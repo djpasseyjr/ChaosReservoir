@@ -1,5 +1,5 @@
 # ChaosReservoir
-## Repository for the study of complex network topologies in reservoir computers
+Complex network topologies in reservoir computers
 
 #### Group Members
 1. Dr. Ben Webb
@@ -9,30 +9,30 @@
 
 #### Plan
 **Week 1**
-[ ] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
+* [ ] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
 Tasks:
-[ ] Identify reasonable parameter ranges for the system
-[ ] Send the ranges to a designated group member
-[ ] Designated member generates experiments for all parameter ranges
+* [ ] Identify reasonable parameter ranges for the system
+* [ ] Send the ranges to a designated group member
+* [ ] Designated member generates experiments for all parameter ranges
 
 **Week 2**
-[ ] How to Use the Super Computer
+* [ ] How to Use the Super Computer
 Tasks:
-[ ] Designated member sends out experiments
-[ ] Each team member runs the experiments and starts data analysis
+* [ ] Designated member sends out experiments
+* [ ] Each team member runs the experiments and starts data analysis
 
 **Week 3**
-[ ] Things to look for in the Data
+* [ ] What to Look for in the Data
 Tasks:
-[ ] Analyze Datasets
+* [ ] Analyze Datasets
 
 **Week 4**
-[ ] Group Members Present Findings
+* [ ] Group Members Present Findings
 Tasks:
-[ ] Further Dataset Analysis
+* [ ] Further Dataset Analysis
 
 **Week 5**
-[ ] Group Members Present Findings
+* [ ] Group Members Present Findings
 Tasks:
-[ ] Discuss Future steps
+* [ ] Discuss Future steps
 
