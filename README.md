@@ -1,13 +1,13 @@
 # ChaosReservoir
 Complex network topologies in reservoir computers
 
-#### Group Members
+### Group Members
 1. Dr. Ben Webb
 2. DJ Passey
 3. Isaac Becker
 4. Joseph Wilkes
 
-#### Plan
+### Plan
 **Week 1**
 * [ ] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
 Tasks:
