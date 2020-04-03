@@ -10,6 +10,7 @@ Complex network topologies in reservoir computers
 ### Plan
 **Week 1**
 * [ ] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
+
 Tasks:
 * [ ] Identify reasonable parameter ranges for the system
 * [ ] Send the ranges to a designated group member
@@ -17,22 +18,26 @@ Tasks:
 
 **Week 2**
 * [ ] How to Use the Super Computer
+
 Tasks:
 * [ ] Designated member sends out experiments
 * [ ] Each team member runs the experiments and starts data analysis
 
 **Week 3**
 * [ ] What to Look for in the Data
+
 Tasks:
 * [ ] Analyze Datasets
 
 **Week 4**
 * [ ] Group Members Present Findings
+
 Tasks:
 * [ ] Further Dataset Analysis
 
 **Week 5**
 * [ ] Group Members Present Findings
+
 Tasks:
 * [ ] Discuss Future steps
 
