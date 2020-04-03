@@ -1,8 +1,7 @@
-from res_experiment_v2 import *
+from res_experiment import *
 from lorenz_sol import *
 from math import floor
 from scipy import integrate
-import os
 
 
 NTRIALS = 2

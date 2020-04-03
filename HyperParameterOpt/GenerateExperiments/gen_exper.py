@@ -4,6 +4,8 @@ TMPL = "template.py"
 BASH_TMPL = "bash_template.sh"
 
 def mass_prod_exp(exp_name, net, remove_ps, nfile_per_exp, nexisting_files=0):
+    """ Write experiment files with the given parameter settings
+    """
     exp_fnames = []
     for j,p in enumerate(remove_ps):
         for i in range(nexisting_files+1, nexisting_files + nfile_per_exp+1):
@@ -14,7 +16,8 @@ def mass_prod_exp(exp_name, net, remove_ps, nfile_per_exp, nexisting_files=0):
             make_bash_file(exp_fname)
             
 def make_exp_file(exp_fname, save_fname, net, remove_p):
-    
+    """ Make a single experiment file
+    """
     tmpl_stream = open(TMPL,'r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#FNAME#",save_fname)
@@ -26,6 +29,8 @@ def make_exp_file(exp_fname, save_fname, net, remove_p):
     new_f.close()
     
 def make_bash_file(fname):
+    """ Make a bash file to run 'fname' on the super computer
+    """
     # Open bash template
     tmpl_stream = open(BASH_TMPL,'r')
     tmpl_str = tmpl_stream.read()
