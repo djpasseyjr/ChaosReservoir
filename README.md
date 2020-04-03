@@ -10,35 +10,46 @@ Click [here](Papers/djpassey_thesis.pdf) for the masters thesis that started thi
 
 ### Plan
 **Week 1**
+
+__Presentation:__
 * [ ] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
 
-Tasks:
+__Tasks:__
 * [ ] Identify reasonable parameter ranges for the system
 * [ ] Send the ranges to a designated group member
 * [ ] Designated member generates experiments for all parameter ranges
 
 **Week 2**
+
+__Presentation:__
 * [ ] How to Use the Super Computer
 
-Tasks:
+__Tasks:__
 * [ ] Designated member sends out experiments
 * [ ] Each team member runs the experiments and starts data analysis
 
 **Week 3**
+
+__Presentation:__
+
 * [ ] How to Analyze Reservoir Computer Results
 
-Tasks:
+__Tasks:__
 * [ ] Analyze Datasets
 
 **Week 4**
+
+__Presentation:__
 * [ ] Group Members Present Findings
 
-Tasks:
+__Tasks:__
 * [ ] Further Dataset Analysis
 
 **Week 5**
+
+__Presentation:__
 * [ ] Group Members Present Findings
 
-Tasks:
+__Tasks:__
 * [ ] Discuss Future steps
 
