@@ -1,6 +1,7 @@
 # ChaosReservoir
-Complex network topologies in reservoir computers
+Repo for writing and running experiments on the effect of network topology on a reservoir computer's ability to learn the Lorentz equations.
 
+Click [here](Papers/djpassey_thesis.pdf) for the masters thesis that started this project (p. 32-end will be the most relevant). Click [here](Papers/attractor_recon.pdf) for a paper about reservoir computing. Click [here](Papers/spect_dyn_specialization.pdf) for a paper about network specialization.
 ### Group Members
 1. Dr. Ben Webb
 2. DJ Passey
