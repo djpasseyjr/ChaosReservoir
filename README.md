@@ -25,7 +25,7 @@ Tasks:
 * [ ] Each team member runs the experiments and starts data analysis
 
 **Week 3**
-* [ ] What to Look for in the Data
+* [ ] How to Analyze Reservoir Computer Results
 
 Tasks:
 * [ ] Analyze Datasets
