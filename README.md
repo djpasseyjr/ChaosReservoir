@@ -53,3 +53,9 @@ __Presentation:__
 __Tasks:__
 * [ ] Discuss Future steps
 
+
+### Other Directions
+
+1. Heatmap of Wout. What is the correlation between connected components in the original adjacency matrix and size of edges in Wout?
+2. Spectral design. Building networks to have certain eigenvalues. Can we start from motifs and connect them in a way that produces the desired structure? Do networks have characteristic motifs that play a role in spectrum as edges are removed.
+3. If we have a network and we uniformly remove edges until we break the network down into motifs, can we build it again by adding the edges back in some way?
