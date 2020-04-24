@@ -31,12 +31,12 @@ RES_PARAMS = {
               "activ_f": np.tanh,
               "connect_p": .4,
               "spect_rad": .9,
-              "gamma": 1.,
+              "gamma": #GAMMA#,
               "sigma": 0.12,
               "sparse_res": True,
              }
 
-spectrum(FNAME, NET, 
+experiment(FNAME, NET, 
          RES_PARAMS, DIFF_EQ_PARAMS,
          ntrials=NTRIALS,  norbits=NORBITS, 
          x0=X0, remove_p=REMOVE_P)

@@ -5,6 +5,14 @@ import networkx as nx
 from math import floor
 from lorenz_sol import *
 
+def how_long_accurate(u, pre, tol=1):
+    """ Find the first i such that ||u_i - pre_i||_2 > tol """
+    for i in range(u.shape[1]):
+        dist = np.sum((u[:,i] - pre[:,i])**2)**.5
+        if dist > tol:
+            return i
+    return u.shape[1]
+
 def remove_edges(A,nedges):
     """ Randomly removes 'nedges' edges from a sparse matrix 'A'
     """
@@ -56,6 +64,9 @@ def watts():
     p = .05
     A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
     return sparse.dok_matrix(A)
+
+def random_lorenz_x0():
+    return  20*(2*np.random.rand(3) - 1)
 
 def experiment(fname, network_adj, 
              res_params, diff_eq_params,

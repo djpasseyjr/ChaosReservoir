@@ -23,6 +23,7 @@ def make_exp_file(exp_fname, save_fname, net, remove_p):
     tmpl_str = tmpl_str.replace("#FNAME#",save_fname)
     tmpl_str = tmpl_str.replace("#NET#",net)
     tmpl_str = tmpl_str.replace("#REMOVE_P#",remove_p)
+    
     # Save to new file
     new_f = open(exp_fname,'w')
     new_f.write(tmpl_str)
