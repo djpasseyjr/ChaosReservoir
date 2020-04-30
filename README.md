@@ -9,7 +9,7 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 1. Dr. Ben Webb
 2. DJ Passey
 3. Isaac Becker
-4. Joseph Wilkes
+4. Joey Wilkes
 
 ### Plan
 **Week 1**
