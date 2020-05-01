@@ -13,7 +13,7 @@ def barab1():
     """ Barabasi-Albert preferential attachment. Each node is added with one edge
     """
     n = np.random.randint(2000,3500)
-    m = 2
+    m = 1
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
     
@@ -30,7 +30,7 @@ def erdos():
     """
     n = np.random.randint(2000,3500)
     p = 2/n
-    A = nx.adj_matrix(nx.erdos_renyi_graph(n,m)).T
+    A = nx.adj_matrix(nx.erdos_renyi_graph(n,p)).T
     return sparse.dok_matrix(A)
     
 def random_digraph():
