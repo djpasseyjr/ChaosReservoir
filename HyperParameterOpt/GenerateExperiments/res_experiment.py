@@ -13,7 +13,7 @@ def barab1():
     """ Barabasi-Albert preferential attachment. Each node is added with one edge
     """
     n = np.random.randint(2000,3500)
-    m = 2
+    m = 1
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
     
@@ -30,7 +30,7 @@ def erdos():
     """
     n = np.random.randint(2000,3500)
     p = 2/n
-    A = nx.adj_matrix(nx.erdos_renyi_graph(n,m)).T
+    A = nx.adj_matrix(nx.erdos_renyi_graph(n,p)).T
     return sparse.dok_matrix(A)
     
 def random_digraph():
@@ -84,7 +84,7 @@ def how_long_accurate(u, pre, tol=1):
 
 #-- Main experiment --#
 
-def experiment(fname, network_adj, 
+def experiment(fname, network_generator, 
              res_params, diff_eq_params,
              ntrials=1000,  norbits=5, 
              x0=random_lorenz_x0, remove_p=0
@@ -98,7 +98,7 @@ def experiment(fname, network_adj,
 
     i = 0
     while i < ntrials:
-        net = network_adj()
+        net = network_generator()
         # Remove Edges
         if remove_p != 0:
             net = remove_edges(net, floor(remove_p*np.sum(net != 0)))
@@ -118,4 +118,4 @@ def experiment(fname, network_adj,
 
         i += 1
         pickle.dump(results, open(fname,"wb"))
-        print(f"Net complete-- \n\tNet: {network_adj} \n\tPercent {remove_p}")
+        print(f"Net complete-- \n\tNet: {network_generator} \n\tPercent {remove_p}")
