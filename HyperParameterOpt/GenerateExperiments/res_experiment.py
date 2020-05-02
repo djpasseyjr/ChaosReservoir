@@ -5,7 +5,11 @@ from math import floor
 from rescomp import ResComp, specialize, lorenz_equ
 from scipy import sparse
 
+#-------------------------------------
+# Constant for measuring preformance 
+# Do not change
 TOL = 5
+#-------------------------------------
 
 #-- Network topologies --#
 
@@ -115,8 +119,8 @@ def results_dict(ntrials, **kwargs):
     """
     results =  {i: {'pred' : [],
                     'err' : [],
-                    'adj' : None
-                    'net' : kwargs["network"],
+                    'adj' : None,
+                    'net' : kwargs["topology"],
                     'gamma' : kwargs['gamma'],
                     'sigma' : kwargs['sigma'],
                     'spect_rad"' : kwargs['spect_rad'],
@@ -127,7 +131,7 @@ def results_dict(ntrials, **kwargs):
 
 def experiment(
     fname,
-    network,
+    topology,
     res_params,
     diff_eq_params,
     ntrials=5,
@@ -150,10 +154,10 @@ def experiment(
         remove_p (float) : Percent of edges to remove from the network
     """
     # Make dictionary to store data
-    results = results_dict(ntrials, remove_p=remove_p, network=network, **res_params)
+    results = results_dict(ntrials, remove_p=remove_p, topology=topology, **res_params)
     i = 0
     while i < ntrials:
-        adj = generate_adj(network)
+        adj = generate_adj(topology)
         # Remove Edges
         if remove_p != 0:
             adj = remove_edges(adj, floor(remove_p*np.sum(adj != 0)))
@@ -168,4 +172,4 @@ def experiment(
             results[i]["pred"].append(how_long_accurate(u(test_t), rc.predict(test_t), tol=TOL))
         i += 1
         pickle.dump(results, open(fname,"wb"))
-        print(f"Net complete-- \n\tNet: {network} \n\tPercent {remove_p}")
+        print(f"Net complete-- \n\tNet: {topology} \n\tPercent {remove_p}")
