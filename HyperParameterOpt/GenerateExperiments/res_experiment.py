@@ -34,7 +34,7 @@ def erdos():
     """
     n = np.random.randint(2000,3500)
     p = 2/n
-    A = nx.adj_matrix(nx.erdos_renyi_graph(n,m)).T
+    A = nx.adj_matrix(nx.erdos_renyi_graph(n,p)).T
     return sparse.dok_matrix(A)
 
 def random_digraph():
@@ -173,3 +173,4 @@ def experiment(
         i += 1
         pickle.dump(results, open(fname,"wb"))
         print(f"Net complete-- \n\tNet: {topology} \n\tPercent {remove_p}")
+
