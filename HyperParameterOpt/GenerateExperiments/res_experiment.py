@@ -93,9 +93,9 @@ def generate_adj(network, p):
     if network == 'random_digraph':
         net = random_digraph(p)
     if network == 'watts3':
-        net = watts(p)
+        net = watts3(p)
     if network == 'watts5':
-        net = watts(p)
+        net = watts5(p)
     return net
 
 #-- Differential equation utilities --#
