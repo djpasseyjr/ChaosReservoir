@@ -6,7 +6,7 @@ from rescomp import ResComp, specialize, lorenz_equ
 from scipy import sparse
 
 #-------------------------------------
-# Constant for measuring preformance 
+# Constant for measuring preformance
 # Do not change
 TOL = 5
 #-------------------------------------
@@ -29,27 +29,32 @@ def barab2():
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
 
-def erdos():
+def erdos(p):
     """ Erdos-Renyi random graph. p=2/n
     """
     n = np.random.randint(2000,3500)
-    p = 2/n
     A = nx.adj_matrix(nx.erdos_renyi_graph(n,p)).T
     return sparse.dok_matrix(A)
 
-def random_digraph():
+def random_digraph(p):
     """ Random digraph. Each directed edge is present with probability p=2/n
     """
     n = np.random.randint(2000,3500)
-    p = 2/n
     return sparse.random(n,n, density=p, data_rvs=np.ones, format='dok')
 
-def watts():
+def watts3(p):
+    """ Watts-Strogatz small world model
+    """
+    n = np.random.randint(2000,3500)
+    k = 3
+    A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
+    return sparse.dok_matrix(A)
+
+def watts5(p):
     """ Watts-Strogatz small world model
     """
     n = np.random.randint(2000,3500)
     k = 5
-    p = .05
     A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
     return sparse.dok_matrix(A)
 
@@ -65,7 +70,7 @@ def remove_edges(A,nedges):
         A[e] = 0
     return A
 
-def generate_adj(network):
+def generate_adj(network, p):
     """ Generate a network with the supplied topology
 
         Parameters
@@ -76,7 +81,7 @@ def generate_adj(network):
         -------
         net (sparse matrix) : An adjacency matrix with the specified network topology
     """
-    network_options = ['barab1','barab2','erdos','random_digraph','watts']
+    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5']
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
     if network == 'barab1':
@@ -84,11 +89,13 @@ def generate_adj(network):
     if network == 'barab2':
         net = barab2()
     if network == 'erdos':
-        net = erdos()
+        net = erdos(p)
     if network == 'random_digraph':
-        net = random_digraph()
-    if network == 'watts':
-        net = watts()
+        net = random_digraph(p)
+    if network == 'watts3':
+        net = watts(p)
+    if network == 'watts5':
+        net = watts(p)
     return net
 
 #-- Differential equation utilities --#
@@ -114,24 +121,27 @@ def how_long_accurate(u, pre, tol=1):
 
 #-- Main experiment --#
 
-def results_dict(ntrials, **kwargs):
+def results_dict(*args, **kwargs):
     """ Generate a dictionary for storing experiment results
     """
+    ntrials, topology, topo_p, remove_p = args
     results =  {i: {'pred' : [],
                     'err' : [],
                     'adj' : None,
-                    'net' : kwargs["topology"],
+                    'net' : topology,
+                    'topo_p' : topo_p,
                     'gamma' : kwargs['gamma'],
                     'sigma' : kwargs['sigma'],
                     'spect_rad"' : kwargs['spect_rad'],
                     'ridge_alpha' : kwargs['ridge_alpha'],
-                    'remove_p' : kwargs['remove_p']
+                    'remove_p' : remove_p
                     } for i in range(ntrials)}
     return results
 
 def experiment(
     fname,
     topology,
+    topo_p,
     res_params,
     diff_eq_params,
     ntrials=5,
@@ -145,7 +155,8 @@ def experiment(
         Parameters
         ----------
         fname (str) : Name of the file where results will be saved
-        network (str) : Network topology in [barab1, barab2, erdos, random_digraph, watts]
+        topology (str) : Network topology in [barab1, barab2, erdos, random_digraph, watts3, watts5]
+        topo_p (float) : Parameter accompanying the topology
         res_params (dict) : Dictionary of all parameters for the ResComp class
         diff_eq_params (dict) : Dictionary of all parameters for the rc_solve_ode function
         ntrials (int) : How many different reservoir computers to generate
@@ -154,10 +165,10 @@ def experiment(
         remove_p (float) : Percent of edges to remove from the network
     """
     # Make dictionary to store data
-    results = results_dict(ntrials, remove_p=remove_p, topology=topology, **res_params)
+    results = results_dict(ntrials, topology, topo_p, remove_p, **res_params)
     i = 0
     while i < ntrials:
-        adj = generate_adj(topology)
+        adj = generate_adj(topology, topo_p)
         # Remove Edges
         if remove_p != 0:
             adj = remove_edges(adj, floor(remove_p*np.sum(adj != 0)))
@@ -173,4 +184,3 @@ def experiment(
         i += 1
         pickle.dump(results, open(fname,"wb"))
         print(f"Net complete-- \n\tNet: {topology} \n\tPercent {remove_p}")
-
