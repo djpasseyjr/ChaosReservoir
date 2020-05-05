@@ -8,7 +8,7 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 ### Group Members
 1. Dr. Ben Webb
 2. DJ Passey
-3. Isaac Becker
+3. Joseph Jamieson
 4. Joey Wilkes
 
 ### Plan
