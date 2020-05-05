@@ -4,11 +4,12 @@ from math import floor
 from scipy import integrate
 
 
-NTRIALS = 2
+NTRIALS = 5
 NORBITS = 200
 X0 = random_lorenz_x0
 FNAME = "#FNAME#"
-NET = #NET#
+TOPOLOGY = #TOPOLOGY#
+TOPO_P = #TOPO_P#
 REMOVE_P = #REMOVE_P#
 
 DIFF_EQ_PARAMS = {
@@ -30,13 +31,20 @@ RES_PARAMS = {
               "res_sz": 15,
               "activ_f": np.tanh,
               "connect_p": .4,
-              "spect_rad": .9,
+              "spect_rad": #SPECT_RAD#,
               "gamma": #GAMMA#,
-              "sigma": 0.12,
+              "sigma": #SIGMA#,
               "sparse_res": True,
              }
 
-experiment(FNAME, NET, 
-         RES_PARAMS, DIFF_EQ_PARAMS,
-         ntrials=NTRIALS,  norbits=NORBITS, 
-         x0=X0, remove_p=REMOVE_P)
+experiment(
+    FNAME,
+    TOPOLOGY,
+    TOPO_P,
+    RES_PARAMS,
+    DIFF_EQ_PARAMS,
+    ntrials=NTRIALS,
+    norbits=NORBITS,
+    x0=X0,
+    remove_p=REMOVE_P
+)
