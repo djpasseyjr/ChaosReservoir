@@ -29,17 +29,19 @@ def barab2():
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
 
-def erdos(p):
+def erdos(mean_degree):
     """ Erdos-Renyi random graph. p=2/n
     """
     n = np.random.randint(2000,3500)
+    p = mean_degree/n
     A = nx.adj_matrix(nx.erdos_renyi_graph(n,p)).T
     return sparse.dok_matrix(A)
 
-def random_digraph(p):
+def random_digraph(mean_degree):
     """ Random digraph. Each directed edge is present with probability p=2/n
     """
     n = np.random.randint(2000,3500)
+    p = mean_degree/n
     return sparse.random(n,n, density=p, data_rvs=np.ones, format='dok')
 
 def watts3(p):
@@ -70,7 +72,7 @@ def remove_edges(A,nedges):
         A[e] = 0
     return A
 
-def generate_adj(network, p):
+def generate_adj(network, param):
     """ Generate a network with the supplied topology
 
         Parameters
@@ -89,13 +91,13 @@ def generate_adj(network, p):
     if network == 'barab2':
         net = barab2()
     if network == 'erdos':
-        net = erdos(p)
+        net = erdos(param)
     if network == 'random_digraph':
-        net = random_digraph(p)
+        net = random_digraph(param)
     if network == 'watts3':
-        net = watts3(p)
+        net = watts3(param)
     if network == 'watts5':
-        net = watts5(p)
+        net = watts5(param)
     return net
 
 #-- Differential equation utilities --#
