@@ -30,7 +30,7 @@ def barab2():
     return sparse.dok_matrix(A)
 
 def erdos(mean_degree):
-    """ Erdos-Renyi random graph. p=2/n
+    """ Erdos-Renyi random graph. 
     """
     n = np.random.randint(2000,3500)
     p = mean_degree/n
@@ -38,7 +38,8 @@ def erdos(mean_degree):
     return sparse.dok_matrix(A)
 
 def random_digraph(mean_degree):
-    """ Random digraph. Each directed edge is present with probability p=2/n
+    """ Random digraph. Each directed edge is present with probability p = mean_degree/n.
+        Since this is a directed graph model, mean_degree = mean in deegree = mean out degree
     """
     n = np.random.randint(2000,3500)
     p = mean_degree/n
