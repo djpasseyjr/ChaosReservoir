@@ -11,12 +11,20 @@ from scipy import sparse
 TOL = 5
 #-------------------------------------
 
+smallest_network_size =  int(2e3)
+biggest_network_size = int(3.5e3)
+
+#downscale while developing
+smallest_network_size =  int(2)
+biggest_network_size = int(5)
+print(smallest_network_size,biggest_network_size,'should be (2000,3500) during experimentation')
+
 #-- Network topologies --#
 
 def barab1():
     """ Barabasi-Albert preferential attachment. Each node is added with one edge
     """
-    n = np.random.randint(2000,3500)
+    n = np.random.randint(smallest_network_size,biggest_network_size)
     m = 1
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
@@ -24,15 +32,15 @@ def barab1():
 def barab2():
     """ Barabasi-Albert preferential attachment. Each node is added with two edges
     """
-    n = np.random.randint(2000,3500)
+    n = np.random.randint(smallest_network_size,biggest_network_size)
     m = 2
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
 
 def erdos(mean_degree):
-    """ Erdos-Renyi random graph. 
+    """ Erdos-Renyi random graph.
     """
-    n = np.random.randint(2000,3500)
+    n = np.random.randint(smallest_network_size,biggest_network_size)
     p = mean_degree/n
     A = nx.adj_matrix(nx.erdos_renyi_graph(n,p)).T
     return sparse.dok_matrix(A)
@@ -41,14 +49,14 @@ def random_digraph(mean_degree):
     """ Random digraph. Each directed edge is present with probability p = mean_degree/n.
         Since this is a directed graph model, mean_degree = mean in deegree = mean out degree
     """
-    n = np.random.randint(2000,3500)
+    n = np.random.randint(smallest_network_size,biggest_network_size)
     p = mean_degree/n
     return sparse.random(n,n, density=p, data_rvs=np.ones, format='dok')
 
 def watts3(p):
     """ Watts-Strogatz small world model
     """
-    n = np.random.randint(2000,3500)
+    n = np.random.randint(smallest_network_size,biggest_network_size)
     k = 3
     A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
     return sparse.dok_matrix(A)
@@ -56,7 +64,7 @@ def watts3(p):
 def watts5(p):
     """ Watts-Strogatz small world model
     """
-    n = np.random.randint(2000,3500)
+    n = np.random.randint(smallest_network_size,biggest_network_size)
     k = 5
     A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
     return sparse.dok_matrix(A)
@@ -185,5 +193,7 @@ def experiment(
             results[i]["err"].append(rc.fit(train_t, u))
             results[i]["pred"].append(how_long_accurate(u(test_t), rc.predict(test_t), tol=TOL))
         i += 1
-        pickle.dump(results, open(fname,"wb"))
-        print(f"Net complete-- \n\tNet: {topology} \n\tPercent {remove_p}")
+        # pickle.dump(results, open(fname,"wb"))
+        # print(f"Net complete-- \n\tNet: {topology} \n\tPercent {remove_p}")
+        #write all results to one source
+        return results
