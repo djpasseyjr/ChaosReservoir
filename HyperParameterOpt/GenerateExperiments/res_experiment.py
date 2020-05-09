@@ -139,6 +139,7 @@ def results_dict(*args, **kwargs):
     results =  {i: {'pred' : [],
                     'err' : [],
                     'adj' : None,
+                    'adj_size':None,
                     'net' : topology,
                     'topo_p' : topo_p,
                     'gamma' : kwargs['gamma'],
@@ -184,6 +185,8 @@ def experiment(
         if remove_p != 0:
             adj = remove_edges(adj, floor(remove_p*np.sum(adj != 0)))
         results[i]["adj"] = adj
+        # store the size just to see if there is any correlation 
+        results[i]["adj_size"] = adj.shape()
         for j in range(norbits):
             # Initial condition
             diff_eq_params["x0"] = x0()

@@ -4,10 +4,15 @@ from parameter_experiments import *
 from math import floor
 from scipy import integrate
 
-# i decided to change the template.py file because I took that ino and put it into the generate_experiments file
-# that way I can return the results, and hopefully just store one file
-# this should be the only file that need be edited to change the experiments
-# these comments above can be deleted if this file is to be kept
+""" there should only be one file that the user will have to edit,
+so here the user can input parameter ranges, and then parameter_experiments.py
+will create individual experiment files, and bash scripts, to be run,
+
+Next part will figure out how to know when all the experiments have been run,
+and then compile all the pkl files into one results file, that we can combine as
+well with other results from other users.  
+
+"""
 
 #edit directly into function
 generate_experiments(
