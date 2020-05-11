@@ -17,27 +17,27 @@ DIFF_EQ_PARAMS = {
 RES_PARAMS = {
               "uniform_weights": True,
               "solver": "ridge",
-              "ridge_alpha": #RIDGE_ALPHA#,
+              "ridge_alpha": 0.001,
               "signal_dim": 3,
               "network": "random graph",
 
               "res_sz": 15,
               "activ_f": np.tanh,
               "connect_p": .4,
-              "spect_rad": #SPECT_RAD#,
-              "gamma": #GAMMA#,
-              "sigma": #SIGMA#,
+              "spect_rad": 0.9,
+              "gamma": 1,
+              "sigma": 1,
               "sparse_res": True,
              }
 
 experiment(
-    fname="#FNAME#",
-    topology=#TOPOLOGY#,
-    topo_p=#TOPO_P#,
+    fname="JW1_barab1_2.pkl",
+    topology="barab1",
+    topo_p=None,
     res_params=RES_PARAMS,
     diff_eq_params=DIFF_EQ_PARAMS,
-    ntrials=#NETS_PER_EXPERIMENT#,
-    norbits=#ORBITS_PER_EXPERIMENT#,
+    ntrials=1,
+    norbits=1,
     x0=random_lorenz_x0,
-    remove_p=#REMOVE_P#
+    remove_p=0.2
 )

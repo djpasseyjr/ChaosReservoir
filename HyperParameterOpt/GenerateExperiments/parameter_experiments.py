@@ -86,7 +86,7 @@ def generate_experiments(
                             #separate different topology's .py files into directories
                             DIR = directory(topology)
                             #put together FNAME with topology, and parameter_enumaration_number
-                            save_fname = DIR + '/' + FNAME + "_" + topology + "_" + str(parameter_enumaration_number)
+                            save_fname =  FNAME + "_" + topology + "_" + str(parameter_enumaration_number)
 
                             #read in template experiment file
                             tmpl_stream = open('experiment_template.py','r')
@@ -105,7 +105,7 @@ def generate_experiments(
                             tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
                             tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                             # Save to new file
-                            new_f = open(save_fname + '.py','w')
+                            new_f = open(DIR + '/' + save_fname + '.py','w')
                             new_f.write(tmpl_str)
                             new_f.close()
 
