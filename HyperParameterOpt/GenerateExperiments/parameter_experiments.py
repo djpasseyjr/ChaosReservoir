@@ -6,14 +6,7 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-""" See the README.md for the file naming system for FNAME input
-
-in preparation for when we need to systematically
-read in each result pkl file exactly once (no more, no less) to one data source
-file per batch,
-
-this parameters_experiments file is just to create the
-needed files to run experiments. Reading the results will be a different process
+"""
 """
 
 def directory(network):
@@ -73,6 +66,8 @@ def generate_experiments(
 
     Returns:
         None
+    Output:
+        Writes files to other directories
 
     """
     if topology is None:
