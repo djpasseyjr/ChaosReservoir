@@ -2,7 +2,7 @@
 
 This directory contains the code for generating experiments. <br>
 
-# FILE NAMING STYLE GUIDE 
+# File naming style guide
 In order to make each file bash and experiment.py file unique, the following
 file naming style guide is proposed. <br>
 
@@ -39,7 +39,7 @@ for the ending of each file.
 
 Example of complete filenames are:
   * "JW2_barab1_1"
-  * "JW2_watts3_100"
+  * "JW3_watts3_100"
   * "DJ5_erdos_444"
 
 Thus each bash script and experiment.py file will be uniquely names, and will
