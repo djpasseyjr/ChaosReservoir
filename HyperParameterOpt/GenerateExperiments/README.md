@@ -2,6 +2,7 @@
 
 This directory contains the code for generating experiments. <br>
 
+# FILE NAMING STYLE GUIDE 
 In order to make each file bash and experiment.py file unique, the following
 file naming style guide is proposed. <br>
 
