@@ -3,16 +3,9 @@ from lorenz_sol import *
 from math import floor
 from scipy import integrate
 
+#this file is edited automatically by main.py and parameter_experiments.py
 
-NTRIALS = 5
-NORBITS = 200
-X0 = random_lorenz_x0
-FNAME = "#FNAME#"
-TOPOLOGY = #TOPOLOGY#
-TOPO_P = #TOPO_P#
-REMOVE_P = #REMOVE_P#
-
-DIFF_EQ_PARAMS = {
+INPUT_DIFF_EQ_PARAMS = {
                   "x0": [-20, 10, -.5],
                   "begin": 0,
                   "end": 60,
@@ -21,7 +14,7 @@ DIFF_EQ_PARAMS = {
                   "solver": lorenz_equ
                  }
 
-RES_PARAMS = {
+INPUT_RES_PARAMS = {
               "uniform_weights": True,
               "solver": "ridge",
               "ridge_alpha": #RIDGE_ALPHA#,
@@ -38,13 +31,13 @@ RES_PARAMS = {
              }
 
 experiment(
-    FNAME,
-    TOPOLOGY,
-    TOPO_P,
-    RES_PARAMS,
-    DIFF_EQ_PARAMS,
-    ntrials=NTRIALS,
-    norbits=NORBITS,
-    x0=X0,
-    remove_p=REMOVE_P
+    FNAME="#FNAME#",
+    TOPOLOGY=#TOPOLOGY#,
+    TOPO_P=#TOPO_P#,
+    RES_PARAMS=INPUT_RES_PARAMS,
+    DIFF_EQ_PARAMS=INPUT_DIFF_EQ_PARAMS,
+    ntrials=#NETS_PER_EXPERIMENT#,
+    norbits=#ORBITS_PER_EXPERIMENT#,
+    x0=random_lorenz_x0,
+    remove_p=#REMOVE_P#
 )

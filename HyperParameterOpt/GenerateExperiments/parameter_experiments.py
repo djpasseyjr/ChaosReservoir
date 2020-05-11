@@ -6,17 +6,18 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-""" TODO figure out a file naming system for bash and experiment files
-according to parameter ranges
-    - maybe enumerate the parameter permutations, and have the filename
-    be the topology and id number for the experiment
+""" See the README.md for the file naming system for FNAME input
 
 in preparation for when we need to systematically
-read in each result files exactly once (no more, no less), this file is just to create
+read in each result pkl file exactly once (no more, no less) to one data source
+file per batch,
+
+this parameters_experiments file is just to create the
 needed files to run experiments. Reading the results will be a different process
 """
 
 def generate_experiments(
+    fname,
     nets_per_experiment = 5,
     orbits_per_experiment = 5,
     topology = None,
@@ -29,8 +30,9 @@ def generate_experiments(
 ):
     """ Write individual bash files (according to bash_template.sh) and
     experiment files (according to experiment_template.py) for a grid of
-    parameters ranges
+    parameters ranges. See the README for a style guide for fname.
 
+    fname                       (str):   prefix to each filename, an error will be thrown if not specified
     nets_per_experiment         (int):   number of networks to generate for a given topology
     orbits_per_experiment       (int):   number of orbits to run on each network for a given topology
     topology                    (str):   topology as specified in the generate_adj function of res_experiment.py
@@ -44,74 +46,40 @@ def generate_experiments(
     Returns: None
 
     """
-    if condensed_output_filename is None:
-        message = """ Currently generate_experiments doesn\'t include funtionality
-            for generating multiple files for each experimient """
-        raise NotImplementedError(message)
-
     if topology is None:
         raise ValueError('Please Specify a Topology as specified in the generate_adj function of res_experiment.py')
 
+    # the counter will be the final component of each file, it's an enumeration of all the parameters
+    # the parameters themselves are not in the filename
+    parameter_enumaration_number = 1
     for TOPO_P in topo_p_vals:
         for gamma in gamma_vals:
             for sigma in sigma_vals:
                 for spectr in spectr_vals:
-                    for specific_ridge_alpha in ridge_alphas:
+                    for ridge_alpha in ridge_alphas:
                         for p in remove_p_list:
-                            # run experiment
-                            DIFF_EQ_PARAMS, RES_PARAMS = parameter_dictionaries(
-                                    specific_ridge_alpha, spectr, gamma, sigma)
+                            #put together FNAME with topology, and parameter_enumaration_number
+                            save_fname = FNAME + "_" + topology + "_" + parameter_enumaration_number
 
-                            #fname isn't necessary in the case that we only write to one big file
-                            #random_lorenz_x0 comes from res_experiment.py
-                            results = experiment(
-                                                'test',
-                                                topology,
-                                                TOPO_P,
-                                                RES_PARAMS,
-                                                DIFF_EQ_PARAMS,
-                                                ntrials=nets_per_experiment,
-                                                norbits=orbits_per_experiment,
-                                                x0=random_lorenz_x0,
-                                                remove_p=p
-                                            )
-                            print(results,'\n\n')
-                            print('figure out how to take the results and write to one big file')
-                            print('remove return statement, its temporary just avoid loop overprocessing')
+                            #read in template experiment file
+                            tmpl_stream = open('experiment_template.py','r')
+                            tmpl_str = tmpl_stream.read()
+                            tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
+                            tmpl_str = tmpl_str.replace("#TOPOLOGY#",toplogy)
+                            tmpl_str = tmpl_str.replace("#TOPO_P#",TOPO_P)
+                            tmpl_str = tmpl_str.replace("#REMOVE_P#",p)
+                            tmpl_str = tmpl_str.replace("#RIDGE_ALPHA#",ridge_alpha)
+                            tmpl_str = tmpl_str.replace("#SPECT_RAD#",spectr)
+                            tmpl_str = tmpl_str.replace("#GAMMA#",gamma)
+                            tmpl_str = tmpl_str.replace("#SIGMA#",sigma)
+                            # Save to new file
+                            new_f = open(save_fname + '.py','w')
+                            new_f.write(tmpl_str)
+                            new_f.close()
+
+                            #write bash file
+                            # can one bash rile run all the experiment files,
+                            # or does each each experiment file need it's own bash file? 
+
+                            parameter_enumaration_number += 1
                             return
-
-
-
-
-def test_functions():
-    """ """
-    try:
-        generate_experiments()
-    except:
-        print('writing individual files still not built for generate_experiments\n')
-
-    a,b = parameter_dictionaries(.0001,1,2,3)
-    print(b)
-    assert b == {
-                  "uniform_weights": True,
-                  "solver": "ridge",
-                  "ridge_alpha": .0001,
-                  "signal_dim": 3,
-                  "network": "random graph",
-
-                  "res_sz": 15,
-                  "activ_f": np.tanh,
-                  "connect_p": .4,
-                  "spect_rad": 1,
-                  "gamma": 2,
-                  "sigma": 3,
-                  "sparse_res": True,
-                 } , 'failed test case for parameter_dictionaries'
-
-    generate_experiments('joeytest101','barab1')
-
-
-
-# test_functions()
-message = 'create a sample function to generate a sample experiment.py file and sample experiment.sh file, if im using individual py and sh files'
-print(message)

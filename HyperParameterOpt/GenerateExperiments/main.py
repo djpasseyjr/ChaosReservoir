@@ -10,13 +10,13 @@ will create individual experiment files, and bash scripts, to be run,
 
 Next part will figure out how to know when all the experiments have been run,
 and then compile all the pkl files into one results file, that we can combine as
-well with other results from other users.  
+well with other results from other users.
 
 """
 
 #edit directly into function
 generate_experiments(
-    condensed_output_filename = 'filename',
+    FNAME = 'filename',
     nets_per_experiment = 2,
     orbits_per_experiment = 2,
     topology = 'barab1',
