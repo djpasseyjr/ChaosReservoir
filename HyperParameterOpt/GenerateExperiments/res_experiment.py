@@ -11,13 +11,19 @@ from scipy import sparse
 TOL = 5
 #-------------------------------------
 
+""" We might even fix the size of the topology sizes
+to avoid scientific variability, if we do randomize
+the network size, that variable will need to be
+addressed in regards to the results in paper
+"""
+
 smallest_network_size =  int(2e3)
 biggest_network_size = int(3.5e3)
 
 #downscale while developing
 smallest_network_size =  int(2)
 biggest_network_size = int(5)
-print(smallest_network_size,biggest_network_size,'should be (2000,3500) during experimentation')
+print(smallest_network_size,biggest_network_size,'was (2000,3500)')
 
 #-- Network topologies --#
 
@@ -92,6 +98,9 @@ def generate_adj(network, param):
         -------
         net (sparse matrix) : An adjacency matrix with the specified network topology
     """
+    # the directory function in parameter_experiments.py needs to have the same
+    #       network_options as this function, so if more topologies are added, the directory
+    #       function in the other file should also be edited
     network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5']
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')

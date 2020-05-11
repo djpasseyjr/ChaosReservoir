@@ -13,12 +13,16 @@ and then compile all the pkl files into one results file, that we can combine as
 well with other results from other users.
 
 """
+#edit USER_ID, and BATCH_NUMBER to follow file naming style guide in README.md
+#USER_ID should be one of the following: ['JW','DJ','BW','JJ','IB']
+USER_ID = 'JW'
+BATCH_NUMBER = 1
 
-#edit directly into function
+#edit directly into function for parameters,
 generate_experiments(
-    FNAME = 'filename',
-    nets_per_experiment = 2,
-    orbits_per_experiment = 2,
+    FNAME = USER_ID + str(BATCH_NUMBER),
+    nets_per_experiment = 1,
+    orbits_per_experiment = 1,
     topology = 'barab1',
     # parameters below should be a list
     gamma_vals = [1],
@@ -26,5 +30,5 @@ generate_experiments(
     spectr_vals = [0.9],
     topo_p_vals = [None],
     ridge_alphas = [0.001],
-    remove_p_list = [0]
+    remove_p_list = [0.1,0.2]
 )

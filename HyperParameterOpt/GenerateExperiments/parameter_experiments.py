@@ -16,8 +16,35 @@ this parameters_experiments file is just to create the
 needed files to run experiments. Reading the results will be a different process
 """
 
+def directory(network):
+    """
+    Given a certain topology, ouput the string of the
+        directory where all the experiment_template.py files
+        should be saved
+
+    Parameters:
+        Network (str): The topology for the experiments
+
+    Returns:
+        DIR (str): The directory where the individual experiment.py files will be stored
+    """
+    # the network options here should match the generate_adj function in res_experiment.py
+    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5']
+    if network not in network_options:
+        raise ValueError('{network} not in {network_options}')
+
+    if network == 'barab1' or network == 'barab2':
+        DIR = 'Barabasi'
+    if network == 'erdos':
+        DIR = 'Erdos'
+    if network == 'random_digraph':
+        DIR = 'RandDigraph'
+    if network == 'watts3' or network == 'watts5':
+        DIR = 'Watts'
+    return DIR
+
 def generate_experiments(
-    fname,
+    FNAME,
     nets_per_experiment = 5,
     orbits_per_experiment = 5,
     topology = None,
@@ -32,25 +59,27 @@ def generate_experiments(
     experiment files (according to experiment_template.py) for a grid of
     parameters ranges. See the README for a style guide for fname.
 
-    fname                       (str):   prefix to each filename, an error will be thrown if not specified
-    nets_per_experiment         (int):   number of networks to generate for a given topology
-    orbits_per_experiment       (int):   number of orbits to run on each network for a given topology
-    topology                    (str):   topology as specified in the generate_adj function of res_experiment.py
-    gamma_vals                  (list):  gamma values for reservoir
-    sigma_vals                  (list):  sigma values for reservoir
-    spectr_vals                 (list):  spectral radius values for reservoir
-    topo_p_vals                 (list):  may not be Necessary for certain topologies
-    ridge_alphas                (list):  ridge alpha values for reservoir for regularization of the model
-    remove_p_list               (list):  the percentages of edges in the adjacency matrix to remove
+    Parameters:
+        FNAME                       (str):   prefix to each filename, an error will be thrown if not specified
+        nets_per_experiment         (int):   number of networks to generate for a given topology
+        orbits_per_experiment       (int):   number of orbits to run on each network for a given topology
+        topology                    (str):   topology as specified in the generate_adj function of res_experiment.py
+        gamma_vals                  (list):  gamma values for reservoir
+        sigma_vals                  (list):  sigma values for reservoir
+        spectr_vals                 (list):  spectral radius values for reservoir
+        topo_p_vals                 (list):  may not be Necessary for certain topologies
+        ridge_alphas                (list):  ridge alpha values for reservoir for regularization of the model
+        remove_p_list               (list):  the percentages of edges in the adjacency matrix to remove
 
-    Returns: None
+    Returns:
+        None
 
     """
     if topology is None:
         raise ValueError('Please Specify a Topology as specified in the generate_adj function of res_experiment.py')
 
-    # the counter will be the final component of each file, it's an enumeration of all the parameters
-    # the parameters themselves are not in the filename
+    # the counter will be the final component of each file name, it's an enumeration of all the parameters
+    # the parameters values are not in the filename
     parameter_enumaration_number = 1
     for TOPO_P in topo_p_vals:
         for gamma in gamma_vals:
@@ -58,28 +87,36 @@ def generate_experiments(
                 for spectr in spectr_vals:
                     for ridge_alpha in ridge_alphas:
                         for p in remove_p_list:
+
+                            #separate different topology's .py files into directories
+                            DIR = directory(topology)
                             #put together FNAME with topology, and parameter_enumaration_number
-                            save_fname = FNAME + "_" + topology + "_" + parameter_enumaration_number
+                            save_fname = DIR + '/' + FNAME + "_" + topology + "_" + str(parameter_enumaration_number)
 
                             #read in template experiment file
                             tmpl_stream = open('experiment_template.py','r')
                             tmpl_str = tmpl_stream.read()
+                            # the resulting pkl files should be in the topology directory
                             tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
-                            tmpl_str = tmpl_str.replace("#TOPOLOGY#",toplogy)
-                            tmpl_str = tmpl_str.replace("#TOPO_P#",TOPO_P)
-                            tmpl_str = tmpl_str.replace("#REMOVE_P#",p)
-                            tmpl_str = tmpl_str.replace("#RIDGE_ALPHA#",ridge_alpha)
-                            tmpl_str = tmpl_str.replace("#SPECT_RAD#",spectr)
-                            tmpl_str = tmpl_str.replace("#GAMMA#",gamma)
-                            tmpl_str = tmpl_str.replace("#SIGMA#",sigma)
+                            # the topology needs to be a string in the .py file, as required
+                            # by the generate_adj function in res_experiment.py file
+                            tmpl_str = tmpl_str.replace("#TOPOLOGY#","\"" + topology + "\"")
+                            tmpl_str = tmpl_str.replace("#TOPO_P#",str(TOPO_P))
+                            tmpl_str = tmpl_str.replace("#REMOVE_P#",str(p))
+                            tmpl_str = tmpl_str.replace("#RIDGE_ALPHA#",str(ridge_alpha))
+                            tmpl_str = tmpl_str.replace("#SPECT_RAD#",str(spectr))
+                            tmpl_str = tmpl_str.replace("#GAMMA#",str(gamma))
+                            tmpl_str = tmpl_str.replace("#SIGMA#",str(sigma))
+                            tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
+                            tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                             # Save to new file
                             new_f = open(save_fname + '.py','w')
                             new_f.write(tmpl_str)
                             new_f.close()
 
-                            #write bash file
+                            #TODO
+                            # write bash file
                             # can one bash rile run all the experiment files,
-                            # or does each each experiment file need it's own bash file? 
+                            # or does each each experiment file need it's own bash file?
 
                             parameter_enumaration_number += 1
-                            return
