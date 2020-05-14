@@ -61,6 +61,14 @@ def watts5(p):
     A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
     return sparse.dok_matrix(A)
 
+def geom(mean_degree):
+    """ Random geometric graph 
+    """
+    n = np.random.randint(2000,3500)
+    r = (mean_degree/(np.pi*n))**.5
+    A = nx.adj_matrix(nx.random_geometric_graph(n, r)).T
+    return sparse.dok_matrix(A)
+
 def remove_edges(A,nedges):
     """ Randomly removes 'nedges' edges from a sparse matrix 'A'
     """
@@ -78,13 +86,13 @@ def generate_adj(network, param):
 
         Parameters
         ----------
-        network (str) : one of [barab1, barab2, erdos, random_digraph, watts]
+        network (str) : one of [barab1, barab2, erdos, random_digraph, watts3, watts5, geom]
 
         Returns
         -------
         net (sparse matrix) : An adjacency matrix with the specified network topology
     """
-    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5']
+    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5', 'geom']
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
     if network == 'barab1':
@@ -99,6 +107,8 @@ def generate_adj(network, param):
         net = watts3(param)
     if network == 'watts5':
         net = watts5(param)
+    if network = 'geom':
+        net = geom(param)
     return net
 
 #-- Differential equation utilities --#
