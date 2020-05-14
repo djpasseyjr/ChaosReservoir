@@ -18,7 +18,7 @@ def mass_prod_exp(exp_name, net, remove_ps, nfile_per_exp, nexisting_files=0):
 def make_exp_file(exp_fname, save_fname, net, remove_p):
     """ Make a single experiment file
     """
-    #read in template experiment file 
+    #read in template experiment file
     tmpl_stream = open(TMPL,'r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#FNAME#",save_fname)

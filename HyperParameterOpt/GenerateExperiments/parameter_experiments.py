@@ -6,8 +6,20 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-"""
-"""
+def prepare_output_compilation(directory,number_of_experiments):
+    """
+    write the directory and number_of_experiments to the compile_output.py file
+
+    Record the topology so that the ouput_compiler can look in that
+    directory to compile all the pkl files that store the output
+    from the experiments
+
+    Parameters:
+        directory               (str): the name of output directory where all resulting pkl files will be stored
+        number_of_experiments   (int): the number of experiments is used to systematically
+                                        compile all individual output files into one primary file
+    """
+    raise NotImplementedError('prepare_output_compilation isnt finished')
 
 def directory(network):
     """
@@ -56,7 +68,7 @@ def generate_experiments(
         FNAME                       (str):   prefix to each filename, an error will be thrown if not specified
         nets_per_experiment         (int):   number of networks to generate for a given topology
         orbits_per_experiment       (int):   number of orbits to run on each network for a given topology
-        topology                    (str):   topology as specified in the generate_adj function of res_experiment.py
+        topology                    (str):   topology as specified in the generate_adj function of res_experiment.py, an error will be thrown if not specified
         gamma_vals                  (list):  gamma values for reservoir
         sigma_vals                  (list):  sigma values for reservoir
         spectr_vals                 (list):  spectral radius values for reservoir
@@ -73,6 +85,12 @@ def generate_experiments(
     if topology is None:
         raise ValueError('Please Specify a Topology as specified in the generate_adj function of res_experiment.py')
 
+    # in order to separate different topology's .py files into directories
+    # then find the directory for this specific topology
+    DIR = directory(topology)
+
+
+
     # the counter will be the final component of each file name, it's an enumeration of all the parameters
     # the parameters values are not in the filename
     parameter_enumaration_number = 1
@@ -83,15 +101,12 @@ def generate_experiments(
                     for ridge_alpha in ridge_alphas:
                         for p in remove_p_list:
 
-                            #separate different topology's .py files into directories
-                            DIR = directory(topology)
                             #put together FNAME with topology, and parameter_enumaration_number
                             save_fname =  FNAME + "_" + topology + "_" + str(parameter_enumaration_number)
 
                             #read in template experiment file
                             tmpl_stream = open('experiment_template.py','r')
                             tmpl_str = tmpl_stream.read()
-                            # the resulting pkl files should be in the topology directory
                             tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
                             # the topology needs to be a string in the .py file, as required
                             # by the generate_adj function in res_experiment.py file
@@ -105,7 +120,7 @@ def generate_experiments(
                             tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
                             tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                             # Save to new file
-                            new_f = open(DIR + '/' + save_fname + '.py','w')
+                            new_f = open(DIR + '/' + save_fname + ' .py','w')
                             new_f.write(tmpl_str)
                             new_f.close()
 
@@ -115,3 +130,7 @@ def generate_experiments(
                             # or does each each experiment file need it's own bash file?
 
                             parameter_enumaration_number += 1
+
+    print('total number of experiments:',parameter_enumaration_number)
+    #in order to compile output systematically, store the number of experiments and output directory
+    prepare_output_compilation(DIR,parameter_enumaration_number)
