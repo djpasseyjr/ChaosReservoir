@@ -25,6 +25,8 @@ generate_experiments(
     orbits_per_experiment = 1,
     topology = 'barab1',
     # parameters below should be a list
+    network_sizes = [1000,2000,3000],
+    # network_size = [None], #None means network size will be random between 2k-3.5k
     gamma_vals = [1],
     sigma_vals = [1],
     spectr_vals = [0.9],
