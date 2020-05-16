@@ -111,8 +111,6 @@ def generate_experiments(
                                 tmpl_stream = open('experiment_template.py','r')
                                 tmpl_str = tmpl_stream.read()
                                 tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
-                                # the topology needs to be a string in the .py file, as required
-                                # by the generate_adj function in res_experiment.py file
                                 tmpl_str = tmpl_str.replace("#TOPOLOGY#",topology)
                                 tmpl_str = tmpl_str.replace("#TOPO_P#",str(TOPO_P))
                                 tmpl_str = tmpl_str.replace("#REMOVE_P#",str(p))
@@ -124,7 +122,7 @@ def generate_experiments(
                                 tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                                 tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
                                 # Save to new file
-                                new_f = open(DIR + '/' + save_fname + ' .py','w')
+                                new_f = open(DIR + '/' + save_fname + '.py','w')
                                 new_f.write(tmpl_str)
                                 new_f.close()
 
@@ -135,6 +133,6 @@ def generate_experiments(
 
                                 parameter_enumaration_number += 1
 
-    print('total number of experiments:',parameter_enumaration_number)
+    print('total number of experiments:',parameter_enumaration_number - 1)
     #in order to compile output systematically, store the number of experiments and output directory
-    prepare_output_compilation(DIR,parameter_enumaration_number)
+    # prepare_output_compilation(DIR,parameter_enumaration_number)
