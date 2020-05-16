@@ -1,12 +1,15 @@
 import networkx as nx
 import numpy as np
 import pickle
-from math import floor
+from math import floor, ceil
 from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-def prepare_output_compilation(directory,number_of_experiments):
+# parameter used in write_bash_script, this is in minutes
+WALLTIME_PER_JOB = 30
+
+def prepare_output_compilation(directory,filename, number_of_experiments):
     """
     write the directory and number_of_experiments to the compile_output.py file
 
@@ -28,8 +31,6 @@ def prepare_output_compilation(directory,number_of_experiments):
     new_f = open('compile_specific_output.py','w')
     new_f.write(tmpl_str)
     new_f.close()
-
-    # raise NotImplementedError('prepare_output_compilation isnt finished')
 
 def directory(network):
     """
@@ -58,6 +59,36 @@ def directory(network):
         DIR = 'Watts'
     return DIR
 
+def write_bash_script(directory,filename, number_of_experiments):
+    """
+    Write the bash script to run all the experiments, for reasoning
+    behind this format, see the links in the bash_template.sh file
+
+    Parameters:
+        directory               (str): the name of output directory where all resulting pkl files will be stored
+        filename                (str): the filename prefix that all the files have in common
+        number_of_experiments   (int): the number of experiments is used to systematically
+                                        compile all individual output files into one primary file
+    """
+    # WALLTIME_PER_JOB is in minutes, this may depend upon topology size
+    # WALLTIME_PER_JOB = 30
+    # find the number of hours, then round up to next hour
+    TOTAL_TIME = ceil(WALLTIME_PER_JOB * number_of_experiments / 60)
+
+    tmpl_stream = open('bash_template.sh','r')
+    tmpl_str = tmpl_stream.read()
+    tmpl_str = tmpl_str.replace("#HOURS#",str(TOTAL_TIME))
+    tmpl_str = tmpl_str.replace("#DIR#",directory)
+    tmpl_str = tmpl_str.replace("#FNAME#",filename)
+    #subtract the number of experiments by one because of zero indexing of filenames
+    # whereas the slurm --array range is inclusive on endpoints
+    # for example, see https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
+    #       then search "	Resulting task ID's	" on that webpage to see 0-6 is inclusive on endpoints
+    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
+    new_f = open(filename +'.sh','w')
+    new_f.write(tmpl_str)
+    new_f.close()
+
 def generate_experiments(
     FNAME,
     nets_per_experiment = 5,
@@ -71,7 +102,7 @@ def generate_experiments(
     ridge_alphas = [0.001],
     remove_p_list = [0]
 ):
-    """ Write individual bash files (according to bash_template.sh) and
+    """ Write one bash file (according to bash_template.sh), and individual
     experiment files (according to experiment_template.py) for a grid of
     parameters ranges. See the README for a style guide for fname.
 
@@ -103,7 +134,7 @@ def generate_experiments(
 
     # the counter will be the final component of each file name, it's an enumeration of all the parameters
     # the parameters values are not in the filename
-    parameter_enumaration_number = 1
+    parameter_enumaration_number = 0
     for n in network_sizes:
         for TOPO_P in topo_p_vals:
             for gamma in gamma_vals:
@@ -141,6 +172,8 @@ def generate_experiments(
 
                                 parameter_enumaration_number += 1
 
-    print('total number of experiments:',parameter_enumaration_number - 1)
+    print('total number of experiments:',parameter_enumaration_number)
+    #in order to run all the experiments on the supercomputer we need the main bash script
+    write_bash_script(DIR,FNAME + "_" + topology,parameter_enumaration_number)
     #in order to compile output systematically, store the number of experiments and output directory
-    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)
+    # prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)

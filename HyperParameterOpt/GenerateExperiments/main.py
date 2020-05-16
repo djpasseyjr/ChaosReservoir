@@ -12,6 +12,10 @@ See the README.md for the file naming system for FNAME input
     in preparation for when we need to systematically
     read in each result pkl file exactly once (no more, no less) to one data source
     file per batch
+
+Note that the supercomputer scheduler might delay our job because its sensitive to our estimate of
+how long the each experiment will take to run. Feel free to adjust the WALLTIME_PER_JOB variable
+at the top of parameter_experiments.py
 """
 #edit USER_ID, and BATCH_NUMBER to follow file naming style guide in README.md
 #USER_ID should be one of the following: ['JW','DJ','BW','JJ','IB']
