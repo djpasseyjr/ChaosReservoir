@@ -3,11 +3,20 @@ import numpy as np
 import pickle
 import pandas as pd
 
-DIR = #TOPOLOGY#
+DIR = "#TOPOLOGY_DIRECTORY#"
+filename_prefix = "#FNAME#"
 total_experiment_number = #NUMBER_OF_EXPERIMENTS#
 
-def compile_output(path, total_experiment_number):
-    """ """
+def compile_output(DIR, filename_prefix, total_experiment_number):
+    """
+
+    Parameters:
+        DIR                     (str): The directory where the individual experiment.py files will be stored
+        filename_prefix         (str): prefix to each filename, an error will be thrown if not specified
+        total_experiment_number (int): the total number of experiment files that were created
+                                       as described by the final parameter_enumaration_number in
+                                       the generate_experiments() function of the parameter_experiments.py file
+    """
     # we also need the prefix of the files, or can we use os.listdir()
     # path is probably directory plus filename prefix
     path =
@@ -29,9 +38,10 @@ def compile_output(path, total_experiment_number):
     #if done appropriately the new index should correspond to the final number in filename
     # corresponding to that specific
 
-
+    #write final dataframe to pkl file
+    df.to_pickle('compiled_output_' + filename_prefix + '.pkl')
 
     raise NotImplementedError('compile_output isnt finished')
 
 
-compile_output(path, total_experiment_number)
+compile_output(DIR, filename_prefix, total_experiment_number)

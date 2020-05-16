@@ -16,10 +16,20 @@ def prepare_output_compilation(directory,number_of_experiments):
 
     Parameters:
         directory               (str): the name of output directory where all resulting pkl files will be stored
+        filename                (str): the filename prefix that all the files have in common
         number_of_experiments   (int): the number of experiments is used to systematically
                                         compile all individual output files into one primary file
     """
-    raise NotImplementedError('prepare_output_compilation isnt finished')
+    tmpl_stream = open('compile_output.py','r')
+    tmpl_str = tmpl_stream.read()
+    tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
+    tmpl_str = tmpl_str.replace("#filename_prefix#",filename)
+    tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",number_of_experiments)
+    new_f = open('compile_specific_output.py','w')
+    new_f.write(tmpl_str)
+    new_f.close()
+
+    # raise NotImplementedError('prepare_output_compilation isnt finished')
 
 def directory(network):
     """
@@ -91,8 +101,6 @@ def generate_experiments(
     # then find the directory for this specific topology
     DIR = directory(topology)
 
-
-
     # the counter will be the final component of each file name, it's an enumeration of all the parameters
     # the parameters values are not in the filename
     parameter_enumaration_number = 1
@@ -135,4 +143,4 @@ def generate_experiments(
 
     print('total number of experiments:',parameter_enumaration_number - 1)
     #in order to compile output systematically, store the number of experiments and output directory
-    # prepare_output_compilation(DIR,parameter_enumaration_number)
+    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)
