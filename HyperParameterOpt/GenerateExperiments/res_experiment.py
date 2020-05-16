@@ -11,19 +11,13 @@ from scipy import sparse
 TOL = 5
 #-------------------------------------
 
-""" We might even fix the size of the topology sizes
-to avoid scientific variability, if we do randomize
-the network size, that variable will need to be
-addressed in regards to the results in paper
-"""
-
 smallest_network_size =  int(2e3)
 biggest_network_size = int(3.5e3)
 
 #downscale while developing
-smallest_network_size =  int(2)
-biggest_network_size = int(5)
-print(smallest_network_size,biggest_network_size,'was (2000,3500)')
+# smallest_network_size =  int(2)
+# biggest_network_size = int(5)
+# print(smallest_network_size,biggest_network_size,'was (2000,3500)')
 
 #-- Network topologies --#
 
