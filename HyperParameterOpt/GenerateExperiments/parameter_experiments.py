@@ -7,7 +7,7 @@ from res_experiment import *
 from scipy import sparse
 
 # parameter used in write_bash_script, this is in minutes
-WALLTIME_PER_JOB = 30
+WALLTIME_PER_JOB = 480
 
 def prepare_output_compilation(directory,filename, number_of_experiments):
     """
@@ -34,8 +34,8 @@ def prepare_output_compilation(directory,filename, number_of_experiments):
 
 def directory(network):
     """
-    Given a certain topology, ouput the string of the
-        directory where all the experiment_template.py files
+    Given a certain topology, output the string of the
+        directory where all the modified experiment_template.py files
         should be saved
 
     Parameters:
@@ -88,6 +88,7 @@ def write_bash_script(directory,filename, number_of_experiments):
     new_f = open(filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
+    print('NEXT: sbatch',filename +'.sh')
 
 def generate_experiments(
     FNAME,
@@ -144,7 +145,7 @@ def generate_experiments(
                             for p in remove_p_list:
 
                                 #put together FNAME with topology, and parameter_enumaration_number
-                                save_fname =  FNAME + "_" + topology + "_" + str(parameter_enumaration_number)
+                                save_fname =  DIR + '/' + FNAME + "_" + topology + "_" + str(parameter_enumaration_number)
 
                                 #read in template experiment file
                                 tmpl_stream = open('experiment_template.py','r')

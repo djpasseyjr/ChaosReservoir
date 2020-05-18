@@ -9,6 +9,7 @@ total_experiment_number = #NUMBER_OF_EXPERIMENTS#
 
 def compile_output(DIR, filename_prefix, total_experiment_number):
     """
+    Compile the data from all the various pkl files
 
     Parameters:
         DIR                     (str): The directory where the individual experiment.py files will be stored
@@ -19,13 +20,13 @@ def compile_output(DIR, filename_prefix, total_experiment_number):
     """
     # we also need the prefix of the files, or can we use os.listdir()
     # path is probably directory plus filename prefix
-    path =
+    path = DIR + filename_prefix + "_"
     #make an initial dataframe that will be added to by all other output files
     # + '1' to path means take first output file
-    first_output = dict(pickle.load(open(path + '1','rb')))
+    first_output = dict(pickle.load(open(path + '0','rb')))
     df = pd.DataFrame(first_output)
 
-    for i in range(total_experiment_number):
+    for i in range(1,total_experiment_number):
         #concatenante dataframe
         output = dict(pickle.load(open(path + str(i),'rb')))
         df = pd.concat([df,pd.DataFrame(output)],ignore_index=False,sort=False)
@@ -40,8 +41,5 @@ def compile_output(DIR, filename_prefix, total_experiment_number):
 
     #write final dataframe to pkl file
     df.to_pickle('compiled_output_' + filename_prefix + '.pkl')
-
-    raise NotImplementedError('compile_output isnt finished')
-
 
 compile_output(DIR, filename_prefix, total_experiment_number)
