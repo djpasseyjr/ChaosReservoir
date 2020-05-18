@@ -143,7 +143,7 @@ def generate_adj(network, param,n=None):
         return watts3(param, n)
     if network == 'watts5':
         return watts5(param, n)
-    if network = 'geom':
+    if network == 'geom':
         net = geom(param, n)
     return net
 
