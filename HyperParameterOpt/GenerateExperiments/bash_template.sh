@@ -10,10 +10,10 @@ module purge
 module load python/3.7
 
 #change directories so I can runn all the files experiment files in that directory
-cd /#DIR#
+# cd /#DIR#
 
-python3 #FNAME#_${SLURM_ARRAY_TASK_ID}.py
-# python3 /#DIR#/#FNAME#_${SLURM_ARRAY_TASK_ID}.py #SECOND OPTION
+python3 #DIR#/#FNAME#_${SLURM_ARRAY_TASK_ID}.py
+#python3 #FNAME#_${SLURM_ARRAY_TASK_ID}.py #SECOND OPTION, cd into it
 
 # THE EFFICIENCY is the final sbatch argument --array, it's like a for loop #
 # see the below resources
