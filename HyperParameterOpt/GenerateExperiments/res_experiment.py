@@ -92,6 +92,15 @@ def watts5(p,n=None):
     A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
     return sparse.dok_matrix(A)
 
+def geom(mean_degree, n=None):
+    """ Random geometric graph 
+    """
+    if n is None:
+        n = np.random.randint(smallest_network_size,biggest_network_size)    
+    r = (mean_degree/(np.pi*n))**.5
+    A = nx.adj_matrix(nx.random_geometric_graph(n, r)).T
+    return sparse.dok_matrix(A)
+
 def remove_edges(A,nedges):
     """ Randomly removes 'nedges' edges from a sparse matrix 'A'
     """
@@ -106,9 +115,8 @@ def remove_edges(A,nedges):
 
 def generate_adj(network, param,n=None):
     """ Generate a network with the supplied topology
-
     Parameters
-        network (str)   : one of [barab1, barab2, erdos, random_digraph, watts]
+        network (str)   : one of [barab1, barab2, erdos, random_digraph, watts3, watts5, geom]
         param   (float) : specific to the topology
         n       (int)   : size of the topology, optional
 
@@ -118,7 +126,8 @@ def generate_adj(network, param,n=None):
     # the directory function in parameter_experiments.py needs to have the same
     #       network_options as this function, so if more topologies are added, the directory
     #       function in the other file should also be edited
-    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5']
+    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5', 'geom']
+
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
 
@@ -127,14 +136,16 @@ def generate_adj(network, param,n=None):
     if network == 'barab2':
         return barab2(n)
     if network == 'erdos':
-        return erdos(param,n)
+        return erdos(param, n)
     if network == 'random_digraph':
-        return random_digraph(param,n)
+        return random_digraph(param, n)
     if network == 'watts3':
-        return watts3(param,n)
+        return watts3(param, n)
     if network == 'watts5':
-        return watts5(param,n)
-
+        return watts5(param, n)
+    if network = 'geom':
+        net = geom(param, n)
+    return net
 
 #-- Differential equation utilities --#
 
