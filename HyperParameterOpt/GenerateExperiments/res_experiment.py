@@ -176,6 +176,8 @@ def results_dict(*args, **kwargs):
     ntrials, topology, topo_p, remove_p = args
     results =  {i: {'pred' : [],
                     'err' : [],
+                    'mean_pred':None,
+                    'mean_err':None,
                     'adj' : None,
                     'adj_size':None,
                     'net' : topology,
@@ -218,6 +220,7 @@ def experiment(
     # Make dictionary to store data
     results = results_dict(ntrials, topology, topo_p, remove_p, **res_params)
     i = 0
+    print('Starting Experiments with the follwing parameters:\n\t', res_params)
     while i < ntrials:
         adj = generate_adj(topology, topo_p, network_size)
         results[i]["adj_size"] = adj.shape[0]
@@ -237,6 +240,9 @@ def experiment(
             # Train network
             results[i]["err"].append(rc.fit(train_t, u))
             results[i]["pred"].append(how_long_accurate(u(test_t), rc.predict(test_t), tol=TOL))
-        i += 1
+
+        results[i]['mean_pred'] = np.array(results[i]['pred']).mean()
+        results[i]['mean_err'] = np.array(results[i]['err']).mean()
         pickle.dump(results, open(fname,"wb"))
-        print(f"Net complete-- \n\t",res_params)
+        print('"Net complete -- \nMean Pred',results[i]['mean_pred'],'\nMean Error',results[i]['mean_err'])
+        i += 1
