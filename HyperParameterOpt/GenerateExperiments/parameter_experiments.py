@@ -23,14 +23,17 @@ def prepare_output_compilation(directory,filename, number_of_experiments):
         number_of_experiments   (int): the number of experiments is used to systematically
                                         compile all individual output files into one primary file
     """
+    print('entering prepare_output_compilation, with filename',filename)
     tmpl_stream = open('compile_output.py','r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
-    tmpl_str = tmpl_str.replace("#filename_prefix#",filename)
-    tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",number_of_experiments)
-    new_f = open('compile_specific_output.py','w')
+    tmpl_str = tmpl_str.replace("#FNAME#",filename)
+    tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
+    new_name = 'compile_output_' + filename +'.py'
+    new_f = open(new_name,'w')
     new_f.write(tmpl_str)
     new_f.close()
+    print(f'\nOnce output has been produced, run the command below:\npython {new_name}')
 
 def directory(network):
     """
@@ -174,8 +177,8 @@ def generate_experiments(
 
                                 parameter_enumaration_number += 1
 
-    print('total number of experiments:',parameter_enumaration_number)
+    print('\ntotal number of experiments:',parameter_enumaration_number)
     #in order to run all the experiments on the supercomputer we need the main bash script
     write_bash_script(DIR,FNAME + "_" + topology,parameter_enumaration_number)
     #in order to compile output systematically, store the number of experiments and output directory
-    # prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)
+    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)
