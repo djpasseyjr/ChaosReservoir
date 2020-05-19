@@ -7,7 +7,7 @@ from res_experiment import *
 from scipy import sparse
 
 # parameter used in write_bash_script, this is in minutes
-WALLTIME_PER_JOB = 480
+WALLTIME_PER_JOB = 300
 
 def prepare_output_compilation(directory,filename, number_of_experiments):
     """
@@ -73,13 +73,17 @@ def write_bash_script(directory,filename, number_of_experiments):
     # WALLTIME_PER_JOB is in minutes, this may depend upon topology size
     # WALLTIME_PER_JOB = 30
     # find the number of hours, then round up to next hour
-    TOTAL_TIME = ceil(WALLTIME_PER_JOB * number_of_experiments / 60)
+    TOTAL_TIME = ceil(WALLTIME_PER_JOB  / 60) # this assumes same number of processors as experiments
+    # TOTAL_TIME = ceil(WALLTIME_PER_JOB * number_of_experiments / 60) #this is if only one processor
+
 
     tmpl_stream = open('bash_template.sh','r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#HOURS#",str(TOTAL_TIME))
     tmpl_str = tmpl_str.replace("#DIR#",directory)
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
+    # we want a processor for each experiment
+    tmpl_str = tmpl_str.replace("#CORES#",str(number_of_experiments))
     #subtract the number of experiments by one because of zero indexing of filenames
     # whereas the slurm --array range is inclusive on endpoints
     # for example, see https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
@@ -92,16 +96,16 @@ def write_bash_script(directory,filename, number_of_experiments):
 
 def generate_experiments(
     FNAME,
-    nets_per_experiment = 5,
-    orbits_per_experiment = 5,
+    nets_per_experiment = 2,
+    orbits_per_experiment = 200,
     topology = None,
     network_sizes = [2000],
     gamma_vals = [1],
-    sigma_vals = [1],
+    sigma_vals = [0.3],
     spectr_vals = [0.9],
     topo_p_vals = [None],
     ridge_alphas = [0.001],
-    remove_p_list = [0]
+    remove_p_list = [0.5]
 ):
     """ Write one bash file (according to bash_template.sh), and individual
     experiment files (according to experiment_template.py) for a grid of
@@ -162,14 +166,9 @@ def generate_experiments(
                                 tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                                 tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
                                 # Save to new file
-                                new_f = open(DIR + '/' + save_fname + '.py','w')
+                                new_f = open(save_fname + '.py','w')
                                 new_f.write(tmpl_str)
                                 new_f.close()
-
-                                #TODO
-                                # write bash file
-                                # can one bash rile run all the experiment files,
-                                # or does each each experiment file need it's own bash file?
 
                                 parameter_enumaration_number += 1
 

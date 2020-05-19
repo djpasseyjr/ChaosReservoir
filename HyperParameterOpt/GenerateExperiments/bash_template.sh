@@ -1,19 +1,15 @@
 #!/bin/bash
 #SBATCH --time=#HOURS#:00:00              # walltime
-#SBATCH --ntasks=1                        # number of processor cores (i.e. tasks)
-#SBATCH --nodes=1                         # number of nodes
-#SBATCH --mem-per-cpu=8G                  # memory per CPU core
+#SBATCH --ntasks=#CORES#                  # number of processor cores (i.e. tasks)
+#SBATCH --nodes=1                         # number of nodes, no need to change unless we use MPI
+#SBATCH --mem-per-cpu=3072M               # memory per CPU core, 3072M = 3G
 #SBATCH -J "#FNAME#"                      # job name
 #SBATCH --array=0-#NUMBER_JOBS#           # the range is inclusive
 
 module purge
 module load python/3.7
 
-#change directories so I can runn all the files experiment files in that directory
-# cd /#DIR#
-
 python3 #DIR#/#FNAME#_${SLURM_ARRAY_TASK_ID}.py
-#python3 #FNAME#_${SLURM_ARRAY_TASK_ID}.py #SECOND OPTION, cd into it
 
 # THE EFFICIENCY is the final sbatch argument --array, it's like a for loop #
 # see the below resources

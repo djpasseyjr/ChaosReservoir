@@ -93,10 +93,10 @@ def watts5(p,n=None):
     return sparse.dok_matrix(A)
 
 def geom(mean_degree, n=None):
-    """ Random geometric graph 
+    """ Random geometric graph
     """
     if n is None:
-        n = np.random.randint(smallest_network_size,biggest_network_size)    
+        n = np.random.randint(smallest_network_size,biggest_network_size)
     r = (mean_degree/(np.pi*n))**.5
     A = nx.adj_matrix(nx.random_geometric_graph(n, r)).T
     return sparse.dok_matrix(A)
@@ -182,7 +182,7 @@ def results_dict(*args, **kwargs):
                     'topo_p' : topo_p,
                     'gamma' : kwargs['gamma'],
                     'sigma' : kwargs['sigma'],
-                    'spect_rad"' : kwargs['spect_rad'],
+                    'spect_rad' : kwargs['spect_rad'],
                     'ridge_alpha' : kwargs['ridge_alpha'],
                     'remove_p' : remove_p
                     } for i in range(ntrials)}
