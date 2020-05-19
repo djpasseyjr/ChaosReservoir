@@ -45,7 +45,7 @@ def directory(network):
         DIR (str): The directory where the individual experiment.py files will be stored
     """
     # the network options here should match the generate_adj function in res_experiment.py
-    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5']
+    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5','geom']
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
 
@@ -57,6 +57,8 @@ def directory(network):
         DIR = 'RandDigraph'
     if network == 'watts3' or network == 'watts5':
         DIR = 'Watts'
+    if network == 'geom':
+        DIR = 'Geometric'
     return DIR
 
 def write_bash_script(directory,filename, number_of_experiments):
