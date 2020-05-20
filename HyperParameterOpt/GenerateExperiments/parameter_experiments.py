@@ -7,7 +7,7 @@ from res_experiment import *
 from scipy import sparse
 
 # parameter used in write_bash_script, this is in minutes
-WALLTIME_PER_JOB = 480
+WALLTIME_PER_JOB = 300
 
 def prepare_output_compilation(directory,filename, number_of_experiments):
     """
@@ -23,14 +23,17 @@ def prepare_output_compilation(directory,filename, number_of_experiments):
         number_of_experiments   (int): the number of experiments is used to systematically
                                         compile all individual output files into one primary file
     """
+    print('entering prepare_output_compilation, with filename',filename)
     tmpl_stream = open('compile_output.py','r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
-    tmpl_str = tmpl_str.replace("#filename_prefix#",filename)
-    tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",number_of_experiments)
-    new_f = open('compile_specific_output.py','w')
+    tmpl_str = tmpl_str.replace("#FNAME#",filename)
+    tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
+    new_name = 'compile_output_' + filename +'.py'
+    new_f = open(new_name,'w')
     new_f.write(tmpl_str)
     new_f.close()
+    print(f'\nOnce output has been produced, run the command below:\npython {new_name}')
 
 def directory(network):
     """
@@ -45,7 +48,7 @@ def directory(network):
         DIR (str): The directory where the individual experiment.py files will be stored
     """
     # the network options here should match the generate_adj function in res_experiment.py
-    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5']
+    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5','geom']
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
 
@@ -57,6 +60,8 @@ def directory(network):
         DIR = 'RandDigraph'
     if network == 'watts3' or network == 'watts5':
         DIR = 'Watts'
+    if network == 'geom':
+        DIR = 'Geometric'
     return DIR
 
 def write_bash_script(directory,filename, number_of_experiments):
@@ -73,13 +78,17 @@ def write_bash_script(directory,filename, number_of_experiments):
     # WALLTIME_PER_JOB is in minutes, this may depend upon topology size
     # WALLTIME_PER_JOB = 30
     # find the number of hours, then round up to next hour
-    TOTAL_TIME = ceil(WALLTIME_PER_JOB * number_of_experiments / 60)
+    TOTAL_TIME = ceil(WALLTIME_PER_JOB  / 60) # this assumes same number of processors as experiments
+    # TOTAL_TIME = ceil(WALLTIME_PER_JOB * number_of_experiments / 60) #this is if only one processor
+
 
     tmpl_stream = open('bash_template.sh','r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#HOURS#",str(TOTAL_TIME))
     tmpl_str = tmpl_str.replace("#DIR#",directory)
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
+    # we want a processor for each experiment
+    tmpl_str = tmpl_str.replace("#CORES#",str(number_of_experiments))
     #subtract the number of experiments by one because of zero indexing of filenames
     # whereas the slurm --array range is inclusive on endpoints
     # for example, see https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
@@ -92,16 +101,16 @@ def write_bash_script(directory,filename, number_of_experiments):
 
 def generate_experiments(
     FNAME,
-    nets_per_experiment = 5,
-    orbits_per_experiment = 5,
+    nets_per_experiment = 2,
+    orbits_per_experiment = 200,
     topology = None,
     network_sizes = [2000],
     gamma_vals = [1],
-    sigma_vals = [1],
+    sigma_vals = [0.3],
     spectr_vals = [0.9],
     topo_p_vals = [None],
     ridge_alphas = [0.001],
-    remove_p_list = [0]
+    remove_p_list = [0.5]
 ):
     """ Write one bash file (according to bash_template.sh), and individual
     experiment files (according to experiment_template.py) for a grid of
@@ -162,19 +171,14 @@ def generate_experiments(
                                 tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                                 tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
                                 # Save to new file
-                                new_f = open(DIR + '/' + save_fname + '.py','w')
+                                new_f = open(save_fname + '.py','w')
                                 new_f.write(tmpl_str)
                                 new_f.close()
 
-                                #TODO
-                                # write bash file
-                                # can one bash rile run all the experiment files,
-                                # or does each each experiment file need it's own bash file?
-
                                 parameter_enumaration_number += 1
 
-    print('total number of experiments:',parameter_enumaration_number)
+    print('\ntotal number of experiments:',parameter_enumaration_number)
     #in order to run all the experiments on the supercomputer we need the main bash script
     write_bash_script(DIR,FNAME + "_" + topology,parameter_enumaration_number)
     #in order to compile output systematically, store the number of experiments and output directory
-    # prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)
+    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)
