@@ -38,7 +38,7 @@ def compile_output(DIR, filename_prefix, total_experiment_number):
     # store the index as network number
     # the network number will be is the key in the output dictionary originally
     df.reset_index(inplace=True)
-    df.rename(columns={'index':'network_number'})
+    df.rename(columns={'index':'network_number'},inplace=True)
 
     #write final dataframe to pkl file
     df.to_pickle('compiled_output_' + filename_prefix + '.pkl')
