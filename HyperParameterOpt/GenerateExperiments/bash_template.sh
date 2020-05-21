@@ -2,7 +2,7 @@
 #SBATCH --time=#HOURS#:00:00              # walltime
 #SBATCH --ntasks=1                        # number of processor cores (i.e. tasks)
 #SBATCH --nodes=1                         # number of nodes, no need to change unless we use MPI
-#SBATCH --mem-per-cpu=512M                # memory per CPU core, 3072M = 3G, 512M = 0.5G
+#SBATCH --mem-per-cpu=1024M                # memory per CPU core, 3072M = 3G, 512M = 0.5G
 #SBATCH -J "#FNAME#"                      # job name
 #SBATCH --array=0-#NUMBER_JOBS#           # the range is inclusive
 
