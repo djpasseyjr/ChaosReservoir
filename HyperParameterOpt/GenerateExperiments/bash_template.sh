@@ -16,3 +16,12 @@ python3 #DIR#/#FNAME#_${SLURM_ARRAY_TASK_ID}.py
 # https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
 # https://rc.byu.edu/wiki/?id=slurm-auto-array
 # https://rc.byu.edu/wiki/index.php?page=SLURM+Tips+and+Tricks
+
+# when the jobs are initiated, slurm output files are generated,
+# put all those slurm files into the output_slurm file
+mkdir #DIR#/#FNAME#/output_slurm
+mv slurm* #DIR#/#FNAME#/output_slurm/
+
+#make a copy of the main file, just in case
+cp main.py main_#FNAME#.py
+mv main_#FNAME#.py #DIR#/#FNAME#/
