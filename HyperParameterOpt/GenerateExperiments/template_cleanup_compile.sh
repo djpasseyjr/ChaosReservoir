@@ -7,6 +7,9 @@ mv #FNAME#.sh #DIR#/#FNAME#
 #compile the output
 python compile_output_#FNAME#.py
 
+#move the compiled output
+mv compiled_output_#FNAME#.pkl #DIR#/#FNAME#/
+
 #move the compile output file to batch directory
 mv compile_output_#FNAME#.py #DIR#/#FNAME#
 
