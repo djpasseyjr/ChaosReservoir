@@ -22,10 +22,11 @@ mv #DIR#/#FNAME#*.py #DIR#/#FNAME#/experiment_files
 mv #DIR#/#FNAME#*.pkl #DIR#/#FNAME#/result_files
 
 # move the batch directory to saved_data or to compute directory
-# mkdir ~/compute/Saved_data/#FNAME#
-# mv #DIR#/#FNAME#/ ~/compute/Saved_data/#FNAME#
-mkdir ~/compute/#FNAME#
-mv #DIR#/#FNAME#/ ~/compute/#FNAME#
+
+cd #DIR#
+# mv #FNAME#/ ~/compute/Saved_data/
+mv #FNAME#/ ~/compute
+cd ..
 
 echo "once the cleanup_compile_#FNAME#.sh file has been run, it can be deleted"
 echo "rm -r -v cleanup_compile_#FNAME#.sh"
