@@ -19,4 +19,4 @@ mv slurm* #DIR#/#FNAME#/output_slurm/
 cp main.py main_#FNAME#.py
 mv main_#FNAME#.py #DIR#/#FNAME#/
 echo "once the cleanup_compile_#FNAME#.sh file has been run, it can be deleted"
-echo "rm -v cleanup_compile_#FNAME#.sh"
+echo "rm -v cleanup_#FNAME#.sh"
