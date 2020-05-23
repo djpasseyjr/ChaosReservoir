@@ -23,3 +23,6 @@ mv #DIR#/#FNAME#*.pkl #DIR#/#FNAME#/result_files
 # mv #DIR#/#FNAME#/ ~/compute/Saved_data/#FNAME#
 mkdir ~/compute/#FNAME#
 mv #DIR#/#FNAME#/ ~/compute/#FNAME#
+
+echo "once the cleanup_compile_#FNAME#.sh file has been run, it can be deleted"
+echo "rm -r -v cleanup_compile_#FNAME#.sh"
