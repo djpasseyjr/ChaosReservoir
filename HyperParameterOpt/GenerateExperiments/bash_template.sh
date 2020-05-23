@@ -27,12 +27,9 @@ mv compiled_output_#FNAME#.pkl #DIR#/#FNAME#/
 #move the compile output file to batch directory
 mv compile_output_#FNAME#.py #DIR#/#FNAME#
 
-# assume that this file is being run from #DIR#/#FNAME#/, aka the cleanup was run right after this bash script was run
-# mkdir #DIR#/#FNAME#/experiment_files
-# mkdir #DIR#/#FNAME#/result_files
-mkdir experiment_files
-mkdir result_files
-
+# make directories for organization
+mkdir #DIR#/#FNAME#/experiment_files
+mkdir #DIR#/#FNAME#/result_files
 #organize the .py files,
 mv #DIR#/#FNAME#*.py #DIR#/#FNAME#/experiment_files
 #organize the .pkl files
