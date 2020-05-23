@@ -25,3 +25,5 @@ mv slurm* #DIR#/#FNAME#/output_slurm/
 #make a copy of the main file, just in case
 cp main.py main_#FNAME#.py
 mv main_#FNAME#.py #DIR#/#FNAME#/
+
+echo "after batch completes, run: bash cleanup_compile_#FNAME#.sh"
