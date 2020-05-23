@@ -90,7 +90,7 @@ def write_bash_script(directory,filename, number_of_experiments):
     tmpl_str = tmpl_str.replace("#DIR#",directory)
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     # we want a processor for each experiment
-    tmpl_str = tmpl_str.replace("#CORES#",str(number_of_experiments))
+    # tmpl_str = tmpl_str.replace("#CORES#",str(number_of_experiments)) #removed
     #subtract the number of experiments by one because of zero indexing of filenames
     # whereas the slurm --array range is inclusive on endpoints
     # for example, see https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
@@ -101,16 +101,15 @@ def write_bash_script(directory,filename, number_of_experiments):
     new_f.close()
     print('NEXT: sbatch',filename +'.sh')
 
-    tmpl_stream = open('template_cleanup_compile.sh','r')
+    tmpl_stream = open('template_cleanup.sh','r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     tmpl_str = tmpl_str.replace("#DIR#",directory)
-    new_name = 'cleanup_compile_' + filename +'.sh'
+    new_name = 'cleanup_' + filename +'.sh'
     new_f = open(new_name,'w')
     new_f.write(tmpl_str)
     new_f.close()
-    print(f'\nOnce output has been produced, run:\nbash {new_name}')
-
+    print('bash','cleanup_' + filename +'.sh','\nThe cleanup file (command above) can be run immediately after submitting the batch')
 
 def generate_experiments(
     FNAME,

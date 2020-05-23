@@ -9,26 +9,40 @@
 module purge
 module load python/3.7
 
-echo "note that the slurm files that will be created when the jobs run, will automatically be organized upon completion"
-echo "most files will be located in the #DIR#/#FNAME#/ directory that will be created upon job completion"
+# these sbatch commands have no utility unless they are placed before the first non-slurm commands
+# so if you want emails then cut and paste these lines above `module purge`
+#SBATCH --mail-user=example@byu.edu   # email address, change email
+#SBATCH --mail-type=BEGIN
+#SBATCH --mail-type=END
+#SBATCH --mail-type=FAIL
 
 python3 #DIR#/#FNAME#_${SLURM_ARRAY_TASK_ID}.py
 
-# THE EFFICIENCY is the final sbatch argument --array, it's like a for loop #
-# see the below resources
-# https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
-# https://rc.byu.edu/wiki/?id=slurm-auto-array
-# https://rc.byu.edu/wiki/index.php?page=SLURM+Tips+and+Tricks
+#compile the output
+python compile_output_#FNAME#.py
 
-# when the jobs are initiated, slurm output files are generated,
-# put all those slurm files into the output_slurm file
-# assume that the topology directory has already been made, in default repository structure 
-mkdir #DIR#/#FNAME#/
-mkdir #DIR#/#FNAME#/output_slurm
-mv slurm* #DIR#/#FNAME#/output_slurm/
+#move the compiled output
+mv compiled_output_#FNAME#.pkl #DIR#/#FNAME#/
 
-#make a copy of the main file, just in case
-cp main.py main_#FNAME#.py
-mv main_#FNAME#.py #DIR#/#FNAME#/
+#move the compile output file to batch directory
+mv compile_output_#FNAME#.py #DIR#/#FNAME#
 
-echo "after batch completes, run: bash cleanup_compile_#FNAME#.sh"
+# assume that this file is being run from #DIR#/#FNAME#/, aka the cleanup was run right after this bash script was run
+# mkdir #DIR#/#FNAME#/experiment_files
+# mkdir #DIR#/#FNAME#/result_files
+mkdir experiment_files
+mkdir result_files
+
+#organize the .py files,
+mv #DIR#/#FNAME#*.py #DIR#/#FNAME#/experiment_files
+#organize the .pkl files
+mv #DIR#/#FNAME#*.pkl #DIR#/#FNAME#/result_files
+
+# move the batch directory to saved_data or to compute directory
+
+cd #DIR#
+# mv #FNAME#/ ~/compute/Saved_data/
+mv #FNAME#/ ~/compute
+cd ..
+
+#any echo statements in this file, are "output" in each slurm file of the batch
