@@ -220,7 +220,7 @@ def experiment(
     # Make dictionary to store data
     results = results_dict(ntrials, topology, topo_p, remove_p, **res_params)
     i = 0
-    print('Starting Experiments with the follwing parameters:\n\t', res_params)
+    print('Starting Experiments with the follwing parameters:\n\t', res_params,'\nremove_p',remove_p,)
     while i < ntrials:
         adj = generate_adj(topology, topo_p, network_size)
         results[i]["adj_size"] = adj.shape[0]

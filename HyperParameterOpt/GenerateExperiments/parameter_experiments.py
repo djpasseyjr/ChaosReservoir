@@ -32,7 +32,6 @@ def prepare_output_compilation(directory,filename, number_of_experiments):
     new_f = open(new_name,'w')
     new_f.write(tmpl_str)
     new_f.close()
-    print(f'\nOnce output has been produced, run the command below:\npython {new_name}')
 
 def directory(network):
     """
@@ -68,6 +67,9 @@ def write_bash_script(directory,filename, number_of_experiments):
     Write the bash script to run all the experiments, for reasoning
     behind this format, see the links in the bash_template.sh file
 
+    also write a bash_script to cleanup and compile the directory
+    where all the files were created for that batch
+
     Parameters:
         directory               (str): the name of output directory where all resulting pkl files will be stored
         filename                (str): the filename prefix that all the files have in common
@@ -87,7 +89,7 @@ def write_bash_script(directory,filename, number_of_experiments):
     tmpl_str = tmpl_str.replace("#DIR#",directory)
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     # we want a processor for each experiment
-    tmpl_str = tmpl_str.replace("#CORES#",str(number_of_experiments))
+    # tmpl_str = tmpl_str.replace("#CORES#",str(number_of_experiments)) #removed
     #subtract the number of experiments by one because of zero indexing of filenames
     # whereas the slurm --array range is inclusive on endpoints
     # for example, see https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
@@ -97,6 +99,16 @@ def write_bash_script(directory,filename, number_of_experiments):
     new_f.write(tmpl_str)
     new_f.close()
     print('NEXT: sbatch',filename +'.sh')
+
+    tmpl_stream = open('template_cleanup.sh','r')
+    tmpl_str = tmpl_stream.read()
+    tmpl_str = tmpl_str.replace("#FNAME#",filename)
+    tmpl_str = tmpl_str.replace("#DIR#",directory)
+    new_name = 'cleanup_' + filename +'.sh'
+    new_f = open(new_name,'w')
+    new_f.write(tmpl_str)
+    new_f.close()
+    print('bash','cleanup_' + filename +'.sh','\nThe cleanup file (command above) can be run immediately after submitting the batch')
 
 def generate_experiments(
     FNAME,
