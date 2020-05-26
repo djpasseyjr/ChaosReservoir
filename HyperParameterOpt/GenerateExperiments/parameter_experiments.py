@@ -23,7 +23,6 @@ def prepare_output_compilation(directory,filename, number_of_experiments):
         number_of_experiments   (int): the number of experiments is used to systematically
                                         compile all individual output files into one primary file
     """
-
     tmpl_stream = open('compile_output.py','r')
     tmpl_str = tmpl_stream.read()
     tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
