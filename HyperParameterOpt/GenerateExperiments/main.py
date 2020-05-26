@@ -13,10 +13,8 @@ See the README.md for the file naming system for FNAME input
     file per batch
 
 Note that the supercomputer scheduler might delay our job because its sensitive to our estimate of
-how long the each experiment will take to run.
-
-***     It is recommended that the WALLTIME_PER_JOB variable
-in parameter_experiments be edited based upon size of network, etc ***
+how long the each experiment will take to run. If the job runs longer than the projected walltime 
+then job is terminated
 
 If you as the user would like emails about the job, then consider adding some lines
     to the specific bash_template (produced after running `python main.py`),
@@ -26,7 +24,7 @@ If you as the user would like emails about the job, then consider adding some li
 
 #edit USER_ID, and BATCH_NUMBER to follow file naming style guide in README.md
 #USER_ID should be one of the following: ['JW','DJ','BW','JJ','IB']
-USER_ID = 'JW'
+USER_ID = 'jw'
 BATCH_NUMBER = 4
 
 #edit directly into function for parameters,
