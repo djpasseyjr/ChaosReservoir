@@ -6,9 +6,6 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-# parameter used in write_bash_script, this is in minutes
-WALLTIME_PER_JOB = 300
-
 def prepare_output_compilation(directory,filename, number_of_experiments):
     """
     write the directory and number_of_experiments to the compile_output.py file
@@ -62,7 +59,7 @@ def directory(network):
         DIR = 'Geometric'
     return DIR
 
-def write_bash_script(directory,filename, number_of_experiments):
+def write_bash_script(directory,filename, number_of_experiments,hours_per_job,minutes_per_job,memory_per_job):
     """
     Write the bash script to run all the experiments, for reasoning
     behind this format, see the links in the bash_template.sh file
@@ -75,21 +72,25 @@ def write_bash_script(directory,filename, number_of_experiments):
         filename                (str): the filename prefix that all the files have in common
         number_of_experiments   (int): the number of experiments is used to systematically
                                         compile all individual output files into one primary file
-    """
-    # WALLTIME_PER_JOB is in minutes, this may depend upon topology size
-    # WALLTIME_PER_JOB = 30
-    # find the number of hours, then round up to next hour
-    TOTAL_TIME = ceil(WALLTIME_PER_JOB  / 60) # this assumes same number of processors as experiments
-    # TOTAL_TIME = ceil(WALLTIME_PER_JOB * number_of_experiments / 60) #this is if only one processor
+        hours_per_job               (int): this parameter is passed to write_bash_script
+        minutes_per_job             (int): this parameter is passed to write_bash_script
+        memory_per_job              (int): Gigabytes, input for --mem-per-cpu slurm command in bash_template
 
+    """
+    if minutes_per_job < 0 or minutes_per_job > 60:
+        raise ValueError('Minutes per job needs to be between 0-60')
+    if not isinstance(memory_per_job,int) and not isinstance(memory_per_job,float):
+        raise ValueError('memory should be an int or float')
+    if not isinstance(hours_per_job,int) and not isinstance(hours_per_job,float):
+        raise ValueError('hours_per_job should be an int or float')
 
     tmpl_stream = open('bash_template.sh','r')
     tmpl_str = tmpl_stream.read()
-    tmpl_str = tmpl_str.replace("#HOURS#",str(TOTAL_TIME))
+    tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
+    tmpl_str = tmpl_str.replace("#MINUTES#",str(minutes_per_job))
+    tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
     tmpl_str = tmpl_str.replace("#DIR#",directory)
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
-    # we want a processor for each experiment
-    # tmpl_str = tmpl_str.replace("#CORES#",str(number_of_experiments)) #removed
     #subtract the number of experiments by one because of zero indexing of filenames
     # whereas the slurm --array range is inclusive on endpoints
     # for example, see https://rc.byu.edu/wiki/index.php?page=How+do+I+submit+a+large+number+of+very+similar+jobs%3F
@@ -115,13 +116,16 @@ def generate_experiments(
     nets_per_experiment = 2,
     orbits_per_experiment = 200,
     topology = None,
+    hours_per_job = 10,
+    minutes_per_job = 0,
+    memory_per_job = 3,
     network_sizes = [2000],
     gamma_vals = [1],
     sigma_vals = [0.3],
     spectr_vals = [0.9],
     topo_p_vals = [None],
     ridge_alphas = [0.001],
-    remove_p_list = [0.5]
+    remove_p_list = [0.9]
 ):
     """ Write one bash file (according to bash_template.sh), and individual
     experiment files (according to experiment_template.py) for a grid of
@@ -132,6 +136,9 @@ def generate_experiments(
         nets_per_experiment         (int):   number of networks to generate for a given topology
         orbits_per_experiment       (int):   number of orbits to run on each network for a given topology
         topology                    (str):   topology as specified in the generate_adj function of res_experiment.py, an error will be thrown if not specified
+        hours_per_job               (int):   this parameter is passed to write_bash_script, including as a parameter provides convenience from main.py
+        minutes_per_job             (int):   this parameter is passed to write_bash_script, including as a parameter provides convenience from main.py
+        memory_per_job              (int):   Gigabytes, input for --mem-per-cpu slurm command in bash_template
         network_sizes               (list):  sizes for the network topologies
         gamma_vals                  (list):  gamma values for reservoir
         sigma_vals                  (list):  sigma values for reservoir
@@ -190,6 +197,6 @@ def generate_experiments(
 
     print('\ntotal number of experiments:',parameter_enumaration_number)
     #in order to run all the experiments on the supercomputer we need the main bash script
-    write_bash_script(DIR,FNAME + "_" + topology,parameter_enumaration_number)
+    write_bash_script(DIR,FNAME + "_" + topology,parameter_enumaration_number,hours_per_job,minutes_per_job,memory_per_job)
     #in order to compile output systematically, store the number of experiments and output directory
     prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)

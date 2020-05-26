@@ -35,6 +35,13 @@ generate_experiments(
     nets_per_experiment = 2,
     orbits_per_experiment = 200,
     topology = 'barab1',
+    # these walltime parameters become the --time slurm command in bash_template
+    hours_per_job = 5,
+    # leave minutes_per_job at 0
+    minutes_per_job = 0,
+    # memory per job input is in Gigabytes
+    memory_per_job = 3,
+
     # parameters below should be a list
     network_sizes = [3000],
     # network_size = [None], #None means network size will be random between 2k-3.5k

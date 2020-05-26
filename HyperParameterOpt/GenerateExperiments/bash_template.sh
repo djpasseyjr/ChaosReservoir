@@ -1,8 +1,8 @@
 #!/bin/bash
-#SBATCH --time=#HOURS#:00:00              # walltime
+#SBATCH --time=#HOURS#:#MINUTES#:00       # walltime
 #SBATCH --ntasks=1                        # number of processor cores (i.e. tasks)
 #SBATCH --nodes=1                         # number of nodes, no need to change unless we use MPI
-#SBATCH --mem-per-cpu=1024M                # memory per CPU core, 3072M = 3G, 512M = 0.5G
+#SBATCH --mem-per-cpu=#MEMORY#G           # memory per CPU core, 3072M = 3G, 1012M = 1G
 #SBATCH -J "#FNAME#"                      # job name
 #SBATCH --gid=fslg_webb_reservoir         # file sharing group, this line must be present in order to share files!!!
 #SBATCH --array=0-#NUMBER_JOBS#           # the range is inclusive
