@@ -26,12 +26,16 @@ def compile_output(DIR, filename_prefix, total_experiment_number):
     first_output = pickle.load(open(path + '0'+ '.pkl','rb'))
     # must be transposed for intutive shape, and proper appending
     df = pd.DataFrame(first_output).T
+    # the label column is eventually to join with FSL walltime data 
+    df['label'] = filename_prefix + "_" + '0'
 
     for i in range(1,total_experiment_number):
         #concatenante dataframe
         output = pickle.load(open(path + str(i) + '.pkl','rb'))
         # append doesn't have an "inplace" parameter, so must return copy to df, to make appending reside
-        df = df.append(pd.DataFrame(output).T,ignore_index=False)
+        temp = pd.DataFrame(output).T
+        temp['label'] = filename_prefix + "_" + str(i)
+        df = df.append(temp,ignore_index=False)
 
 
     #because the current index is just the network number for a given index
