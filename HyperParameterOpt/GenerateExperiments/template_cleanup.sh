@@ -5,7 +5,7 @@ echo "note that once batch bash script finishes, all files (relevant to this bat
 mkdir #DIR#/#FNAME#/
 
 #move a copy of the batch bash script to batch directory
-cp #FNAME#.sh #DIR#/#FNAME#/copy_#FNAME#.sh
+#cp #FNAME#.sh #DIR#/#FNAME#/copy_#FNAME#.sh
 
 
 # when the jobs are initiated, slurm output files are generated,
