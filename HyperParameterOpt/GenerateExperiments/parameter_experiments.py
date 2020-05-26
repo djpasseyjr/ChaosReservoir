@@ -61,10 +61,7 @@ def directory(network):
 
 def write_bash_script(directory,filename, number_of_experiments,hours_per_job,minutes_per_job,memory_per_job):
     """
-    Write the bash script to run all the experiments, for reasoning
-    behind this format, see the links in the bash_template.sh file
-
-    also write a bash_script to cleanup and compile the directory
+    Write the bash script to run all the experiments and write a bash_script to cleanup and compile the directory
     where all the files were created for that batch
 
     Parameters:
