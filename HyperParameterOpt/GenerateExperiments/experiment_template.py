@@ -8,10 +8,11 @@ from scipy import integrate
 DIFF_EQ_PARAMS = {
                   "x0": [-20, 10, -.5],
                   "begin": 0,
-                  "end": 60,
-                  "timesteps":60000,
-                  "train_per": .66,
-                  "solver": lorenz_equ
+                  "end": 85,
+                  "timesteps": 85000,
+                  "train_per": .889,
+                  "solver": lorenz_equ,
+                  "clip": 40
                  }
 
 RES_PARAMS = {
