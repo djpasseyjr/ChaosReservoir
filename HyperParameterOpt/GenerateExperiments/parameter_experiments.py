@@ -96,7 +96,7 @@ def write_bash_script(directory,filename, number_of_experiments,hours_per_job,mi
     new_f = open(filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('NEXT: sbatch',filename +'.sh')
+    print('NEXT: sg fslg_webb_reservoir \"sbatch',filename +'.sh\"')
 
     tmpl_stream = open('template_cleanup.sh','r')
     tmpl_str = tmpl_stream.read()
