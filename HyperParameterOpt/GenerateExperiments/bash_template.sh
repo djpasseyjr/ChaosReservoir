@@ -38,6 +38,8 @@ mv #DIR#/#FNAME#*.pkl #DIR#/#FNAME#/result_files
 # move the batch directory to saved_data or to compute directory
 
 cd #DIR#
+# the data can easily, automatically be moved to a folder in a file sharing location. 
+# mv #FNAME#/ ~/fsl_groups/fslg_webb_reservoir/jw27+
 # mv #FNAME#/ ~/compute/Saved_data/
 mv #FNAME#/ ~/compute
 cd ..
