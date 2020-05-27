@@ -54,7 +54,7 @@ Pay close attention to the first parameter <br>
 
 
 # SUBMITTING A BATCH, AKA RUNNING EXPERIMENTS 
-after running the main.py file with python, the output will say something similar to 'Next: sbatch JW7_barab1.sh'. That output can be copied and run to submit the job. Use [slurm commands](https://rc.byu.edu/wiki/?id=SLURM+Commands) to see if the job has been run, etc. <br>
+after running the main.py file with python, the output will say something similar to 'Next: sg fslg_webb_reservoir "sbatch JW7_barab1.sh" '. That output can be copied and run to submit the job. `sg` command switches the group and allows for file-sharing. Use [slurm commands](https://rc.byu.edu/wiki/?id=SLURM+Commands) to see if the job has been run, etc. <br>
 
 Once the job is "running" (according to supercomputer, aka slurm_#####.out files have been created) then the specific cleanup bash script can be run (the exact command is an output from running 'python main.py'). The cleanup file will help organize the files. 
 
