@@ -35,7 +35,7 @@ mv #DIR#/#FNAME#*.py #DIR#/#FNAME#/experiment_files
 #organize the .pkl files
 mv #DIR#/#FNAME#*.pkl #DIR#/#FNAME#/result_files
 
-# move the batch directory to saved_data or to compute directory
+# move the batch directory a better location
 
 cd #DIR#
 # the data can easily, automatically be moved to a folder in a file sharing location. 
