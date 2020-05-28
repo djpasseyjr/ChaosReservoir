@@ -168,12 +168,12 @@ def generate_experiments(
     # then find the directory for this specific topology
     DIR = directory(topology)
 
-    print('how to make each .py file take about as long as any other .py file to run? just change for loop order?')
+    # print('how to make each .py file take about as long as any other .py file to run? just change for loop order?')
 
     #file count is to index the number of files in an orderly manner
     file_count = 0
     #temp_counter is used to allocate 'num_experiments_per_file' experiments to each .py file
-    temp_counter = 1
+    temp_counter = 0
 
     a,b,c = len(topo_p_vals), len(gamma_vals), len(sigma_vals)
     d,e,f,g = len(spectr_vals), len(ridge_alphas), len(network_sizes), len(remove_p_list)
@@ -181,7 +181,12 @@ def generate_experiments(
     print('\ntotal number of experiments:',total_experiment_number)
     if num_experiments_per_file > total_experiment_number:
         raise ValueError('num_experiments_per_file cant be greater than the total number of possible experiments (product of list length for the 7 parameters)')
+    if num_experiments_per_file <= 0:
+        raise ValueError('default num_experiments_per_file should be 1, not zero or less')
 
+
+    parameter_experiment_number = 1
+    # print('({parameter_experiment_number},{temp_counter},{file_count})')
     for TOPO_P in topo_p_vals:
         for gamma in gamma_vals:
             for sigma in sigma_vals:
@@ -193,17 +198,17 @@ def generate_experiments(
                         for n in network_sizes:
                             for p in remove_p_list:
 
-                                #put together FNAME with topology, and parameter_enumaration_number
-                                # this needs to change
+                                #save_fname is for .py files
+                                #new_name is for .pkl files
                                 save_fname =  DIR + '/' + FNAME + "_" + topology + "_" + str(file_count)
+                                new_name = DIR + '/' + FNAME + "_" + topology + "_" + str(parameter_experiment_number)
 
-                                if temp_counter == 1:
-                                    temp_counter += 1
-
+                                if temp_counter == 0:
+                                    # print(f'A:({parameter_experiment_number},{temp_counter},{file_count})')
                                     #read in template experiment file
                                     tmpl_stream = open('job_template.py','r')
                                     tmpl_str = tmpl_stream.read()
-                                    tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
+                                    tmpl_str = tmpl_str.replace("#FNAME#",new_name + '.pkl')
                                     tmpl_str = tmpl_str.replace("#TOPOLOGY#",topology)
                                     tmpl_str = tmpl_str.replace("#TOPO_P#",str(TOPO_P))
                                     tmpl_str = tmpl_str.replace("#REMOVE_P#",str(p))
@@ -215,20 +220,17 @@ def generate_experiments(
                                     tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                                     tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
                                     #write first file with import statements
+                                    tmpl_stream.close()
                                     new_f = open(save_fname + '.py','w')
                                     new_f.write(tmpl_str)
                                     new_f.close()
 
                                 else:
-                                    if temp_counter >= num_experiments_per_file:
-                                        temp_counter = 1
-                                    else:
-                                        temp_counter += 1
-                                    file_count += 1
+                                    # print(f'B:({parameter_experiment_number},{temp_counter},{file_count})')
                                     #read in template experiment file
                                     tmpl_stream = open('experiment_template.py','r')
                                     tmpl_str = tmpl_stream.read()
-                                    tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
+                                    tmpl_str = tmpl_str.replace("#FNAME#",new_name + '.pkl')
                                     tmpl_str = tmpl_str.replace("#TOPOLOGY#",topology)
                                     tmpl_str = tmpl_str.replace("#TOPO_P#",str(TOPO_P))
                                     tmpl_str = tmpl_str.replace("#REMOVE_P#",str(p))
@@ -240,11 +242,18 @@ def generate_experiments(
                                     tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                                     tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
                                     # this will append to new file
-                                    new_f = open(save_fname + '.py','a')
+                                    tmpl_stream.close()
+                                    new_f = open(save_fname + '.py','a+')
                                     new_f.write(tmpl_str)
                                     new_f.close()
+                                temp_counter += 1
+                                parameter_experiment_number += 1
+
+                                if temp_counter >= num_experiments_per_file:
+                                    temp_counter = 0
+                                    file_count += 1
 
     #in order to run all the experiments on the supercomputer we need the main bash script
     write_bash_script(DIR,FNAME + "_" + topology,file_count,hours_per_job,minutes_per_job,memory_per_job)
     #in order to compile output systematically, store the number of experiments and output directory
-    prepare_output_compilation(DIR,FNAME + "_" + topology,file_count)
+    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_experiment_number)
