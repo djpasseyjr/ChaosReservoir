@@ -1,5 +1,5 @@
 # this file purposefully doens't include import statements
-# it could have time stamps in it
+# if we wanted to track the time of each experiment we could import time 
 DIFF_EQ_PARAMS = {
                   "x0": [-20, 10, -.5],
                   "begin": 0,
