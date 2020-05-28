@@ -1,5 +1,10 @@
-# this file purposefully doens't include import statements
-# it could have time stamps in it
+from res_experiment import *
+from rescomp.lorenz_sol import *
+from math import floor
+from scipy import integrate
+
+#this file is edited automatically by main.py and parameter_experiments.py
+
 DIFF_EQ_PARAMS = {
                   "x0": [-20, 10, -.5],
                   "begin": 0,

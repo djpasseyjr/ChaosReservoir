@@ -61,8 +61,8 @@ def directory(network):
 
 def write_bash_script(directory,filename, number_of_experiments,hours_per_job,minutes_per_job,memory_per_job):
     """
-    Write the bash script to run all the experiments and write a bash_script to cleanup and compile the directory
-    where all the files were created for that batch
+    Write the bash script to run all the experiments and write a bash_script to cleanup the directory
+    where all the files were created for that batch, write a post_batch completion script to compile output
 
     Parameters:
         directory               (str): the name of output directory where all resulting pkl files will be stored
@@ -108,10 +108,20 @@ def write_bash_script(directory,filename, number_of_experiments,hours_per_job,mi
     new_f.close()
     print('bash','cleanup_' + filename +'.sh','\nThe cleanup file (command above) can be run immediately after submitting the batch')
 
+    tmpl_stream = open('post_completion.sh','r')
+    tmpl_str = tmpl_stream.read()
+    tmpl_str = tmpl_str.replace("#FNAME#",filename)
+    tmpl_str = tmpl_str.replace("#DIR#",directory)
+    new_name = 'post_' + filename +'.sh'
+    new_f = open(new_name,'w')
+    new_f.write(tmpl_str)
+    new_f.close()
+
 def generate_experiments(
     FNAME,
     nets_per_experiment = 2,
     orbits_per_experiment = 200,
+    num_experiments_per_file = 1,
     topology = None,
     hours_per_job = 10,
     minutes_per_job = 0,
@@ -132,6 +142,7 @@ def generate_experiments(
         FNAME                       (str):   prefix to each filename, an error will be thrown if not specified
         nets_per_experiment         (int):   number of networks to generate for a given topology
         orbits_per_experiment       (int):   number of orbits to run on each network for a given topology
+        num_experiments_per_file    (int):   the number of experiments to write to one .py file, can't be more than the number of permutations of parameters
         topology                    (str):   topology as specified in the generate_adj function of res_experiment.py, an error will be thrown if not specified
         hours_per_job               (int):   this parameter is passed to write_bash_script, including as a parameter provides convenience from main.py
         minutes_per_job             (int):   this parameter is passed to write_bash_script, including as a parameter provides convenience from main.py
@@ -157,43 +168,83 @@ def generate_experiments(
     # then find the directory for this specific topology
     DIR = directory(topology)
 
-    # the counter will be the final component of each file name, it's an enumeration of all the parameters
-    # the parameters values are not in the filename
-    parameter_enumaration_number = 0
-    for n in network_sizes:
-        for TOPO_P in topo_p_vals:
-            for gamma in gamma_vals:
-                for sigma in sigma_vals:
-                    for spectr in spectr_vals:
-                        for ridge_alpha in ridge_alphas:
+    print('how to make each .py file take about as long as any other .py file to run? just change for loop order?')
+
+    #file count is to index the number of files in an orderly manner
+    file_count = 0
+    #temp_counter is used to allocate 'num_experiments_per_file' experiments to each .py file
+    temp_counter = 1
+
+    a,b,c = len(topo_p_vals), len(gamma_vals), len(sigma_vals)
+    d,e,f,g = len(spectr_vals), len(ridge_alphas), len(network_sizes), len(remove_p_list)
+    total_experiment_number = a*b*c*d*e*f*g
+    print('\ntotal number of experiments:',total_experiment_number)
+    if num_experiments_per_file > total_experiment_number:
+        raise ValueError('num_experiments_per_file cant be greater than the total number of possible experiments (product of list length for the 7 parameters)')
+
+    for TOPO_P in topo_p_vals:
+        for gamma in gamma_vals:
+            for sigma in sigma_vals:
+                for spectr in spectr_vals:
+                    for ridge_alpha in ridge_alphas:
+                        #having network sizes, and remove_p values be the
+                        #last 2 values in the loop should mean that each file should have a mix
+                        #of low and high network sizes and remove_p values, depending upon 'num_experiments_per_file' of course
+                        for n in network_sizes:
                             for p in remove_p_list:
 
                                 #put together FNAME with topology, and parameter_enumaration_number
-                                save_fname =  DIR + '/' + FNAME + "_" + topology + "_" + str(parameter_enumaration_number)
+                                # this needs to change
+                                save_fname =  DIR + '/' + FNAME + "_" + topology + "_" + str(file_count)
 
-                                #read in template experiment file
-                                tmpl_stream = open('experiment_template.py','r')
-                                tmpl_str = tmpl_stream.read()
-                                tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
-                                tmpl_str = tmpl_str.replace("#TOPOLOGY#",topology)
-                                tmpl_str = tmpl_str.replace("#TOPO_P#",str(TOPO_P))
-                                tmpl_str = tmpl_str.replace("#REMOVE_P#",str(p))
-                                tmpl_str = tmpl_str.replace("#RIDGE_ALPHA#",str(ridge_alpha))
-                                tmpl_str = tmpl_str.replace("#SPECT_RAD#",str(spectr))
-                                tmpl_str = tmpl_str.replace("#GAMMA#",str(gamma))
-                                tmpl_str = tmpl_str.replace("#SIGMA#",str(sigma))
-                                tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
-                                tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
-                                tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
-                                # Save to new file
-                                new_f = open(save_fname + '.py','w')
-                                new_f.write(tmpl_str)
-                                new_f.close()
+                                if temp_counter == 1:
+                                    temp_counter += 1
 
-                                parameter_enumaration_number += 1
+                                    #read in template experiment file
+                                    tmpl_stream = open('job_template.py','r')
+                                    tmpl_str = tmpl_stream.read()
+                                    tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
+                                    tmpl_str = tmpl_str.replace("#TOPOLOGY#",topology)
+                                    tmpl_str = tmpl_str.replace("#TOPO_P#",str(TOPO_P))
+                                    tmpl_str = tmpl_str.replace("#REMOVE_P#",str(p))
+                                    tmpl_str = tmpl_str.replace("#RIDGE_ALPHA#",str(ridge_alpha))
+                                    tmpl_str = tmpl_str.replace("#SPECT_RAD#",str(spectr))
+                                    tmpl_str = tmpl_str.replace("#GAMMA#",str(gamma))
+                                    tmpl_str = tmpl_str.replace("#SIGMA#",str(sigma))
+                                    tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
+                                    tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
+                                    tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
+                                    #write first file with import statements
+                                    new_f = open(save_fname + '.py','w')
+                                    new_f.write(tmpl_str)
+                                    new_f.close()
 
-    print('\ntotal number of experiments:',parameter_enumaration_number)
+                                else:
+                                    if temp_counter >= num_experiments_per_file:
+                                        temp_counter = 1
+                                    else:
+                                        temp_counter += 1
+                                    file_count += 1
+                                    #read in template experiment file
+                                    tmpl_stream = open('experiment_template.py','r')
+                                    tmpl_str = tmpl_stream.read()
+                                    tmpl_str = tmpl_str.replace("#FNAME#",save_fname + '.pkl')
+                                    tmpl_str = tmpl_str.replace("#TOPOLOGY#",topology)
+                                    tmpl_str = tmpl_str.replace("#TOPO_P#",str(TOPO_P))
+                                    tmpl_str = tmpl_str.replace("#REMOVE_P#",str(p))
+                                    tmpl_str = tmpl_str.replace("#RIDGE_ALPHA#",str(ridge_alpha))
+                                    tmpl_str = tmpl_str.replace("#SPECT_RAD#",str(spectr))
+                                    tmpl_str = tmpl_str.replace("#GAMMA#",str(gamma))
+                                    tmpl_str = tmpl_str.replace("#SIGMA#",str(sigma))
+                                    tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
+                                    tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
+                                    tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
+                                    # this will append to new file
+                                    new_f = open(save_fname + '.py','a')
+                                    new_f.write(tmpl_str)
+                                    new_f.close()
+
     #in order to run all the experiments on the supercomputer we need the main bash script
-    write_bash_script(DIR,FNAME + "_" + topology,parameter_enumaration_number,hours_per_job,minutes_per_job,memory_per_job)
+    write_bash_script(DIR,FNAME + "_" + topology,file_count,hours_per_job,minutes_per_job,memory_per_job)
     #in order to compile output systematically, store the number of experiments and output directory
-    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_enumaration_number)
+    prepare_output_compilation(DIR,FNAME + "_" + topology,file_count)
