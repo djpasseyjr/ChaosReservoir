@@ -220,7 +220,7 @@ def experiment(
     # Make dictionary to store data
     results = results_dict(ntrials, topology, topo_p, remove_p, **res_params)
     i = 0
-    print('Starting Experiments with the follwing parameters:\n\t', res_params,'\nremove_p',remove_p,)
+    # print('Starting Experiments with the follwing parameters:\n\t', res_params,'\nremove_p',remove_p,)
     while i < ntrials:
         adj = generate_adj(topology, topo_p, network_size)
         results[i]["adj_size"] = adj.shape[0]
@@ -244,5 +244,5 @@ def experiment(
         results[i]['mean_pred'] = np.array(results[i]['pred']).mean()
         results[i]['mean_err'] = np.array(results[i]['err']).mean()
         pickle.dump(results, open(fname,"wb"))
-        print('"Net complete -- \nMean Pred',results[i]['mean_pred'],'\nMean Error',results[i]['mean_err'])
+        # print('"Net complete -- \nMean Pred',results[i]['mean_pred'],'\nMean Error',results[i]['mean_err'])
         i += 1
