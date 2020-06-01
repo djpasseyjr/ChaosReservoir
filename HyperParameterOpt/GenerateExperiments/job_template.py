@@ -30,16 +30,18 @@ RES_PARAMS = {
               "sigma": #SIGMA#,
               "sparse_res": True,
              }
-
-experiment(
-    fname="#FNAME#",
-    topology="#TOPOLOGY#",
-    topo_p=#TOPO_P#,
-    res_params=RES_PARAMS,
-    diff_eq_params=DIFF_EQ_PARAMS,
-    ntrials=#NETS_PER_EXPERIMENT#,
-    norbits=#ORBITS_PER_EXPERIMENT#,
-    network_size=#SIZE_OF_NETWORK#,
-    x0=random_lorenz_x0,
-    remove_p=#REMOVE_P#
-)
+try:
+    experiment(
+        fname="#FNAME#",
+        topology="#TOPOLOGY#",
+        topo_p=#TOPO_P#,
+        res_params=RES_PARAMS,
+        diff_eq_params=DIFF_EQ_PARAMS,
+        ntrials=#NETS_PER_EXPERIMENT#,
+        norbits=#ORBITS_PER_EXPERIMENT#,
+        network_size=#SIZE_OF_NETWORK#,
+        x0=random_lorenz_x0,
+        remove_p=#REMOVE_P#
+    )
+except:
+    pass
