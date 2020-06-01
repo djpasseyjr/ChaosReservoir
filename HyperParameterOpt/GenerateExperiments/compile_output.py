@@ -42,21 +42,22 @@ def compile_output(DIR, filename_prefix, total_experiment_number):
                 started = True
             except:
                 failed_file_count += 1
-        try:
-            #concatenante dataframe
-            output = pickle.load(open(path + str(i) + '.pkl','rb'))
-            # append doesn't have an "inplace" parameter, so must return copy to df, to make appending reside
-            temp = pd.DataFrame(output).T
-            temp['label'] = filename_prefix + "_" + str(i)
-            df = df.append(temp,ignore_index=False)
-        except:
-            failed_file_count += 1
-        if verbose:
-            if i == 0:
-                # don't need to print this
-                pass
-            elif i % 1000 == 0:
-                print(f'{i} files compile attempted,\ntime since start (minues):{round((time.time() - start )/ 60,1)}')
+        else:
+            try:
+                #concatenante dataframe
+                output = pickle.load(open(path + str(i) + '.pkl','rb'))
+                # append doesn't have an "inplace" parameter, so must return copy to df, to make appending reside
+                temp = pd.DataFrame(output).T
+                temp['label'] = filename_prefix + "_" + str(i)
+                df = df.append(temp,ignore_index=False)
+            except:
+                failed_file_count += 1
+            if verbose:
+                if i == 0:
+                    # don't need to print this
+                    pass
+                elif i % 1000 == 0:
+                    print(f'{i} files compile attempted,\ntime since start (minues):{round((time.time() - start )/ 60,1)}')
 
 
     #time difference is originally seconds
