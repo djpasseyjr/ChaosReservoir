@@ -64,14 +64,14 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         if verbose:
             if i % 1000 == 0:
                 print(f'{i} files compile attempted,\ntime since start (minues):{round((time.time() - start )/ 60,1)}')
+    #write final dict to pkl file
+    pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
+    
     if verbose:
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
         print(f'it took {round(finished,1)} minutes to compile\nor {round(finished / 60,1)} hours')
-        print(f'(#failed files) / (# total number of experiments) is {failed_file_count} / {NEXPERIMENTS}\nor {100 * round(failed_file_count/total_experiment_number,1)}% failed')
-    #write final dict to pkl file
-    pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
-    if verbose:
+        print(f'(#failed files) / (# total number of experiments) is {failed_file_count} / {NEXPERIMENTS}\nor {100 * round(failed_file_count/NEXPERIMENTS, 1)}% failed')
         print(f'{filename_prefix} compilation process finished')
 
 def empty_result_dict(num_experiments, nets_per_experiment):
