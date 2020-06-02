@@ -47,13 +47,12 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
 
     # we also need the prefix of the files, or can we use os.listdir()
     # path is probably directory plus filename prefix
-    all_data = empty_result_dict()
     path = DIR + "/" + filename_prefix + "_"
     failed_file_count = 0
     start = time.time()
     start_idx = 0
 
-    for i in range(num_experiments):
+    for i in range(1, num_experiments+1):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
