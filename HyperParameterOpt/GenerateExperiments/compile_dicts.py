@@ -3,6 +3,12 @@ import pickle
 import pandas as pd
 import time
 
+DIR = "#TOPOLOGY_DIRECTORY#"
+filename_prefix = "#FNAME#"
+NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
+NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
+#verbose will become a parameter in main
+verbose = True
 
 FLOAT_COLNAMES = [
     "mean_pred",
@@ -22,14 +28,6 @@ LIST_COLNAMES = [
 STRING_COLNAMES = [
     "net"
 ]
-DIR = "#TOPOLOGY_DIRECTORY#"
-filename_prefix = "#FNAME#"
-NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
-NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
-#verbose will become a parameter in main
-verbose = True
-
-
 
 def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     """
