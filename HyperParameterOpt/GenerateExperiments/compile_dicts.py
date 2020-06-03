@@ -38,9 +38,8 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     Parameters:
         DIR                     (str): The directory where the individual experiment.py files will be stored
         filename_prefix         (str): prefix to each filename, an error will be thrown if not specified
-        total_experiment_number (int): the total number of experiment files that were created
-                                       as described by the final parameter_enumaration_number in
-                                       the generate_experiments() function of the parameter_experiments.py file
+        num_experiments         (int): number of experiments total
+        nets_per_experiment     (int): number of nets in each experiment, equivalent to nets_per_experiment in main.py        
     """
     # Make dictionary for storing all data
     compiled = empty_result_dict(num_experiments, nets_per_experiment)
@@ -63,7 +62,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         start_idx += nets_per_experiment
         if verbose:
             if i % 1000 == 0:
-                print(f'{i} files compile attempted,\ntime since start (minues):{round((time.time() - start )/ 60,1)}')
+                print(f'{i} files compile attempted,\ntime since start (minutes):{round((time.time() - start )/ 60,1)}')
     #write final dict to pkl file
     pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
     
