@@ -59,11 +59,12 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
+            add_to_compiled(compiled, data_dict, start_idx)
         except:
             failed_file_count += 1
         # Add data to compiled dictionary
-        add_to_compiled(compiled, data_dict, start_idx)
         start_idx += nets_per_experiment
+        
         if verbose:
             if i % 1000 == 0:
                 info = f'\n{i} files compile attempted,time since start (minutes):{round((time.time() - start )/ 60,1)}' 
