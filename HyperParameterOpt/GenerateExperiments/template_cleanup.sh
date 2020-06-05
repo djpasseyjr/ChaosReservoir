@@ -1,7 +1,7 @@
 #!/bin/bash
 # this file is suppose to run immediately after submitting the batch
 
-echo "note that once batch bash script finishes, all files (relevant to this batch) will be moved outside of ChaosReservoir to avoid the possibility of data being lost"
+echo "note that once batch bash script finishes, all files (relevant to this batch) should be moved outside of ChaosReservoir to avoid the possibility of data being lost"
 mkdir #DIR#/#FNAME#/
 
 #move a copy of the batch bash script to batch directory

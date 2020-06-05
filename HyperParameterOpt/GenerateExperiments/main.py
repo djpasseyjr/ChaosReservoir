@@ -31,6 +31,7 @@ BATCH_NUMBER = 4
 #edit directly into function for parameters,
 generate_experiments(
     FNAME = USER_ID + str(BATCH_NUMBER),
+    verbose = True,
     nets_per_experiment = 2,
     orbits_per_experiment = 200,
     num_experiments_per_file = 1,
