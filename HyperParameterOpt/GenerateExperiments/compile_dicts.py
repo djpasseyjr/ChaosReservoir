@@ -65,7 +65,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             failed_file_count += 1
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
-            data_dict["exp_num"][k] = i
+            compiled["exp_num"][k] = i
 
         start_idx += nets_per_experiment
 
