@@ -122,6 +122,7 @@ def write_bash_script(
     # tmpl_str = tmpl_str.replace("#DIR#",directory) #not needed
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     new_name = 'post_' + filename +'.sh'
+    new_f = open(new_name,'w')
     new_f.write(tmpl_str)
     new_f.close()
 
