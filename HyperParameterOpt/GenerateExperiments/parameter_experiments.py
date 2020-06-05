@@ -6,7 +6,7 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-def prepare_output_compilation(directory,filename, number_of_experiments,verbose=True):
+def prepare_output_compilation(directory,filename, number_of_experiments,nets_per_experiment,verbose=True):
     """
     write the directory and number_of_experiments to the compile_output.py file
 
@@ -19,6 +19,8 @@ def prepare_output_compilation(directory,filename, number_of_experiments,verbose
         filename                (str): the filename prefix that all the files have in common
         number_of_experiments   (int): the number of experiments is used to systematically
                                         compile all individual output files into one primary file
+        nets_per_experiment     (int): parameter in main.py
+        verbose                 (bool):  print statements to provide extra information
     """
     tmpl_stream = open('compile_dicts.py','r')
     tmpl_str = tmpl_stream.read()
