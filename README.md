@@ -15,21 +15,21 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 **Week 1**
 
 __Presentation:__
-* [ ] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
+* [x] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
 
 __Tasks:__
-* [ ] Identify reasonable parameter ranges for the system
-* [ ] Send the ranges to a designated group member
-* [ ] Designated member generates experiments for all parameter ranges
+* [x] Identify reasonable parameter ranges for the system
+* [x] Send the ranges to a designated group member
+* [x] Designated member generates experiments for all parameter ranges
 
 **Week 2**
 
 __Presentation:__
-* [ ] How to Use the Super Computer
+* [x] How to Use the Super Computer
 
 __Tasks:__
-* [ ] Designated member sends out experiments
-* [ ] Each team member runs the experiments and starts data analysis
+* [x] Designated member sends out experiments
+* [x] Each team member runs the experiments and starts data analysis
 
 **Week 3**
 
