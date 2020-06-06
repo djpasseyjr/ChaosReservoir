@@ -30,8 +30,6 @@ STRING_COLNAMES = [
     "net"
 ]
 
-print('fix docstring for compile_output')
-
 def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     """
     Compile the data from all the various pkl files
