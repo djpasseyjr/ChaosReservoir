@@ -117,6 +117,12 @@ def merge_compiled(compiled1, compiled2):
     if isinstance(compiled1, str) and isinstance(compiled2, str):
         compiled1 = pickle.load(open(compiled1, 'rb'))
         compiled2 = pickle.load(open(compiled2, 'rb'))
+    # Shift experiment number for compiled2
+    total_exp = np.max(compiled1["exp_num"])
+    exp_nums = np.array(compiled2["exp_num"])
+    exp_nums[exp_nums >= 0] += total_exp 
+    compiled2["exp_num"] = list(exp_nums)
+    # Merge
     for k in compiled1.keys():
         compiled1[k] += compiled2[k]
     return compiled1
