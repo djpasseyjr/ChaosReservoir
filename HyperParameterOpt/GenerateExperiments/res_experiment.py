@@ -68,6 +68,18 @@ def random_digraph(mean_degree,n=None):
     p = mean_degree/n
     return sparse.random(n,n, density=p, data_rvs=np.ones, format='dok')
 
+def watts2(p,n=None):
+    """ Watts-Strogatz small world model
+    Parameter
+        p               (float): specific to this topology
+        n               (int): n is the size of the network
+    """
+    if n is None:
+        n = np.random.randint(smallest_network_size,biggest_network_size)
+    k = 2
+    A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
+    return sparse.dok_matrix(A)
+
 def watts3(p,n=None):
     """ Watts-Strogatz small world model
     Parameter
@@ -77,6 +89,18 @@ def watts3(p,n=None):
     if n is None:
         n = np.random.randint(smallest_network_size,biggest_network_size)
     k = 3
+    A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
+    return sparse.dok_matrix(A)
+
+def watts4(p,n=None):
+    """ Watts-Strogatz small world model
+    Parameter
+        p               (float): specific to this topology
+        n               (int): n is the size of the network
+    """
+    if n is None:
+        n = np.random.randint(smallest_network_size,biggest_network_size)
+    k = 4
     A = nx.adj_matrix(nx.watts_strogatz_graph(n,k,p)).T
     return sparse.dok_matrix(A)
 
@@ -126,7 +150,11 @@ def generate_adj(network, param,n=None):
     # the directory function in parameter_experiments.py needs to have the same
     #       network_options as this function, so if more topologies are added, the directory
     #       function in the other file should also be edited
-    network_options = ['barab1', 'barab2', 'erdos', 'random_digraph', 'watts3', 'watts5', 'geom']
+    network_options = ['barab1', 'barab2',
+                        'erdos', 'random_digraph',
+                        'watts3', 'watts5',
+                        'watts2','watts4',
+                        'geom']
 
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
@@ -143,6 +171,10 @@ def generate_adj(network, param,n=None):
         return watts3(param, n)
     if network == 'watts5':
         return watts5(param, n)
+    if network == 'watts2':
+        return watts2(param, n)
+    if network == 'watts4':
+        return watts4(param, n)
     if network == 'geom':
         net = geom(param, n)
     return net
