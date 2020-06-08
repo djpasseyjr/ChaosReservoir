@@ -9,7 +9,7 @@ filename_prefix = "#FNAME#"
 NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
 NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
 #verbose will become a parameter in main
-verbose = True
+verbose = #VERBOSE#
 
 FLOAT_COLNAMES = [
     "mean_pred",
