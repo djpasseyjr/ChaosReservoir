@@ -51,7 +51,9 @@ def directory(network):
                         'erdos', 'random_digraph',
                         'watts3', 'watts5',
                         'watts2','watts4',
-                        'geom']
+                        'geom', 'no_edges',
+                        'chain', 'loop',
+                        'ident']
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
 
@@ -61,10 +63,12 @@ def directory(network):
         DIR = 'Erdos'
     if network == 'random_digraph':
         DIR = 'RandDigraph'
-    if network == 'watts3' or network == 'watts5' or network == 'watts4' or network == 'watts2':
+    if network in ['watts3', 'watts5', 'watts4', 'watts2']:
         DIR = 'Watts'
     if network == 'geom':
         DIR = 'Geometric'
+    if network in ['no_edges', 'chain', 'loop', 'ident']:
+        DIR = 'AdditionalTopos'
     return DIR
 
 def write_bash_script(
