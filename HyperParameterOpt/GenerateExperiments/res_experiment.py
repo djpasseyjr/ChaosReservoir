@@ -125,6 +125,20 @@ def geom(mean_degree, n=None):
     A = nx.adj_matrix(nx.random_geometric_graph(n, r)).T
     return sparse.dok_matrix(A)
 
+def no_edges(n):
+    return sparse.csr_matrix((n,n))
+
+def chain(weight, n):
+    A = sparse.lil_matrix((n,n))
+    for i in range(n):
+        A[i+1, i] = weight
+        
+def loop(n):
+    A = sparse.lil_matrix((n,n))
+    for i in range(n):
+        A[i+1, i] = weight
+    A[0, -1] = weight
+
 def remove_edges(A,nedges):
     """ Randomly removes 'nedges' edges from a sparse matrix 'A'
     """
@@ -177,6 +191,12 @@ def generate_adj(network, param,n=None):
         return watts4(param, n)
     if network == 'geom':
         net = geom(param, n)
+    if network == 'no_edges':
+        net = no_edges(n)
+    if network = 'chain':
+        net = chain(param, n)
+    if network = 'loop':
+        net = loop(n)
     return net
 
 #-- Differential equation utilities --#
