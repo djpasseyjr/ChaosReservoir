@@ -28,7 +28,7 @@ def prepare_output_compilation(directory,filename, number_of_experiments,nets_pe
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
     tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
-    tmpl_str = tmpl_str.replace("VERBOSE",str(verbose))
+    tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
     new_name = 'compile_output_' + filename +'.py'
     new_f = open(new_name,'w')
     new_f.write(tmpl_str)
