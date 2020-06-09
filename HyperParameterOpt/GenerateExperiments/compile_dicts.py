@@ -85,6 +85,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         file += info
         print(info)
         ending = f'\n{filename_prefix} compilation process finished'
+        print(ending)
         timing += ending
         #only write to the file once, the file will close automatically
         with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
