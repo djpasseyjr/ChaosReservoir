@@ -139,6 +139,9 @@ def loop(n):
         A[i+1, i] = weight
     A[0, -1] = weight
 
+def ident(n):
+    return sparse.eye(n, format="lil")
+
 def remove_edges(A,nedges):
     """ Randomly removes 'nedges' edges from a sparse matrix 'A'
     """
@@ -193,10 +196,12 @@ def generate_adj(network, param,n=None):
         net = geom(param, n)
     if network == 'no_edges':
         net = no_edges(n)
-    if network = 'chain':
+    if network == 'chain':
         net = chain(param, n)
-    if network = 'loop':
+    if network == 'loop':
         net = loop(n)
+    if network == 'ident':
+        net = ident(n)
     return net
 
 #-- Differential equation utilities --#
