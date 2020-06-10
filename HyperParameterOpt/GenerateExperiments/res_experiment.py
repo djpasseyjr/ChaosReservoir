@@ -197,7 +197,7 @@ def generate_adj(network, param,n=None):
     if network == 'no_edges':
         net = no_edges(n)
     if network == 'chain':
-        net = chain(param, n)
+        net = chain(n)
     if network == 'loop':
         net = loop(n)
     if network == 'ident':
