@@ -128,16 +128,16 @@ def geom(mean_degree, n=None):
 def no_edges(n):
     return sparse.csr_matrix((n,n))
 
-def chain(weight, n):
+def chain(n):
     A = sparse.lil_matrix((n,n))
     for i in range(n):
-        A[i+1, i] = weight
+        A[i+1, i] = 1
         
 def loop(n):
     A = sparse.lil_matrix((n,n))
     for i in range(n):
-        A[i+1, i] = weight
-    A[0, -1] = weight
+        A[i+1, i] = 1
+    A[0, -1] = 1
 
 def ident(n):
     return sparse.eye(n, format="lil")
