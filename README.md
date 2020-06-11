@@ -22,7 +22,7 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 * [ ] Run more extensive tests with the top 1% of parameter combinations
 * [ ] Analyze overview data
 * [ ] Analyze top preformers data
-* [ ] Make useful plots
+* [ ] Make plots for paper
 
 
 ### Other Directions
