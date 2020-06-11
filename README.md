@@ -12,53 +12,21 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 4. Joey Wilkes
 
 ### Plan
-**Week 1**
+* [x] Write code to generate jobs for the super computer
+* [x] Write code to compile data from the jobs
+* [ ] Write code to extract network information from graphs
+* [ ] Write statistical analysis pipeline 
+* [x] Generate hyper parameter overview jobs
+* [ ] Run all hyper parameter overview jobs for all topologies
+* [ ] Identify the best combination of parameters for each topology
+* [ ] Run more extensive tests with the top 1% of parameter combinations
 
-__Presentation:__
-* [x] Introduction to Reservoir Computers, Network Topology and Lorentz Equations
 
-__Tasks:__
-* [x] Identify reasonable parameter ranges for the system
-* [x] Send the ranges to a designated group member
-* [x] Designated member generates experiments for all parameter ranges
 
-**Week 2**
-
-__Presentation:__
-* [x] How to Use the Super Computer
-
-__Tasks:__
-* [x] Designated member sends out experiments
-* [x] Each team member runs the experiments and starts data analysis
-
-**Week 3**
-
-__Presentation:__
-
-* [ ] How to Analyze Reservoir Computer Results
-
-__Tasks:__
-* [ ] Analyze Datasets
-
-**Week 4**
-
-__Presentation:__
-* [ ] Group Members Present Findings
-
-__Tasks:__
-* [ ] Further Dataset Analysis
-
-**Week 5**
-
-__Presentation:__
-* [ ] Group Members Present Findings
-
-__Tasks:__
-* [ ] Discuss Future steps
 
 
 ### Other Directions
 
-1. Heatmap of Wout. What is the correlation between connected components in the original adjacency matrix and size of edges in Wout?
+1. What is the correlation between connected components in the original adjacency matrix and size of edges in Wout?
 2. Spectral design. Building networks to have certain eigenvalues. Can we start from motifs and connect them in a way that produces the desired structure? Do networks have characteristic motifs that play a role in spectrum as edges are removed.
 3. If we have a network and we uniformly remove edges until we break the network down into motifs, can we build it again by adding the edges back in some way?
