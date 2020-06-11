@@ -130,14 +130,16 @@ def no_edges(n):
 
 def chain(n):
     A = sparse.lil_matrix((n,n))
-    for i in range(n):
+    for i in range(n - 1):
         A[i+1, i] = 1
-        
+    return A
+    
 def loop(n):
     A = sparse.lil_matrix((n,n))
-    for i in range(n):
+    for i in range(n - 1):
         A[i+1, i] = 1
     A[0, -1] = 1
+    return A
 
 def ident(n):
     return sparse.eye(n, format="lil")
@@ -171,7 +173,10 @@ def generate_adj(network, param,n=None):
                         'erdos', 'random_digraph',
                         'watts3', 'watts5',
                         'watts2','watts4',
-                        'geom']
+                        'geom', 'no_edges',
+                        'loop', 'chain',
+                        'ident'
+                      ]
 
     if network not in network_options:
         raise ValueError('{network} not in {network_options}')
