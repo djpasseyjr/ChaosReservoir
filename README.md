@@ -20,9 +20,9 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 * [ ] Run all hyper parameter overview jobs for all topologies
 * [ ] Identify the best combination of parameters for each topology
 * [ ] Run more extensive tests with the top 1% of parameter combinations
-
-
-
+* [ ] Analyze overview data
+* [ ] Analyze top preformers data
+* [ ] Make useful plots
 
 
 ### Other Directions
