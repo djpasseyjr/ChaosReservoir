@@ -24,6 +24,7 @@ def prepare_output_compilation(directory,filename, number_of_experiments,nets_pe
     """
     tmpl_stream = open('compile_dicts.py','r')
     tmpl_str = tmpl_stream.read()
+    tmpl_stream.close()
     tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
@@ -108,6 +109,7 @@ def write_bash_script(
 
     tmpl_stream = open('bash_template.sh','r')
     tmpl_str = tmpl_stream.read()
+    tmpl_stream.close()
     tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
     tmpl_str = tmpl_str.replace("#MINUTES#",str(minutes_per_job))
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
@@ -125,6 +127,7 @@ def write_bash_script(
 
     tmpl_stream = open('post_completion.sh','r')
     tmpl_str = tmpl_stream.read()
+    tmpl_stream.close()
     # TODO, this will be used once we have dependence figured out
     # tmpl_str = tmpl_str.replace("#HOURS#",str(compile_hours))
     # tmpl_str = tmpl_str.replace("#MINUTES#",str(compile_minutes))
@@ -138,6 +141,7 @@ def write_bash_script(
 
     tmpl_stream = open('template_cleanup.sh','r')
     tmpl_str = tmpl_stream.read()
+    tmpl_stream.close()
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     tmpl_str = tmpl_str.replace("#DIR#",directory)
     new_name = 'cleanup_' + filename +'.sh'
@@ -148,6 +152,7 @@ def write_bash_script(
 
     tmpl_stream = open('template_final_step.sh','r')
     tmpl_str = tmpl_stream.read()
+    tmpl_stream.close()
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     tmpl_str = tmpl_str.replace("#DIR#",directory)
     new_name = 'final_' + filename +'.sh'
@@ -260,8 +265,8 @@ def generate_experiments(
                                     tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
                                     tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                                     tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
-                                    #write first file with import statements
                                     tmpl_stream.close()
+                                    #write first file with import statements
                                     new_f = open(save_fname + '.py','w')
                                     new_f.write(tmpl_str)
                                     new_f.close()
@@ -282,8 +287,8 @@ def generate_experiments(
                                     tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
                                     tmpl_str = tmpl_str.replace("#ORBITS_PER_EXPERIMENT#",str(orbits_per_experiment))
                                     tmpl_str = tmpl_str.replace("#SIZE_OF_NETWORK#",str(n))
-                                    # this will append to new file
                                     tmpl_stream.close()
+                                    # 'a+' will append to new file
                                     new_f = open(save_fname + '.py','a+')
                                     new_f.write(tmpl_str)
                                     new_f.close()
