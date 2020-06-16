@@ -26,6 +26,20 @@ RES_PARAMS = {
               "sparse_res": True,
              }
 try:
+    #experiment string is for debugging convenience
+    experiment_str = """
+    fname="#FNAME#",
+    topology="#TOPOLOGY#",
+    topo_p=#TOPO_P#,
+    ntrials=#NETS_PER_EXPERIMENT#,
+    norbits=#ORBITS_PER_EXPERIMENT#,
+    network_size=#SIZE_OF_NETWORK#,
+    "ridge_alpha": #RIDGE_ALPHA#,
+    "spect_rad": #SPECT_RAD#,
+    "gamma": #GAMMA#,
+    "sigma": #SIGMA#,
+    remove_p=#REMOVE_P#
+    """
     experiment(
         fname="#FNAME#",
         topology="#TOPOLOGY#",
@@ -40,3 +54,6 @@ try:
     )
 except:
     pass
+    print(experiment_str)
+    traceback.print_exc()
+    print('\n\n')

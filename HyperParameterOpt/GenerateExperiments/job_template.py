@@ -1,7 +1,7 @@
 from res_experiment import *
 from rescomp.lorenz_sol import *
-from math import floor
-from scipy import integrate
+import sys
+import traceback
 
 #this file is edited automatically by main.py and parameter_experiments.py
 
@@ -31,6 +31,20 @@ RES_PARAMS = {
               "sparse_res": True,
              }
 try:
+    #experiment string is for debugging convenience
+    experiment_str = """
+    fname="#FNAME#",
+    topology="#TOPOLOGY#",
+    topo_p=#TOPO_P#,
+    ntrials=#NETS_PER_EXPERIMENT#,
+    norbits=#ORBITS_PER_EXPERIMENT#,
+    network_size=#SIZE_OF_NETWORK#,
+    "ridge_alpha": #RIDGE_ALPHA#,
+    "spect_rad": #SPECT_RAD#,
+    "gamma": #GAMMA#,
+    "sigma": #SIGMA#,
+    remove_p=#REMOVE_P#
+    """
     experiment(
         fname="#FNAME#",
         topology="#TOPOLOGY#",
@@ -44,4 +58,6 @@ try:
         remove_p=#REMOVE_P#
     )
 except:
-    pass
+    print(experiment_str)
+    traceback.print_exc()
+    print('\n\n')
