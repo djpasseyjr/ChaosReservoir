@@ -27,7 +27,7 @@ RES_PARAMS = {
              }
 try:
     #experiment string is for debugging convenience
-    experiment = """
+    experiment_str = """
     fname="#FNAME#",
     topology="#TOPOLOGY#",
     topo_p=#TOPO_P#,
@@ -53,6 +53,7 @@ try:
         remove_p=#REMOVE_P#
     )
 except:
-    print(experiment)
+    pass
+    print(experiment_str)
     traceback.print_exc()
     print('\n\n')
