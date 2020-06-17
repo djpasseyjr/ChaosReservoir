@@ -147,7 +147,7 @@ def ident(n):
 def remove_edges(A,nedges):
     """ Randomly removes 'nedges' edges from a sparse matrix 'A'
     """
-    A.todok()
+    A = A.todok()
     # Remove Edges
     keys = list(A.keys())
     remove_idx = np.random.choice(range(len(keys)),size=nedges, replace=False)
