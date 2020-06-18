@@ -69,7 +69,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             # find remainder of i, to nearest job number
             s = i % num_experiments_per_file
             # append the job number (corresponding slurm file) to list 
-            failed_experiment_identifiers.append((i-s) / num_experiments_per_file))
+            failed_experiment_identifiers.append((i-s) / num_experiments_per_file)
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
             compiled["exp_num"][k] = i
