@@ -68,7 +68,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             failed_file_count += 1
             # find remainder of i, to nearest job number
             s = i % num_experiments_per_file
-            # append the job number (corresponding slurm file) to list 
+            # append the job number (corresponding slurm file) to list
             failed_experiment_identifiers.append((i-s) / num_experiments_per_file)
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
@@ -86,7 +86,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
 
     if verbose:
         #make a string to report failures
-        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(failed_experiment_identifiers) + '\n'
+        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(list(set(failed_experiment_identifiers))) + '\n'
 
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
