@@ -8,6 +8,8 @@ DIR = "#TOPOLOGY_DIRECTORY#"
 filename_prefix = "#FNAME#"
 NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
 NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
+num_experiments_per_file = #NUM_EXPRMTS_PER_FILE#
+print('TODO - pass num_experiments_per_file as a parameter, or keep as global constant?')
 #verbose will become a parameter in main
 verbose = #VERBOSE#
 
@@ -64,7 +66,10 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             add_to_compiled(compiled, data_dict, start_idx)
         except:
             failed_file_count += 1
-            failed_experiment_identifiers.append(i)
+            # find remainder of i, to nearest job number
+            s = i % num_experiments_per_file
+            # append the job number (corresponding slurm file) to list 
+            failed_experiment_identifiers.append((i-s) / num_experiments_per_file))
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
             compiled["exp_num"][k] = i
@@ -81,7 +86,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
 
     if verbose:
         #make a string to report failures
-        failures = '\nthe following list shows #\'s of the failed files :' + str(failed_experiment_identifiers) + '\n'
+        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(failed_experiment_identifiers) + '\n'
 
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
