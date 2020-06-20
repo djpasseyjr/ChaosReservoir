@@ -23,16 +23,18 @@ COLNAMES = [
     "remove_p",
     "pred",
     "err",
-    "net",
-    "mean_pred",
-    "mean_err",
-    "adj_size",
-    "topo_p",
-    "gamma",
-    "sigma",
-    "spect_rad",
-    "ridge_alpha",
-    "remove_p"
+]
+
+NETCOLS = [
+    "max_scc",
+    "max_wcc",
+    "giant_comp",
+    "singletons",
+    "nwcc",
+    "nscc"
+    "cluster",
+    "assort",
+    "diam"
 ]
 
 def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
@@ -64,6 +66,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
             # Add data to compiled dictionary
             add_to_compiled(compiled, data_dict, start_idx)
+            add_net_stats(compiled, data_dict, start_idx)
         except:
             failed_file_count += 1
         # Track experiment number
@@ -101,7 +104,7 @@ def empty_result_dict(num_experiments, nets_per_experiment):
     """ Make empty dictionary for compiling data """
     empty = {}
     nentries = num_experiments * nets_per_experiment
-    for col in COL_NAMES:
+    for col in COLNAMES + NETCOLS:
         empty[col] = [None] * nentries
     return empty
 
@@ -110,6 +113,29 @@ def add_to_compiled(compiled, data_dict, start_idx):
     for k in data_dict.keys():
         for colname in FLOAT_COLNAMES + STRING_COLNAMES + LIST_COLNAMES:
             compiled[colname][start_idx + k] = data_dict[k][colname]
+            
+def add_net_stats(compiled, data_dict, start_idx):
+    """ Get data from adjacency matrix and add to dict """
+    for k in data_dict.keys():
+        A = data_dict[k]['adj']
+        # Get stats
+        g = nx.DiGraph(A.T)
+        n = A.shape[0]
+        scc = [list(c) for c in nx.strongly_connected_components(g)]
+        scc_sz = [len(c) for c in scc]
+        wcc = [list(c) for c in nx.weakly_connected_components(g)]
+        wcc_sz = [len(c) for c in wcc]
+        # Diameter of the largest scc
+        diam = nx.diameter(nx.subgraph(g, scc[np.argmax(scc_sz)]))
+        # Add to dictionary
+        compiled["max_wcc"][start_idx + k] = np.max(wcc_sz)/n
+        compiled["max_scc"][start_idx + k] = np.max(wcc_sz)/n
+        compiled["singletons"][start_idx + k] = np.sum(np.array(scc_sz) == 1)
+        compiled["nscc"][start_idx + k] = len(scc)
+        compiled["nwcc"][start_idx + k] = len(wcc)
+        compiled["assort"][start_idx + k] = nx.degree_assortativity_coefficient(g)
+        compiled["cluster"][start_idx + k] = nx.average_clustering(g)
+        compiled["diam"][start_idx + k] = diam
 
 def merge_compiled(compiled1, compiled2):
     """ Merge two compiled dictionaries """
