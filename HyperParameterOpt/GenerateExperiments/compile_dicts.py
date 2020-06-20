@@ -11,7 +11,19 @@ NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
 #verbose will become a parameter in main
 verbose = #VERBOSE#
 
-FLOAT_COLNAMES = [
+COLNAMES = [
+    "mean_pred",
+    "mean_err",
+    "adj_size",
+    "topo_p",
+    "gamma",
+    "sigma",
+    "spect_rad",
+    "ridge_alpha",
+    "remove_p",
+    "pred",
+    "err",
+    "net",
     "mean_pred",
     "mean_err",
     "adj_size",
@@ -21,13 +33,6 @@ FLOAT_COLNAMES = [
     "spect_rad",
     "ridge_alpha",
     "remove_p"
-]
-LIST_COLNAMES = [
-    "pred",
-    "err"
-]
-STRING_COLNAMES = [
-    "net"
 ]
 
 def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
@@ -96,13 +101,8 @@ def empty_result_dict(num_experiments, nets_per_experiment):
     """ Make empty dictionary for compiling data """
     empty = {}
     nentries = num_experiments * nets_per_experiment
-    for colname in FLOAT_COLNAMES:
-        empty[colname] = [0.0] * nentries
-    for colname in LIST_COLNAMES:
-        empty[colname] = [[]] * nentries
-    for colname in STRING_COLNAMES:
-        empty[colname] = [''] * nentries
-    empty["exp_num"] = [-1] * nentries
+    for col in COL_NAMES:
+        empty[col] = [None] * nentries
     return empty
 
 def add_to_compiled(compiled, data_dict, start_idx):
