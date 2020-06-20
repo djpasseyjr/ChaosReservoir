@@ -152,6 +152,4 @@ def merge_compiled(compiled1, compiled2):
         compiled1[k] += compiled2[k]
     return compiled1
 
-
-
-compile_output(DIR,filename_prefix,NEXPERIMENTS,NETS_PER_EXPERIMENT)
+compile_output(DIR, filename_prefix, NEXPERIMENTS, NETS_PER_EXPERIMENT)
