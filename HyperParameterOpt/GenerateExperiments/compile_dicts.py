@@ -43,6 +43,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     """
     #get a list of failed files identifiers so it's simple to check traceback
     failed_experiment_identifiers = []
+    failed_job_identifiers = []
 
     # Make dictionary for storing all data
     compiled = empty_result_dict(num_experiments, nets_per_experiment)
@@ -58,7 +59,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         file = filename_prefix
         timing = '\n\n'
 
-    for i in range(1, num_experiments+1):
+    for i in range(num_experiments):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
@@ -69,7 +70,8 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             # find remainder of i, to nearest job number
             s = i % num_experiments_per_file
             # append the job number (corresponding slurm file) to list
-            failed_experiment_identifiers.append((i-s) / num_experiments_per_file)
+            failed_experiment_identifiers.append(i)
+            failed_job_identifiers.append((i-s) / num_experiments_per_file)
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
             compiled["exp_num"][k] = i
@@ -86,7 +88,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
 
     if verbose:
         #make a string to report failures
-        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(list(set(failed_experiment_identifiers))) + '\n'
+        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(list(set(failed_job_identifiers))) + '\n'
 
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
@@ -99,9 +101,12 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         ending = f'\n{filename_prefix} compilation process finished'
         print(ending)
         timing += ending
+
+        failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(list(set(failed_experiment_identifiers))) + '\n# corresponds to the # in FNAME in experiment() call'
+
         #only write to the file once, the file will close automatically
         with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
-            f.write(file + failures + timing)
+            f.write(file + failures + timing + failed_exp)
 
 def empty_result_dict(num_experiments, nets_per_experiment):
     """ Make empty dictionary for compiling data """
