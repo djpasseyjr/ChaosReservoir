@@ -8,6 +8,7 @@ DIR = "#TOPOLOGY_DIRECTORY#"
 filename_prefix = "#FNAME#"
 NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
 NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
+num_experiments_per_file = #NUM_EXPRMTS_PER_FILE#
 #verbose will become a parameter in main
 verbose = #VERBOSE#
 
@@ -46,6 +47,10 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         num_experiments         (int): number of experiments total
         nets_per_experiment     (int): number of nets in each experiment, equivalent to nets_per_experiment in main.py
     """
+    #get a list of failed files identifiers so it's simple to check traceback
+    failed_experiment_identifiers = []
+    failed_job_identifiers = []
+    
     # Make dictionary for storing all data
     compiled = empty_result_dict(num_experiments, nets_per_experiment)
 
@@ -60,7 +65,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         file = filename_prefix
         timing = '\n\n'
 
-    for i in range(1, num_experiments+1):
+    for i in range(num_experiments):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
@@ -69,6 +74,12 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             add_net_stats(compiled, data_dict, start_idx)
         except:
             failed_file_count += 1
+            # find remainder of i, to nearest job number
+            s = i % num_experiments_per_file
+            # append the job number (corresponding slurm file) to list
+            failed_experiment_identifiers.append(i)
+            failed_job_identifiers.append((i-s) / num_experiments_per_file)
+            
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
             compiled["exp_num"][k] = i
@@ -84,6 +95,9 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
 
     if verbose:
+        #make a string to report failures
+        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(list(set(failed_job_identifiers))) + '\n'
+
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
         info = f'\nit took {round(finished,1)} minutes to compile\nor {round(finished / 60,1)} hours'
@@ -95,9 +109,12 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         ending = f'\n{filename_prefix} compilation process finished'
         print(ending)
         timing += ending
+
+        failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(list(set(failed_experiment_identifiers))) + '\n# corresponds to the # in FNAME in experiment() call'
+
         #only write to the file once, the file will close automatically
         with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
-            f.write(file + timing)
+            f.write(file + failures + timing + failed_exp)
 
 
 def empty_result_dict(num_experiments, nets_per_experiment):
@@ -106,12 +123,13 @@ def empty_result_dict(num_experiments, nets_per_experiment):
     nentries = num_experiments * nets_per_experiment
     for col in COLNAMES + NETCOLS:
         empty[col] = [None] * nentries
+    empty["exp_num"] = [-1] * nentries
     return empty
 
 def add_to_compiled(compiled, data_dict, start_idx):
     """ Add output dictionary to compiled data, return next empty index """
     for k in data_dict.keys():
-        for colname in FLOAT_COLNAMES + STRING_COLNAMES + LIST_COLNAMES:
+        for colname in COLNAMES + NETCOLS:
             compiled[colname][start_idx + k] = data_dict[k][colname]
             
 def add_net_stats(compiled, data_dict, start_idx):
