@@ -5,6 +5,7 @@ import pandas as pd
 import time
 import sys
 import traceback
+import networkx as nx
 
 DIR = "#TOPOLOGY_DIRECTORY#"
 filename_prefix = "#FNAME#"
@@ -137,7 +138,7 @@ def empty_result_dict(num_experiments, nets_per_experiment):
 def add_to_compiled(compiled, data_dict, start_idx):
     """ Add output dictionary to compiled data, return next empty index """
     for k in data_dict.keys():
-        for colname in COLNAMES + NETCOLS:
+        for colname in COLNAMES:
             compiled[colname][start_idx + k] = data_dict[k][colname]
             
 def add_net_stats(compiled, data_dict, start_idx):
