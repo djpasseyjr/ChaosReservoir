@@ -146,7 +146,7 @@ def add_net_stats(compiled, data_dict, start_idx):
     for k in data_dict.keys():
         A = data_dict[k]['adj']
         # Get stats
-        g = nx.DiGraph(A.T)
+        g = nx.DiGraph(A.T.tolil())
         n = A.shape[0]
         scc = [list(c) for c in nx.strongly_connected_components(g)]
         scc_sz = [len(c) for c in scc]
