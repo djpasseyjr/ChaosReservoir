@@ -35,7 +35,7 @@ NETCOLS = [
     "giant_comp",
     "singletons",
     "nwcc",
-    "nscc"
+    "nscc",
     "cluster",
     "assort",
     "diam"
