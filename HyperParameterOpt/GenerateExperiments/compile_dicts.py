@@ -102,7 +102,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
 
     if verbose:
-        errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see slurm file for compilation'
+        errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see compilation slurm file'
         #make a string to report failures
         failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(list(set(failed_job_identifiers))) + '\n'
         print(errors_message,failures,sep='\n')
