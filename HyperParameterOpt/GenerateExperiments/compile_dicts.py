@@ -3,6 +3,8 @@ import numpy as np
 import pickle
 import pandas as pd
 import time
+import sys
+import traceback
 
 DIR = "#TOPOLOGY_DIRECTORY#"
 filename_prefix = "#FNAME#"
@@ -58,11 +60,13 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     # path is probably directory plus filename prefix
     path = DIR + "/" + filename_prefix + "_"
     failed_file_count = 0
+    errors_thrown = 0
     start = time.time()
     start_idx = 0
 
     if verbose:
         file = filename_prefix
+        print(file)
         timing = '\n\n'
 
     for i in range(num_experiments):
@@ -72,13 +76,16 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             # Add data to compiled dictionary
             add_to_compiled(compiled, data_dict, start_idx)
             add_net_stats(compiled, data_dict, start_idx)
-        except:
+        except FileNotFoundError:
             failed_file_count += 1
             # find remainder of i, to nearest job number
             s = i % num_experiments_per_file
             # append the job number (corresponding slurm file) to list
             failed_experiment_identifiers.append(i)
             failed_job_identifiers.append((i-s) / num_experiments_per_file)
+        except:
+            traceback.print_exc()
+            errors_thrown += 1 
             
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
@@ -95,9 +102,10 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
 
     if verbose:
+        errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see slurm file for compilation'
         #make a string to report failures
         failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(list(set(failed_job_identifiers))) + '\n'
-
+        print(errors_message,failures,sep='\n')
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
         info = f'\nit took {round(finished,1)} minutes to compile\nor {round(finished / 60,1)} hours'
@@ -114,7 +122,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
 
         #only write to the file once, the file will close automatically
         with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
-            f.write(file + failures + timing + failed_exp)
+            f.write(file + errors_message + failures + timing + failed_exp)
 
 
 def empty_result_dict(num_experiments, nets_per_experiment):
