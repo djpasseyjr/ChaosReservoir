@@ -53,7 +53,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     #get a list of failed files identifiers so it's simple to check traceback
     failed_experiment_identifiers = []
     failed_job_identifiers = []
-    
+
     # Make dictionary for storing all data
     compiled = empty_result_dict(num_experiments, nets_per_experiment)
 
@@ -70,7 +70,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         print(file)
         timing = '\n\n'
 
-    for i in range(num_experiments):
+    for i in range(#STARTING_EXPERIMENT_NUMBER#,#ENDING_EXPERIMENT_NUMBER# + 1):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
@@ -86,8 +86,8 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             failed_job_identifiers.append((i-s) / num_experiments_per_file)
         except:
             traceback.print_exc()
-            errors_thrown += 1 
-            
+            errors_thrown += 1
+
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
             compiled["exp_num"][k] = i
@@ -125,7 +125,6 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
             f.write(file + errors_message + failures + timing + failed_exp)
 
-
 def empty_result_dict(num_experiments, nets_per_experiment):
     """ Make empty dictionary for compiling data """
     empty = {}
@@ -140,7 +139,7 @@ def add_to_compiled(compiled, data_dict, start_idx):
     for k in data_dict.keys():
         for colname in COLNAMES + NETCOLS:
             compiled[colname][start_idx + k] = data_dict[k][colname]
-            
+
 def add_net_stats(compiled, data_dict, start_idx):
     """ Get data from adjacency matrix and add to dict """
     for k in data_dict.keys():
@@ -172,7 +171,7 @@ def merge_compiled(compiled1, compiled2):
     # Shift experiment number for compiled2
     total_exp = np.max(compiled1["exp_num"])
     exp_nums = np.array(compiled2["exp_num"])
-    exp_nums[exp_nums >= 0] += total_exp 
+    exp_nums[exp_nums >= 0] += total_exp
     compiled2["exp_num"] = list(exp_nums)
     # Merge
     for k in compiled1.keys():
