@@ -105,7 +105,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     if verbose:
         errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see compilation slurm file'
         #make a string to report failures
-        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(list(set(failed_job_identifiers))) + '\n'
+        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(sorted(list(set(failed_job_identifiers)))) + '\n'
         print(errors_message,failures,sep='\n')
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
@@ -119,7 +119,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         print(ending)
         timing += ending
 
-        failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(list(set(failed_experiment_identifiers))) + '\n# corresponds to the # in FNAME in experiment() call'
+        failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(sorted(list(set(failed_experiment_identifiers)))) + '\n# corresponds to the # in FNAME in experiment() call'
 
         #only write to the file once, the file will close automatically
         with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
