@@ -138,7 +138,7 @@ def empty_result_dict(num_experiments, nets_per_experiment):
 def add_to_compiled(compiled, data_dict, start_idx):
     """ Add output dictionary to compiled data, return next empty index """
     for k in data_dict.keys():
-        for colname in COLNAMES:
+        for colname in COLNAMES + NETCOLS:
             compiled[colname][start_idx + k] = data_dict[k][colname]
             
 def add_net_stats(compiled, data_dict, start_idx):
