@@ -41,13 +41,12 @@ NETCOLS = [
     "diam"
 ]
 
-def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
+def compile_output(DIR, filename_prefix, nets_per_experiment):
     """
     Compile the data from all the various pkl files
     Parameters:
         DIR                     (str): The directory where the individual experiment.py files will be stored
         filename_prefix         (str): prefix to each filename, an error will be thrown if not specified
-        num_experiments         (int): number of experiments total
         nets_per_experiment     (int): number of nets in each experiment, equivalent to nets_per_experiment in main.py
     """
     #get a list of failed files identifiers so it's simple to check traceback
@@ -55,7 +54,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     failed_job_identifiers = []
 
     # Make dictionary for storing all data
-    compiled = empty_result_dict(num_experiments, nets_per_experiment)
+    compiled = empty_result_dict(#ENDING_EXPERIMENT_NUMBER# - #STARTING_EXPERIMENT_NUMBER#, nets_per_experiment)
 
     # we also need the prefix of the files, or can we use os.listdir()
     # path is probably directory plus filename prefix
@@ -70,7 +69,7 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         print(file)
         timing = '\n\n'
 
-    for i in range(#STARTING_EXPERIMENT_NUMBER#,#ENDING_EXPERIMENT_NUMBER# + 1):
+    for i in range(#STARTING_EXPERIMENT_NUMBER#,#ENDING_EXPERIMENT_NUMBER#):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
@@ -178,4 +177,4 @@ def merge_compiled(compiled1, compiled2):
         compiled1[k] += compiled2[k]
     return compiled1
 
-compile_output(DIR, filename_prefix, NEXPERIMENTS, NETS_PER_EXPERIMENT)
+compile_output(DIR, filename_prefix, NETS_PER_EXPERIMENT)
