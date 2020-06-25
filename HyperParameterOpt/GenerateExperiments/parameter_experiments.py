@@ -22,7 +22,7 @@ def prepare_output_compilation(directory,filename, number_of_experiments,nets_pe
         nets_per_experiment     (int): parameter in main.py
         verbose                 (bool):  print statements to provide extra information
     """
-    tmpl_stream = open('compile_dicts.py','r')
+    tmpl_stream = open('template_compilation_main.py','r')
     tmpl_str = tmpl_stream.read()
     tmpl_stream.close()
     tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
@@ -30,10 +30,11 @@ def prepare_output_compilation(directory,filename, number_of_experiments,nets_pe
     tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
     tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
     tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
-    new_name = 'compile_output_' + filename +'.py'
+    new_name = 'compile_main_' + filename +'.py'
     new_f = open(new_name,'w')
     new_f.write(tmpl_str)
     new_f.close()
+    print(f'The following parameters need to be input into the `compile_main_{filename}.py` file:\nPARTITION_NUM,compatilation_hours_per_partition,compatilation_memory_per_partition')
 
 def directory(network):
     """
