@@ -48,7 +48,7 @@ def write_bash1(filename,
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
     tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'pc')
     tmpl_str = tmpl_str.replace("#FILENAME#",'partition_compilation_' + filename)
-    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
+    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(PARTITION_NUM - 1))
     new_f = open('individual_partition_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
