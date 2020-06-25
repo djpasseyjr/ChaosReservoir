@@ -1,142 +1,180 @@
-#no imports required
+import numpy as np
+import pickle
+import pandas as pd
+import time
+import sys
+import traceback
+import networkx as nx
 
-PARTITION_NUM = #partition_num#
-compilation_hours_per_partition = #compilation_hours_per_partition#
-compilation_memory_per_partition = #compilation_memory_per_partition#
-
-#if using a slurm batch to compile partitions then change the following parameters
-# first constant is a parameter declaring whether using wants a bash2 script to compile partitions
-bash2_desired = False #switch to true if desired
-main_compilation_walltime_hours = 1
-memory_required = 50
-
-
-# the following should automatically be filled in
+DIR = "#TOPO_DIRECTORY#"
+filename_prefix = "#FILENAME#"
 NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
-NETS_PER_EXPERIMENT = #NUMBER_NETS_PER_EXPERIMENT#
+NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
+num_experiments_per_file = #NUM_EXPRMTS_PER_FILE#
 #verbose will become a parameter in main
-verbose = #MAIN_VERBOSE#
-DIR = "#TOPOLOGY_DIRECTORY#"
-filename_prefix = "#FNAME#"
+verbose = #VERBOSE#
+partition_index = #PARTITION_INDEX#
 
-def range_inator(max_experiments,nsplit):
-    """Input is number of experiments and number of desired partitions,
-    output is a list of tuples which are the range of each partition"""
-    partition = max_experiments//nsplit
-    output = []
-    for i in range(nsplit):
-        if i == 0:
-            output.append((0,partition))
-        elif i == nsplit-1:
-            output.append((output[-1][-1],max_experiments))
-        else:
-            output.append((output[-1][-1],output[-1][-1]+partition))
-    return output
+COLNAMES = [
+    "mean_pred",
+    "mean_err",
+    "adj_size",
+    "topo_p",
+    "gamma",
+    "sigma",
+    "spect_rad",
+    "ridge_alpha",
+    "remove_p",
+    "pred",
+    "err",
+]
 
-def write_bash1(filename,
-    number_of_experiments,
-    hours_per_job,
-    memory_per_job,
-):
+NETCOLS = [
+    "max_scc",
+    "max_wcc",
+    "giant_comp",
+    "singletons",
+    "nwcc",
+    "nscc",
+    "cluster",
+    "assort",
+    "diam"
+]
+
+def compile_output(DIR, filename_prefix, nets_per_experiment):
     """
-    Make the bash script 1 that will run the partitioned compile .py files
-     """
-    with open('bash1_template.sh','r') as f:
-        tmpl_str = f.read()
-    tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
-    tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
-    tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'pc')
-    tmpl_str = tmpl_str.replace("#FILENAME#",'pc' + filename)
-    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
-    new_f = open('individual_partition_compilation_' + filename +'.sh','w')
-    new_f.write(tmpl_str)
-    new_f.close()
-    print('written: individual_partition_compilation_' + filename +'.sh')
-
-def write_bash2(filename,
-    number_partitions,
-    hours_per_job,
-    memory_per_job,
-):
+    Compile the data from all the various pkl files
+    Parameters:
+        DIR                     (str): The directory where the individual experiment.py files will be stored
+        filename_prefix         (str): prefix to each filename, an error will be thrown if not specified
+        nets_per_experiment     (int): number of nets in each experiment, equivalent to nets_per_experiment in main.py
     """
-    Write the (optional) bash script to compile all the datasets resulting from
-    the individual_partition_compilation*.py files.
-     """
-    with open('bash2_template.sh','r') as f:
-        tmpl_str = f.read()
-    tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
-    tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
-    # JName, as in Job Name.
-    tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'bsh2')
-    tmpl_str = tmpl_str.replace("#FNAME#",filename[:2] + 'bsh2')
-    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
-    new_f = open('all_partitions_compilation_' + filename +'.sh','w')
-    new_f.write(tmpl_str)
-    new_f.close()
-    print('written: all_partitions_compilation_' + filename +'.sh')
+    #get a list of failed files identifiers so it's simple to check traceback
+    failed_experiment_identifiers = []
+    failed_job_identifiers = []
 
-def write_merge(fname,num_partitions):
-    """ write the merge file that will compile all the resulting datasets
-    from each partition, once the merge file is finished running, then all
-    the data for the *filename_prefix* batch has been compiled
-    """
-    with open('template_compilation_main.py','r') as f:
-        tmpl_str = f.read()
-    tmpl_str = tmpl_str.replace("#filename_prefix#",fname)
+    # Make dictionary for storing all data
+    compiled = empty_result_dict(#ENDING_EXPERIMENT_NUMBER# - #STARTING_EXPERIMENT_NUMBER#, nets_per_experiment)
 
-    tmpl_str = tmpl_str.replace("#partitions#",str(num_partitions))
-    new_f = open('merge_partitioned_output_' + fname +'.py','w')
-    new_f.write(tmpl_str)
-    new_f.close()
-    print('written: merge_partitioned_output_' + fname +'.py')
+    # we also need the prefix of the files, or can we use os.listdir()
+    # path is probably directory plus filename prefix
+    path = DIR + "/" + filename_prefix + "_"
+    failed_file_count = 0
+    errors_thrown = 0
+    start = time.time()
+    start_idx = 0
 
-def write_partitions():
-    """write partitioned compile output scripts to leverage
-    multiple processors to pcompile data from big batches
+    if verbose:
+        file = filename_prefix
+        print(file)
+        timing = '\n\n'
 
-    Write partitioned compilation files to compile output in parallel
+    for i in range(#STARTING_EXPERIMENT_NUMBER#,#ENDING_EXPERIMENT_NUMBER#):
+        # Load next data dictionary
+        try:
+            data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
+            # Add data to compiled dictionary
+            add_to_compiled(compiled, data_dict, start_idx)
+            add_net_stats(compiled, data_dict, start_idx)
+        except FileNotFoundError:
+            failed_file_count += 1
+            # find remainder of i, to nearest job number
+            s = i % num_experiments_per_file
+            # append the job number (corresponding slurm file) to list
+            failed_experiment_identifiers.append(i)
+            failed_job_identifiers.append((i-s) / num_experiments_per_file)
+        except:
+            traceback.print_exc()
+            errors_thrown += 1
 
-    Write partitioned files according to the following name with zero
-    based indexing
-        - 'compiled_output_' + filename_prefix + '_' part_num + '.pkl
-    """
-    l = range_inator(NEXPERIMENTS,PARTITION_NUM)
-    for i,tuple in enumerate(l):
-        a,b = tuple
-        with open('compile_dicts_template.py','r') as f:
-            tmpl_str = f.read()
-        tmpl_str = tmpl_str.replace("#STARTING_EXPERIMENT_NUMBER#",str(a))
-        tmpl_str = tmpl_str.replace("#ENDING_EXPERIMENT_NUMBER#",str(b))
-        tmpl_str = tmpl_str.replace("#TOPO_DIRECTORY#",DIR)
-        tmpl_str = tmpl_str.replace("#FILENAME#",filename_prefix)
-        # the number of experiments isn't needed for a partitioned compilation
-        # tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
-        tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(NETS_PER_EXPERIMENT))
-        tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
-        tmpl_str = tmpl_str.replace("#PARTITION_INDEX#",str(i))
-        new_name = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
-        new_f = open(new_name,'w')
-        new_f.write(tmpl_str)
-        new_f.close()
-    print('written all the `partition_compilation_' + filename_prefix + "_*" + '.py` files from 0 to',PARTITION_NUM - 1)
+        # Track experiment number
+        for k in range(start_idx, start_idx + nets_per_experiment):
+            compiled["exp_num"][k] = i
 
-    #write bash_script1
-    #filename_prefix
-    write_bash1(filename_prefix,
-    NEXPERIMENTS,
-    compilation_hours_per_partition,
-    compilation_memory_per_partition)
+        start_idx += nets_per_experiment
 
-    if bash2_desired:
-        #this might not be desired if the second compilation
-        #if the user would prefer to do it locally or in the login node
-        write_bash2(filename_prefix,
-            PARTITION_NUM,
-            main_compilation_walltime_hours,
-            memory_required)
+        if verbose:
+            if i % 1000 == 0:
+                info = f'\n{i} files compile attempted,time since start (minutes):{round((time.time() - start )/ 60,1)}'
+                timing += info
+                print(info)
+    #write final dict to pkl file
+    pickle.dump(compiled, open('compiled_output_' + filename_prefix + "_" + partition_index + '.pkl', 'wb'))
 
-    write_merge(filename_prefix,PARTITION_NUM)
+    if verbose:
+        errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see compilation slurm file'
+        #make a string to report failures
+        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(sorted(list(set(failed_job_identifiers)))) + '\n'
+        print(errors_message,failures,sep='\n')
+        # Time difference is originally seconds
+        finished = (time.time() - start )/ 60
+        info = f'\nit took {round(finished,1)} minutes to compile\nor {round(finished / 60,1)} hours'
+        file += info
+        print(info)
+        info = f'\n(#failed files) / (# total number of experiments) is {failed_file_count} / {NEXPERIMENTS}\nor {100 * round(failed_file_count/NEXPERIMENTS, 1)}% failed'
+        file += info
+        print(info)
+        ending = f'\n{filename_prefix} compilation process finished'
+        print(ending)
+        timing += ending
 
-    print('\nfinished writing partitions & bash files ')
+        failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(sorted(list(set(failed_experiment_identifiers)))) + '\n# corresponds to the # in FNAME in experiment() call'
 
-write_partitions()
+        #only write to the file once, the file will close automatically
+        with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
+            f.write(file + errors_message + failures + timing + failed_exp)
+
+def empty_result_dict(num_experiments, nets_per_experiment):
+    """ Make empty dictionary for compiling data """
+    empty = {}
+    nentries = num_experiments * nets_per_experiment
+    for col in COLNAMES + NETCOLS:
+        empty[col] = [None] * nentries
+    empty["exp_num"] = [-1] * nentries
+    return empty
+
+def add_to_compiled(compiled, data_dict, start_idx):
+    """ Add output dictionary to compiled data, return next empty index """
+    for k in data_dict.keys():
+        for colname in COLNAMES + NETCOLS:
+            compiled[colname][start_idx + k] = data_dict[k][colname]
+
+def add_net_stats(compiled, data_dict, start_idx):
+    """ Get data from adjacency matrix and add to dict """
+    for k in data_dict.keys():
+        A = data_dict[k]['adj']
+        # Get stats
+        g = nx.DiGraph(A.T.tolil())
+        n = A.shape[0]
+        scc = [list(c) for c in nx.strongly_connected_components(g)]
+        scc_sz = [len(c) for c in scc]
+        wcc = [list(c) for c in nx.weakly_connected_components(g)]
+        wcc_sz = [len(c) for c in wcc]
+        # Diameter of the largest scc
+        diam = nx.diameter(nx.subgraph(g, scc[np.argmax(scc_sz)]))
+        # Add to dictionary
+        compiled["max_wcc"][start_idx + k] = np.max(wcc_sz)/n
+        compiled["max_scc"][start_idx + k] = np.max(wcc_sz)/n
+        compiled["singletons"][start_idx + k] = np.sum(np.array(scc_sz) == 1)
+        compiled["nscc"][start_idx + k] = len(scc)
+        compiled["nwcc"][start_idx + k] = len(wcc)
+        compiled["assort"][start_idx + k] = nx.degree_assortativity_coefficient(g)
+        compiled["cluster"][start_idx + k] = nx.average_clustering(g)
+        compiled["diam"][start_idx + k] = diam
+
+def merge_compiled(compiled1, compiled2):
+    """ Merge two compiled dictionaries """
+    if isinstance(compiled1, str) and isinstance(compiled2, str):
+        compiled1 = pickle.load(open(compiled1, 'rb'))
+        compiled2 = pickle.load(open(compiled2, 'rb'))
+    # Shift experiment number for compiled2
+    total_exp = np.max(compiled1["exp_num"])
+    exp_nums = np.array(compiled2["exp_num"])
+    exp_nums[exp_nums >= 0] += total_exp
+    compiled2["exp_num"] = list(exp_nums)
+    # Merge
+    for k in compiled1.keys():
+        compiled1[k] += compiled2[k]
+    return compiled1
+
+compile_output(DIR, filename_prefix, NETS_PER_EXPERIMENT)
