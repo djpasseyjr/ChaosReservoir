@@ -17,7 +17,7 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 * [ ] Write code to extract network information from graphs
 * [ ] Write statistical analysis pipeline 
 * [x] Generate hyper parameter overview jobs
-* [ ] Run all hyper parameter overview jobs for all topologies
+* [x] Run all hyper parameter overview jobs for all topologies
 * [ ] Identify the best combination of parameters for each topology
 * [ ] Run more extensive tests with the top 1% of parameter combinations
 * [ ] Analyze overview data
