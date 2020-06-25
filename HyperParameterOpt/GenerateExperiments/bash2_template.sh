@@ -16,4 +16,4 @@ module load python/3.7
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 
-python3 #FNAME#_${SLURM_ARRAY_TASK_ID}.py
+python3 #FILENAME#_${SLURM_ARRAY_TASK_ID}.py
