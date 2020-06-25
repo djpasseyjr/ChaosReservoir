@@ -1,9 +1,9 @@
 #!/bin/bash
-#SBATCH --time=#HOURS#:#MINUTES#:00       # walltime
+#SBATCH --time=#HOURS#:00:00       # walltime
 #SBATCH --ntasks=1                        # number of processor cores (i.e. tasks)
 #SBATCH --nodes=1                         # number of nodes, no need to change unless we use MPI
 #SBATCH --mem-per-cpu=#MEMORY#G           # memory per CPU core, 3072M = 3G, 1012M = 1G
-#SBATCH -J "#FNAME#"                      # job name
+#SBATCH -J "#JNAME#"                      # job name
 #SBATCH --array=0-#NUMBER_JOBS#           # the range is inclusive
 
 module purge
@@ -16,4 +16,4 @@ module load python/3.7
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 
-python3 #DIR#/#FNAME#_${SLURM_ARRAY_TASK_ID}.py
+python3 #FILENAME#_${SLURM_ARRAY_TASK_ID}.py
