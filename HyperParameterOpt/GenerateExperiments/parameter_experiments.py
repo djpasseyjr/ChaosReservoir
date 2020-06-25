@@ -6,7 +6,7 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-DEBUG = False #similar to verbose but specifically for debugging
+DEBUG = True #similar to verbose but specifically for debugging
 
 def range_inator(max_experiments,nsplit):
     """Input is number of experiments and number of desired partitions,
@@ -20,9 +20,10 @@ def range_inator(max_experiments,nsplit):
             output.append((output[-1][-1],max_experiments))
         else:
             output.append((output[-1][-1],output[-1][-1]+partition))
-    last = output.pop()
-    a,b = last
-    output.append((a,b-1))
+    #if max_experiments is max_experiments + 1
+    # last = output.pop()
+    # a,b = last
+    # output.append((a,b-1))
     return output
 
 def write_bash1(filename,
@@ -359,7 +360,6 @@ def generate_experiments(
                         #of low and high network sizes and remove_p values, depending upon 'num_experiments_per_file' of course
                         for n in network_sizes:
                             for p in remove_p_list:
-
                                 #save_fname is for .py files
                                 #new_name is for .pkl files
                                 save_fname =  DIR + '/' + FNAME + "_" + topology + "_" + str(file_count)
@@ -428,7 +428,8 @@ def generate_experiments(
         compilation_memory_per_partition,
         DIR,
         FNAME_PREFIX,
-        parameter_experiment_number,
+        # subtract one for zero based indexing
+        parameter_experiment_number - 1,
         nets_per_experiment,
         num_experiments_per_file,
         verbose,
