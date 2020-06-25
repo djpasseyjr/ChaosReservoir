@@ -6,7 +6,7 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-def prepare_output_compilation(directory,filename, number_of_experiments,nets_per_experiment,verbose=True):
+def prepare_output_compilation(directory,filename, number_of_experiments,nets_per_experiment,num_experiments_per_file,verbose=True):
     """
     write the directory and number_of_experiments to the compile_output.py file
 
@@ -28,8 +28,9 @@ def prepare_output_compilation(directory,filename, number_of_experiments,nets_pe
     tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
     tmpl_str = tmpl_str.replace("#FNAME#",filename)
     tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
-    tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
-    tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
+    tmpl_str = tmpl_str.replace("#NUMBER_NETS_PER_EXPERIMENT#",str(nets_per_experiment))
+    tmpl_str = tmpl_str.replace("#NUM_EXPMTS_PR_FL#",str(num_experiments_per_file))
+    tmpl_str = tmpl_str.replace("#MAIN_VERBOSE#",str(verbose))
     new_name = 'compile_main_' + filename +'.py'
     new_f = open(new_name,'w')
     new_f.write(tmpl_str)
@@ -305,4 +306,4 @@ def generate_experiments(
     #in order to run all the experiments on the supercomputer we need the main bash script
     write_bash_script(DIR,FNAME + "_" + topology,file_count,hours_per_job,minutes_per_job,memory_per_job)
     #in order to compile output systematically, store the number of experiments and output directory
-    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_experiment_number,nets_per_experiment,verbose)
+    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_experiment_number,nets_per_experiment,num_experiments_per_file,verbose)
