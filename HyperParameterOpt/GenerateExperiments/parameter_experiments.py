@@ -418,7 +418,7 @@ def generate_experiments(
         compilation_hours_per_partition,
         compilation_memory_per_partition,
         DIR,
-        filename_prefix,
+        FNAME,
         NEXPERIMENTS,
         NETS_PER_EXPERIMENT,
         NUM_EXPERIMENTS_PER_FILE,
@@ -428,3 +428,4 @@ def generate_experiments(
         bash2_memory_required,
          )
     #prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_experiment_number,nets_per_experiment,num_experiments_per_file,verbose)
+    pass
