@@ -121,7 +121,7 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
         failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(sorted(list(set(failed_experiment_identifiers)))) + '\n# corresponds to the # in FNAME in experiment() call'
 
         #only write to the file once, the file will close automatically
-        with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
+        with open(f'{filename_prefix}_compiling_notes_{partition_index}.txt','w') as f:
             f.write(file + errors_message + failures + timing + failed_exp)
 
 def empty_result_dict(num_experiments, nets_per_experiment):
