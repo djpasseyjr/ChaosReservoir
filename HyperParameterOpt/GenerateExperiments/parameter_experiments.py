@@ -71,7 +71,6 @@ def write_merge(fname,num_partitions):
     with open('template_merge_compilations.py','r') as f:
         tmpl_str = f.read()
     tmpl_str = tmpl_str.replace("#filename_prefix#",fname)
-
     tmpl_str = tmpl_str.replace("#partitions#",str(num_partitions))
     new_f = open('merge_partitioned_output_' + fname +'.py','w')
     new_f.write(tmpl_str)
@@ -138,43 +137,6 @@ def write_partitions(
     write_merge(filename_prefix,PARTITION_NUM)
 
     print('\nfinished writing partitions & bash files ')
-
-def prepare_output_compilation(
-    directory,
-    filename,
-    number_of_experiments,
-    nets_per_experiment,
-    num_experiments_per_file,
-    verbose=True):
-    """
-    write the directory and number_of_experiments to the compile_output.py file
-
-    Record the topology so that the ouput_compiler can look in that
-    directory to compile all the pkl files that store the output
-    from the experiments
-
-    Parameters:
-        directory               (str): the name of output directory where all resulting pkl files will be stored
-        filename                (str): the filename prefix that all the files have in common
-        number_of_experiments   (int): the number of experiments is used to systematically
-                                        compile all individual output files into one primary file
-        nets_per_experiment     (int): parameter in main.py
-        verbose                 (bool):  print statements to provide extra information
-    """
-    tmpl_stream = open('template_compilation_main.py','r')
-    tmpl_str = tmpl_stream.read()
-    tmpl_stream.close()
-    tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
-    tmpl_str = tmpl_str.replace("#FNAME#",filename)
-    tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
-    tmpl_str = tmpl_str.replace("#NUMBER_NETS_PER_EXPERIMENT#",str(nets_per_experiment))
-    tmpl_str = tmpl_str.replace("#NUM_EXPMTS_PR_FL#",str(num_experiments_per_file))
-    tmpl_str = tmpl_str.replace("#MAIN_VERBOSE#",str(verbose))
-    new_name = 'compile_main_' + filename +'.py'
-    new_f = open(new_name,'w')
-    new_f.write(tmpl_str)
-    new_f.close()
-    print(f'The following parameters need to be input into the `compile_main_{filename}.py` file:\nPARTITION_NUM,compatilation_hours_per_partition,compatilation_memory_per_partition')
 
 def directory(network):
     """
