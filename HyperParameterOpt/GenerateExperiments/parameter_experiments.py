@@ -326,7 +326,7 @@ def generate_experiments(
     # print('how to make each .py file take about as long as any other .py file to run? just change for loop order?')
 
     #file count is to index the number of files in an orderly manner
-    file_count = 0
+    file_count = 1
     #temp_counter is used to allocate 'num_experiments_per_file' experiments to each .py file
     temp_counter = 0
 
