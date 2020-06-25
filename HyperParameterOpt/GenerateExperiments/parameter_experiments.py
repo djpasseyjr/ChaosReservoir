@@ -6,6 +6,7 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
+DEBUG = False #similar to verbose but specifically for debugging
 
 def range_inator(max_experiments,nsplit):
     """Input is number of experiments and number of desired partitions,
@@ -19,6 +20,9 @@ def range_inator(max_experiments,nsplit):
             output.append((output[-1][-1],max_experiments))
         else:
             output.append((output[-1][-1],output[-1][-1]+partition))
+    last = output.pop()
+    a,b = last
+    output.append((a,b-1))
     return output
 
 def write_bash1(filename,
@@ -101,6 +105,8 @@ def write_partitions(
         - 'compiled_output_' + filename_prefix + '_' part_num + '.pkl
     """
     l = range_inator(NEXPERIMENTS,PARTITION_NUM)
+    if DEBUG:
+        print(l)
     for i,tuple in enumerate(l):
         a,b = tuple
         with open('compile_dicts_template.py','r') as f:
@@ -410,6 +416,8 @@ def generate_experiments(
                                     file_count += 1
     if verbose:
         print('\ntotal number of files/jobs',file_count)
+        if DEBUG:
+            print('parameter experiment number',parameter_experiment_number)
     #in order to run all the experiments on the supercomputer we need the main bash script
     FNAME_PREFIX = FNAME + "_" + topology
     write_bash_script(DIR,FNAME_PREFIX,file_count,hours_per_job,minutes_per_job,memory_per_job)
