@@ -8,7 +8,7 @@ import networkx as nx
 
 DIR = "#TOPO_DIRECTORY#"
 filename_prefix = "#FILENAME#"
-NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
+#NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS# #not needed for partitioning
 NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
 num_experiments_per_file = #NUM_EXPRMTS_PER_FILE#
 #verbose will become a parameter in main
