@@ -38,7 +38,7 @@ def write_bash1(filename,
         tmpl_str = f.read()
     tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
-    tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'pc')
+    tmpl_str = tmpl_str.replace("#JNAME#",filename[2:] + 'pc')
     tmpl_str = tmpl_str.replace("#FILENAME#",'partition_compilation_' + filename)
     tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
     new_f = open('individual_partition_compilation_' + filename +'.sh','w')
@@ -59,7 +59,7 @@ def write_bash2(filename,
     tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
     # JName, as in Job Name.
-    tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'bsh2')
+    tmpl_str = tmpl_str.replace("#JNAME#",filename[2:] + 'bsh2')
     tmpl_str = tmpl_str.replace("#FILENAME#",'merge_partitioned_output_filename' + filename)
     # assuming that we will have just one processor compile all the partitioned datasets
     tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(0))
