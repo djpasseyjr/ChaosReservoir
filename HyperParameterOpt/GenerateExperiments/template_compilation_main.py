@@ -6,7 +6,7 @@ compilation_memory_per_partition = #compilation_memory_per_partition#
 
 #if using a slurm batch to compile partitions then change the following parameters
 # first constant is a parameter declaring whether using wants a bash2 script to compile partitions
-bash2_desired = False #switch to true if desired
+bash2_desired = True #switch to true if desired
 main_compilation_walltime_hours = 1
 memory_required = 50
 
@@ -47,7 +47,7 @@ def write_bash1(filename,
     tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
     tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'pc')
-    tmpl_str = tmpl_str.replace("#FILENAME#",'pc' + filename)
+    tmpl_str = tmpl_str.replace("#FILENAME#",'partition_compilation_' + filename)
     tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
     new_f = open('individual_partition_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
@@ -55,7 +55,6 @@ def write_bash1(filename,
     print('written: individual_partition_compilation_' + filename +'.sh')
 
 def write_bash2(filename,
-    number_partitions,
     hours_per_job,
     memory_per_job,
 ):
@@ -69,8 +68,9 @@ def write_bash2(filename,
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
     # JName, as in Job Name.
     tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'bsh2')
-    tmpl_str = tmpl_str.replace("#FNAME#",filename[:2] + 'bsh2')
-    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
+    tmpl_str = tmpl_str.replace("#FILENAME#",'merge_partitioned_output_filename' + filename)
+    # assuming that we will have just one processor compile all the partitioned datasets
+    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(0))
     new_f = open('all_partitions_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
@@ -81,7 +81,7 @@ def write_merge(fname,num_partitions):
     from each partition, once the merge file is finished running, then all
     the data for the *filename_prefix* batch has been compiled
     """
-    with open('template_compilation_main.py','r') as f:
+    with open('template_merge_compilations.py','r') as f:
         tmpl_str = f.read()
     tmpl_str = tmpl_str.replace("#filename_prefix#",fname)
 
@@ -132,7 +132,6 @@ def write_partitions():
         #this might not be desired if the second compilation
         #if the user would prefer to do it locally or in the login node
         write_bash2(filename_prefix,
-            PARTITION_NUM,
             main_compilation_walltime_hours,
             memory_required)
 
