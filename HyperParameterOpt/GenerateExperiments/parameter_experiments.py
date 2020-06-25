@@ -60,7 +60,7 @@ def write_bash2(filename,
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
     # JName, as in Job Name.
     tmpl_str = tmpl_str.replace("#JNAME#",filename[2:] + 'bsh2')
-    tmpl_str = tmpl_str.replace("#FILENAME#",'merge_partitioned_output_filename' + filename)
+    tmpl_str = tmpl_str.replace("#FILENAME#",'merge_partitioned_output_' + filename)
     # assuming that we will have just one processor compile all the partitioned datasets
     tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(0))
     new_f = open('all_partitions_compilation_' + filename +'.sh','w')
