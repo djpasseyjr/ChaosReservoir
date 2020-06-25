@@ -31,7 +31,8 @@ BATCH_NUMBER = 4
 #edit directly into function for parameters,
 generate_experiments(
     FNAME = USER_ID + str(BATCH_NUMBER),
-    # parameters for compilation 
+    verbose = True,
+    # parameters for compilation
     PARTITION_NUM = 1,
     compilation_hours_per_partition = 50,
     compilation_memory_per_partition = 50,
@@ -39,7 +40,6 @@ generate_experiments(
     bash2_desired=True,
     bash2_walltime_hours = 1,
     bash2_memory_required = 50,
-    verbose = True,
     #essential parameters for experiment generation
     nets_per_experiment = 2,
     orbits_per_experiment = 200,
