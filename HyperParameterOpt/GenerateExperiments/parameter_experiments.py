@@ -411,14 +411,15 @@ def generate_experiments(
     if verbose:
         print('\ntotal number of files/jobs',file_count)
     #in order to run all the experiments on the supercomputer we need the main bash script
-    write_bash_script(DIR,FNAME + "_" + topology,file_count,hours_per_job,minutes_per_job,memory_per_job)
+    FNAME_PREFIX = FNAME + "_" + topology
+    write_bash_script(DIR,FNAME_PREFIX,file_count,hours_per_job,minutes_per_job,memory_per_job)
     #in order to compile output systematically, store the number of experiments and output directory
     write_partitions(
         PARTITION_NUM,
         compilation_hours_per_partition,
         compilation_memory_per_partition,
         DIR,
-        FNAME,
+        FNAME_PREFIX,
         parameter_experiment_number,
         nets_per_experiment,
         num_experiments_per_file,
