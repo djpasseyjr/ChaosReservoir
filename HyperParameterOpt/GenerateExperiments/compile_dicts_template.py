@@ -1,4 +1,3 @@
-#compile_dicts.py
 import numpy as np
 import pickle
 import pandas as pd
@@ -7,7 +6,7 @@ import sys
 import traceback
 import networkx as nx
 
-DIR = "#TOPOLOGY_DIRECTORY#"
+DIR = "#TOPO_DIRECTORY#"
 filename_prefix = "#FNAME#"
 NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
 NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
