@@ -124,7 +124,7 @@ def write_partitions():
     #write bash_script1
     #filename_prefix
     write_bash1(filename_prefix,
-    NEXPERIMENTS,
+    PARTITION_NUM,
     compilation_hours_per_partition,
     compilation_memory_per_partition)
 
