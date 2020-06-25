@@ -1,8 +1,8 @@
 #no imports required
 
 PARTITION_NUM = #partition_num#
-compatilation_hours_per_partition = #COMPATILATION_HOURS_PER_PARTITION#
-compatilation_memory_per_partition = #COMPATILATION_MEMORY_PER_PARTITION#
+compilation_hours_per_partition = #compilation_hours_per_partition#
+compilation_memory_per_partition = #compilation_memory_per_partition#
 
 #if using a slurm batch to compile partitions then change the following parameters
 # first constant is a parameter declaring whether using wants a bash2 script to compile partitions
@@ -13,10 +13,10 @@ memory_required = 50
 
 # the following should automatically be filled in
 NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
-NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
-num_experiments_per_file = #NUM_EXPRMTS_PER_FILE#
+NUM_EXPERIMENTS_PER_FILE = #NUM_EXPMTS_PR_FL#
+NETS_PER_EXPERIMENT = #NUMBER_NETS_PER_EXPERIMENT#
 #verbose will become a parameter in main
-verbose = #VERBOSE#
+verbose = #MAIN_VERBOSE#
 DIR = "#TOPOLOGY_DIRECTORY#"
 filename_prefix = "#FNAME#"
 
@@ -37,7 +37,6 @@ def range_inator(max_experiments,nsplit):
 def write_bash1(filename,
     number_of_experiments,
     hours_per_job,
-    minutes_per_job,
     memory_per_job,
 ):
     """
@@ -46,18 +45,14 @@ def write_bash1(filename,
     with open('bash1_template.sh','r') as f:
         tmpl_str = f.read()
     tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
-    # tmpl_str = tmpl_str.replace("#MINUTES#",str(minutes_per_job)) #removed
     tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
-    # tmpl_str = tmpl_str.replace("#DIR#",directory) #not needed
-    # take off the first two letters of filename
-    # pc stands for partitioned compilation
     tmpl_str = tmpl_str.replace("#JNAME#",filename[:2] + 'pc')
-    tmpl_str = tmpl_str.replace("#FNAME#",'pc' + filename)
+    tmpl_str = tmpl_str.replace("#FILENAME#",'pc' + filename)
     tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
     new_f = open('individual_partition_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('write_bash1 completed')
+    print('written: individual_partition_compilation_' + filename +'.sh')
 
 def write_bash2(filename,
     number_partitions,
@@ -79,7 +74,7 @@ def write_bash2(filename,
     new_f = open('all_partitions_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('write_bash2 completed')
+    print('written: all_partitions_compilation_' + filename +'.sh')
 
 def write_merge(fname,num_partitions):
     """ write the merge file that will compile all the resulting datasets
@@ -91,10 +86,10 @@ def write_merge(fname,num_partitions):
     tmpl_str = tmpl_str.replace("#filename_prefix#",fname)
 
     tmpl_str = tmpl_str.replace("#partitions#",str(num_partitions))
-    new_f = open('merge_partitioned_output_' + filename +'.py','w')
+    new_f = open('merge_partitioned_output_' + fname +'.py','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('write_merge completed')
+    print('written: merge_partitioned_output_' + fname +'.py')
 
 def write_partitions():
     """write partitioned compile output scripts to leverage
@@ -107,29 +102,31 @@ def write_partitions():
         - 'compiled_output_' + filename_prefix + '_' part_num + '.pkl
     """
     l = range_inator(NEXPERIMENTS,PARTITION_NUM)
-    for tuple in l:
+    for i,tuple in enumerate(l):
         a,b = tuple
-        with open('compilation_output_template.py','r') as f:
+        with open('compile_dicts_template.py','r') as f:
             tmpl_str = f.read()
         tmpl_str = tmpl_str.replace("#STARTING_EXPERIMENT_NUMBER#",str(a))
         tmpl_str = tmpl_str.replace("#ENDING_EXPERIMENT_NUMBER#",str(b))
-        tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
-        tmpl_str = tmpl_str.replace("#FNAME#",filename)
+        tmpl_str = tmpl_str.replace("#TOPO_DIRECTORY#",DIR)
+        tmpl_str = tmpl_str.replace("#FILENAME#",filename_prefix)
         # the number of experiments isn't needed for a partitioned compilation
-        # tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
-        tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
+        tmpl_str = tmpl_str.replace("#NUM_EXPRMTS_PER_FILE#",str(NUM_EXPERIMENTS_PER_FILE))
+        tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(NETS_PER_EXPERIMENT))
         tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
-        new_name = 'partition_compilation_' + filename +'.py'
+        tmpl_str = tmpl_str.replace("#PARTITION_INDEX#",str(i))
+        new_name = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
         new_f = open(new_name,'w')
         new_f.write(tmpl_str)
         new_f.close()
+    print('written all the `partition_compilation_' + filename_prefix + "_*" + '.py` files from 0 to',PARTITION_NUM - 1)
 
     #write bash_script1
     #filename_prefix
     write_bash1(filename_prefix,
     NEXPERIMENTS,
-    compatilation_hours_per_partition,
-    memory_per_job)
+    compilation_hours_per_partition,
+    compilation_memory_per_partition)
 
     if bash2_desired:
         #this might not be desired if the second compilation
@@ -141,4 +138,6 @@ def write_partitions():
 
     write_merge(filename_prefix,PARTITION_NUM)
 
-    print('finished writing partitions & bash files ')
+    print('\nfinished writing partitions & bash files ')
+
+write_partitions()
