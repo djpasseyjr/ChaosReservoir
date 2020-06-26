@@ -6,7 +6,30 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-DEBUG = True #similar to verbose but specifically for debugging
+DEBUG = False #similar to verbose but specifically for debugging
+
+def write_dependency_bash(filename_prefix):
+    """
+    Write a script that will automatically run 3 files with dependencies:
+    (1) the data generation batch
+    (2) individual_partition_compilation_filenameprefix.sh - the paritioned compilation files
+    (3) all_partitions_compilation_filenameprefix.sh - the final compilation
+
+    Parameters:
+        filename_prefix (str): essential for running proper files
+
+    Output:
+        FILE: `run_' + FNAME +'.sh'` which will run the 3 files with dependencies
+
+    """
+    with open('bash_dependency_template.sh','r') as f:
+        tmpl_str = f.read()
+    tmpl_str = tmpl_str.replace("#FILENAME_PREFIX#",filename_prefix)
+    tmpl_str = tmpl_str.replace("#JOB_NAME#",'auto_' + filename_prefix)
+    new_f = open('run_' + filename_prefix +'.sh','w')
+    new_f.write(tmpl_str)
+    new_f.close()
+    print('\nbash run_' + filename_prefix +'.sh')
 
 def range_inator(max_experiments,nsplit):
     """Input is number of experiments and number of desired partitions,
@@ -44,7 +67,8 @@ def write_bash1(filename,
     new_f = open('individual_partition_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('written: individual_partition_compilation_' + filename +'.sh')
+    # print('written: individual_partition_compilation_' + filename +'.sh')
+    pass
 
 def write_bash2(filename,
     hours_per_job,
@@ -66,7 +90,8 @@ def write_bash2(filename,
     new_f = open('all_partitions_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('written: all_partitions_compilation_' + filename +'.sh')
+    # print('written: all_partitions_compilation_' + filename +'.sh')
+    pass
 
 def write_merge(fname,num_partitions):
     """ write the merge file that will compile all the resulting datasets
@@ -80,7 +105,8 @@ def write_merge(fname,num_partitions):
     new_f = open('merge_partitioned_output_' + fname +'.py','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('written: merge_partitioned_output_' + fname +'.py')
+    # print('written: merge_partitioned_output_' + fname +'.py')
+    pass
 
 def write_partitions(
     PARTITION_NUM,
@@ -125,7 +151,7 @@ def write_partitions(
         new_f = open(new_name,'w')
         new_f.write(tmpl_str)
         new_f.close()
-    print('written all the `partition_compilation_' + filename_prefix + "_*" + '.py` files from 0 to',PARTITION_NUM - 1)
+    # print('written all the `partition_compilation_' + filename_prefix + "_*" + '.py` files from 0 to',PARTITION_NUM - 1)
 
     #write bash_script1
     #filename_prefix
@@ -143,7 +169,8 @@ def write_partitions(
 
     write_merge(filename_prefix,PARTITION_NUM)
 
-    print('\nfinished writing partitions & bash files ')
+    # print('\nfinished writing partitions & bash files ')
+    pass
 
 def directory(network):
     """
@@ -233,7 +260,7 @@ def write_bash_script(
     new_f = open(filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('NEXT: sg fslg_webb_reservoir \"sbatch',filename +'.sh\"')
+    # print('NEXT: sg fslg_webb_reservoir \"sbatch',filename +'.sh\"')
 
     tmpl_stream = open('post_completion.sh','r')
     tmpl_str = tmpl_stream.read()
@@ -258,7 +285,7 @@ def write_bash_script(
     new_f = open(new_name,'w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('bash','cleanup_' + filename +'.sh')
+    # print('bash','cleanup_' + filename +'.sh')
     #print('\nThe cleanup file (command above) can be run immediately after submitting the batch')
 
     tmpl_stream = open('template_final_step.sh','r')
@@ -437,5 +464,7 @@ def generate_experiments(
         bash2_walltime_hours,
         bash2_memory_required,
          )
+
+    write_dependency_bash(FNAME_PREFIX)
     #prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_experiment_number,nets_per_experiment,num_experiments_per_file,verbose)
     pass
