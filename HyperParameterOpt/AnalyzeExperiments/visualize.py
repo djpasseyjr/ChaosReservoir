@@ -56,11 +56,11 @@ def compare_parameters(
             A.reset_index(inplace=True)
             ax[i][1].semilogy(A['index'],A['remove_p'],label=p)
 
-        ax[i][0].legend(prop={'size': 5},bbox_to_anchor=(-0.2, 0.5))
+        leg0 = ax[i][0].legend(prop={'size': 5},bbox_to_anchor=(-0.2, 0.5))
         ax[i][0].set_title(f'{v} Value Comparison')
         ax[i][0].set_xlabel('remove_p')
 
-        ax[i][1].legend(prop={'size': 5},bbox_to_anchor=(1.2, 0.5))
+        leg1 = ax[i][1].legend(prop={'size': 5},bbox_to_anchor=(1.2, 0.5))
         ax[i][1].set_xlabel('remove_p')
         ax[i][1].set_ylabel('# nets (log)')
         ax[i][1].set_title(f'{v} value counts per value')
@@ -78,8 +78,8 @@ def compare_parameters(
     hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
 
     if dep == 'mean_pred':
-        fig.savefig(f'Optimize_{t}_{month}_{day}_at_{hour}_{minute}.png',bbox_inches='tight',bbox_extra_artists=[my_suptitle])
+        fig.savefig(f'Visuals/Optimize_{t}_{month}_{day}_at_{hour}_{minute}.png',bbox_inches='tight',bbox_extra_artists=[my_suptitle,leg0,leg1])
     else:
-        fig.savefig(f'Optimize_{t}_by_fit_{month}_{day}_at_{hour}_{minute}.png',bbox_inches='tight',bbox_extra_artists=[my_suptitle])
+        fig.savefig(f'Visuals/Optimize_{t}_by_fit_{month}_{day}_at_{hour}_{minute}.png',bbox_inches='tight',bbox_extra_artists=[my_suptitle,,leg0,leg1])
 
         
