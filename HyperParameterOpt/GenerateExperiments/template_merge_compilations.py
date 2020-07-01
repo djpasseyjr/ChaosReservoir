@@ -30,9 +30,14 @@ compiled = pickle.load(open('compiled_output_' + filename_prefix + '_0.pkl', 'rb
 
 for i in range(1,partitions):
     #Load and merge each compiled partition#
-    compiled1 = pickle.load(open('compiled_output_' + filename_prefix + '_' + str(i) + '.pkl', 'rb'))
-    compiled = merge_compiled(compiled,compiled1)
-    print(f'{i + 1} files combined in {round((time.time() - start )/ 60,1)} minutes')
+    try:
+        compiled1 = pickle.load(open('compiled_output_' + filename_prefix + '_' + str(i) + '.pkl', 'rb'))
+        compiled = merge_compiled(compiled,compiled1)
+        print(f'{i + 1} files combined in {round((time.time() - start )/ 60,1)} minutes')
+    except FileNotFoundError:
+        print(f'FILE NOT FOUND: compiled_output_{filename_prefix}_{str(i)}.pkl')
+    except:
+        traceback.print_exc()
 
 pickle.dump(compiled, open('completely_compiled_' + filename_prefix + '.pkl', 'wb'))
 print(f'{filename_prefix} completely compiled, with export, after {round((time.time() - start )/ 60,1)} minutes')
