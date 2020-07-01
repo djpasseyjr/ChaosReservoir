@@ -25,7 +25,8 @@ def write_dependency_bash(filename_prefix):
     with open('bash_dependency_template.sh','r') as f:
         tmpl_str = f.read()
     tmpl_str = tmpl_str.replace("#FILENAME_PREFIX#",filename_prefix)
-    tmpl_str = tmpl_str.replace("#JOB_NAME#",'auto_' + filename_prefix)
+    # a for auto
+    tmpl_str = tmpl_str.replace("#JOB_NAME#",'a_' + filename_prefix)
     new_f = open('run_' + filename_prefix +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
