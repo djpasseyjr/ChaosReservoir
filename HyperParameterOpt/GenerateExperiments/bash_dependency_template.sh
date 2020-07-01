@@ -1,6 +1,6 @@
 #!/bin/bash
 echo "starting --dependency=singleton --job-name=#JOB_NAME#"
-echo "starting --dependency=singleton --job-name=#JOB_NAME#" >> my_saved_ids.txt
+echo "\nstarting --dependency=singleton --job-name=#JOB_NAME#" >> my_saved_ids.txt
 echo "$(date)" >> my_saved_ids.txt
 echo "sbatch #FILENAME_PREFIX#.sh" >> my_saved_ids.txt
 sbatch --dependency=singleton --job-name=#JOB_NAME# #FILENAME_PREFIX#.sh >> my_saved_ids.txt
