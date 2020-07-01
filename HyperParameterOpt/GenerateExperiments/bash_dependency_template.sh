@@ -14,3 +14,4 @@ sbatch --dependency=singleton --job-name=#JOB_NAME# individual_partition_compila
 echo "all_partitions_compilation_#FILENAME_PREFIX#.sh" >> my_saved_ids.txt
 sbatch --dependency=singleton --job-name=#JOB_NAME# all_partitions_compilation_#FILENAME_PREFIX#.sh >> my_saved_ids.txt
 echo "finished" >> my_saved_ids.txt
+echo $"\n" >> my_saved_ids.txt
