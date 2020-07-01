@@ -147,6 +147,13 @@ def add_to_compiled(compiled, data_dict, start_idx):
         for colname in COLNAMES:
             compiled[colname][start_idx + k] = data_dict[k][colname]
 
+def assort(g):
+    try:
+        a = nx.degree_assortativity_coefficient(g)
+    except ValueError:
+        a = np.nan
+    return a
+
 def add_net_stats(compiled, data_dict, start_idx):
     """ Get data from adjacency matrix and add to dict """
     for k in data_dict.keys():
@@ -166,7 +173,7 @@ def add_net_stats(compiled, data_dict, start_idx):
         compiled["singletons"][start_idx + k] = np.sum(np.array(scc_sz) == 1)
         compiled["nscc"][start_idx + k] = len(scc)
         compiled["nwcc"][start_idx + k] = len(wcc)
-        compiled["assort"][start_idx + k] = nx.degree_assortativity_coefficient(g)
+        compiled["assort"][start_idx + k] = assort(g)
         compiled["cluster"][start_idx + k] = nx.average_clustering(g)
         compiled["diam"][start_idx + k] = diam
 
@@ -185,4 +192,4 @@ def merge_compiled(compiled1, compiled2):
         compiled1[k] += compiled2[k]
     return compiled1
 
-compile_output(DIR, filename_prefix, NETS_PER_EXPERIMENT)
+compile_output(DIR, filename_prefix, NEXPERIMENTS, NETS_PER_EXPERIMENT)
