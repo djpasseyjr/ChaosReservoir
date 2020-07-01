@@ -3,15 +3,19 @@ import numpy as np
 import pickle
 import pandas as pd
 import time
+import sys
+import traceback
+import networkx as nx
 
 DIR = "#TOPOLOGY_DIRECTORY#"
 filename_prefix = "#FNAME#"
 NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
 NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
+num_experiments_per_file = #NUM_EXPRMTS_PER_FILE#
 #verbose will become a parameter in main
 verbose = #VERBOSE#
 
-FLOAT_COLNAMES = [
+COLNAMES = [
     "mean_pred",
     "mean_err",
     "adj_size",
@@ -20,14 +24,20 @@ FLOAT_COLNAMES = [
     "sigma",
     "spect_rad",
     "ridge_alpha",
-    "remove_p"
-]
-LIST_COLNAMES = [
+    "remove_p",
     "pred",
-    "err"
+    "err",
 ]
-STRING_COLNAMES = [
-    "net"
+
+NETCOLS = [
+    "max_scc",
+    "max_wcc",
+    "singletons",
+    "nwcc",
+    "nscc",
+    "cluster",
+    "assort",
+    "diam"
 ]
 
 def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
@@ -39,6 +49,10 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         num_experiments         (int): number of experiments total
         nets_per_experiment     (int): number of nets in each experiment, equivalent to nets_per_experiment in main.py
     """
+    #get a list of failed files identifiers so it's simple to check traceback
+    failed_experiment_identifiers = []
+    failed_job_identifiers = []
+    
     # Make dictionary for storing all data
     compiled = empty_result_dict(num_experiments, nets_per_experiment)
 
@@ -46,21 +60,33 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     # path is probably directory plus filename prefix
     path = DIR + "/" + filename_prefix + "_"
     failed_file_count = 0
+    errors_thrown = 0
     start = time.time()
     start_idx = 0
 
     if verbose:
         file = filename_prefix
+        print(file)
         timing = '\n\n'
 
-    for i in range(1, num_experiments+1):
+    for i in range(num_experiments):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
             # Add data to compiled dictionary
             add_to_compiled(compiled, data_dict, start_idx)
-        except:
+            add_net_stats(compiled, data_dict, start_idx)
+        except FileNotFoundError:
             failed_file_count += 1
+            # find remainder of i, to nearest job number
+            s = i % num_experiments_per_file
+            # append the job number (corresponding slurm file) to list
+            failed_experiment_identifiers.append(i)
+            failed_job_identifiers.append((i-s) / num_experiments_per_file)
+        except:
+            traceback.print_exc()
+            errors_thrown += 1 
+            
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
             compiled["exp_num"][k] = i
@@ -76,6 +102,10 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
     pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
 
     if verbose:
+        errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see compilation slurm file'
+        #make a string to report failures
+        failures = '\nthe following list shows #\'s of slurm files that had failed experiments:\n' + str(sorted(list(set(failed_job_identifiers)))) + '\n'
+        print(errors_message,failures,sep='\n')
         # Time difference is originally seconds
         finished = (time.time() - start )/ 60
         info = f'\nit took {round(finished,1)} minutes to compile\nor {round(finished / 60,1)} hours'
@@ -87,29 +117,58 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         ending = f'\n{filename_prefix} compilation process finished'
         print(ending)
         timing += ending
+
+        failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(sorted(list(set(failed_experiment_identifiers)))) + '\n# corresponds to the # in FNAME in experiment() call'
+
         #only write to the file once, the file will close automatically
         with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
-            f.write(file + timing)
+            f.write(file + errors_message + failures + timing + failed_exp)
 
 
 def empty_result_dict(num_experiments, nets_per_experiment):
     """ Make empty dictionary for compiling data """
     empty = {}
     nentries = num_experiments * nets_per_experiment
-    for colname in FLOAT_COLNAMES:
-        empty[colname] = [0.0] * nentries
-    for colname in LIST_COLNAMES:
-        empty[colname] = [[]] * nentries
-    for colname in STRING_COLNAMES:
-        empty[colname] = [''] * nentries
+    for col in COLNAMES + NETCOLS:
+        empty[col] = [None] * nentries
     empty["exp_num"] = [-1] * nentries
     return empty
 
 def add_to_compiled(compiled, data_dict, start_idx):
     """ Add output dictionary to compiled data, return next empty index """
     for k in data_dict.keys():
-        for colname in FLOAT_COLNAMES + STRING_COLNAMES + LIST_COLNAMES:
+        for colname in COLNAMES:
             compiled[colname][start_idx + k] = data_dict[k][colname]
+
+def assort(g):
+    try:
+        a = nx.degree_assortativity_coefficient(g)
+    except ValueError:
+        a = np.nan
+    return a
+
+def add_net_stats(compiled, data_dict, start_idx):
+    """ Get data from adjacency matrix and add to dict """
+    for k in data_dict.keys():
+        A = data_dict[k]['adj']
+        # Get stats
+        g = nx.DiGraph(A.T.tolil())
+        n = A.shape[0]
+        scc = [list(c) for c in nx.strongly_connected_components(g)]
+        scc_sz = [len(c) for c in scc]
+        wcc = [list(c) for c in nx.weakly_connected_components(g)]
+        wcc_sz = [len(c) for c in wcc]
+        # Diameter of the largest scc
+        diam = nx.diameter(nx.subgraph(g, scc[np.argmax(scc_sz)]))
+        # Add to dictionary
+        compiled["max_wcc"][start_idx + k] = np.max(wcc_sz)/n
+        compiled["max_scc"][start_idx + k] = np.max(wcc_sz)/n
+        compiled["singletons"][start_idx + k] = np.sum(np.array(scc_sz) == 1)
+        compiled["nscc"][start_idx + k] = len(scc)
+        compiled["nwcc"][start_idx + k] = len(wcc)
+        compiled["assort"][start_idx + k] = assort(g)
+        compiled["cluster"][start_idx + k] = nx.average_clustering(g)
+        compiled["diam"][start_idx + k] = diam
 
 def merge_compiled(compiled1, compiled2):
     """ Merge two compiled dictionaries """
@@ -126,6 +185,4 @@ def merge_compiled(compiled1, compiled2):
         compiled1[k] += compiled2[k]
     return compiled1
 
-
-
-compile_output(DIR,filename_prefix,NEXPERIMENTS,NETS_PER_EXPERIMENT)
+compile_output(DIR, filename_prefix, NEXPERIMENTS, NETS_PER_EXPERIMENT)
