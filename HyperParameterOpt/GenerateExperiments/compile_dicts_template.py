@@ -103,7 +103,7 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
                 print(info)
 
         if i % 2500:
-            pickle.dump(compiled, open('partial_compiled_output_' + filename_prefix + "_" + str(partition_index) "_" + str(save_file_index)+ '.pkl', 'wb'))
+            pickle.dump(compiled, open('partial_compiled_output_' + filename_prefix + "_" + str(partition_index) + "_" + str(save_file_index)+ '.pkl', 'wb'))
             save_file_index += 1
 
     #write final dict to pkl file
