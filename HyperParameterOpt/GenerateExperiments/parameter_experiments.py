@@ -275,17 +275,7 @@ def write_bash_script(
     new_f.write(tmpl_str)
     new_f.close()
 
-    tmpl_stream = open('template_cleanup.sh','r')
-    tmpl_str = tmpl_stream.read()
-    tmpl_stream.close()
-    tmpl_str = tmpl_str.replace("#FNAME#",filename)
-    tmpl_str = tmpl_str.replace("#DIR#",directory)
-    new_name = 'cleanup_' + filename +'.sh'
-    new_f = open(new_name,'w')
-    new_f.write(tmpl_str)
-    new_f.close()
-    # print('bash','cleanup_' + filename +'.sh')
-    #print('\nThe cleanup file (command above) can be run immediately after submitting the batch')
+    #removed cleanup file 
 
     tmpl_stream = open('template_final_step.sh','r')
     tmpl_str = tmpl_stream.read()
