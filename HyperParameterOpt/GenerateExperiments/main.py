@@ -41,8 +41,8 @@ generate_experiments(
     bash2_walltime_hours = 1,
     bash2_memory_required = 50,
     #essential parameters for experiment generation
-    nets_per_experiment = 2,
-    orbits_per_experiment = 200,
+    nets_per_experiment = 25,
+    orbits_per_experiment = 1,
     num_experiments_per_file = 1,
     topology = 'barab1',
     # these walltime parameters become the --time slurm command in bash_template
