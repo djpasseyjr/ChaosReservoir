@@ -215,9 +215,6 @@ def write_bash_script(
     hours_per_job,
     minutes_per_job,
     memory_per_job,
-    # compile_hours, #will used with batch dependence
-    # compile_minutes,
-    # compile_mem
     ):
     """
     Write the bash script to run all the experiments and write a bash_script to cleanup the directory
@@ -261,21 +258,9 @@ def write_bash_script(
     new_f.close()
     # print('NEXT: sg fslg_webb_reservoir \"sbatch',filename +'.sh\"')
 
-    tmpl_stream = open('post_completion.sh','r')
-    tmpl_str = tmpl_stream.read()
-    tmpl_stream.close()
-    # TODO, this will be used once we have dependence figured out
-    # tmpl_str = tmpl_str.replace("#HOURS#",str(compile_hours))
-    # tmpl_str = tmpl_str.replace("#MINUTES#",str(compile_minutes))
-    # tmpl_str = tmpl_str.replace("#MEMORY#",str(compile_mem))
-    # tmpl_str = tmpl_str.replace("#DIR#",directory) #not needed
-    tmpl_str = tmpl_str.replace("#FNAME#",filename)
-    new_name = 'post_' + filename +'.sh'
-    new_f = open(new_name,'w')
-    new_f.write(tmpl_str)
-    new_f.close()
+    #post_completion script is outdated 
 
-    #removed cleanup file 
+    #removed cleanup file
 
     tmpl_stream = open('template_final_step.sh','r')
     tmpl_str = tmpl_stream.read()
