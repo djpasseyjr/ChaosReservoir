@@ -52,6 +52,11 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
     #get a list of failed files identifiers so it's simple to check traceback
     failed_experiment_identifiers = []
     failed_job_identifiers = []
+    start_idx = 0
+    #used to make save the compiled dataset even partially
+    save_file_index = 0
+    failed_file_count = 0
+    errors_thrown = 0
 
     # Make dictionary for storing all data
     compiled = empty_result_dict(#ENDING_EXPERIMENT_NUMBER# - #STARTING_EXPERIMENT_NUMBER#, nets_per_experiment)
@@ -59,10 +64,8 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
     # we also need the prefix of the files, or can we use os.listdir()
     # path is probably directory plus filename prefix
     path = DIR + "/" + filename_prefix + "_"
-    failed_file_count = 0
-    errors_thrown = 0
+
     start = time.time()
-    start_idx = 0
 
     if verbose:
         file = filename_prefix
@@ -98,8 +101,13 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
                 info = f'\n{i} files compile attempted,time since start (minutes):{round((time.time() - start )/ 60,1)}'
                 timing += info
                 print(info)
+
+        if i % 2500:
+            pickle.dump(compiled, open('partial_compiled_output_' + filename_prefix + "_" + str(partition_index) "_" + str(save_file_index)+ '.pkl', 'wb'))
+            save_file_index += 1
+
     #write final dict to pkl file
-    pickle.dump(compiled, open('compiled_output_' + filename_prefix + "_" + partition_index + '.pkl', 'wb'))
+    pickle.dump(compiled, open('compiled_output_' + filename_prefix + "_" + str(partition_index) + '.pkl', 'wb'))
 
     if verbose:
         errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see compilation slurm file'

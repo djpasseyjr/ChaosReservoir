@@ -4,7 +4,6 @@
 #SBATCH --nodes=1                         # number of nodes, no need to change unless we use MPI
 #SBATCH --mem-per-cpu=#MEMORY#G           # memory per CPU core, 3072M = 3G, 1012M = 1G
 #SBATCH -J "#JNAME#"                      # job name
-#SBATCH --array=0-#NUMBER_JOBS#           # the range is inclusive
 
 module purge
 module load python/3.7
@@ -16,4 +15,6 @@ module load python/3.7
 #SBATCH --mail-type=END
 #SBATCH --mail-type=FAIL
 
-python3 #FILENAME#_${SLURM_ARRAY_TASK_ID}.py
+python3 #FILENAME#.py
+
+#the final compilation script shouldn't be a job array 

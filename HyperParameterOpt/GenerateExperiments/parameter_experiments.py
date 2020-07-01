@@ -19,7 +19,7 @@ def write_dependency_bash(filename_prefix):
         filename_prefix (str): essential for running proper files
 
     Output:
-        FILE: `run_' + FNAME +'.sh'` which will run the 3 files with dependencies
+        FILE: `run_' + filename_prefix +'.sh'` which will run the 3 files with dependencies
 
     """
     with open('bash_dependency_template.sh','r') as f:
@@ -85,8 +85,6 @@ def write_bash2(filename,
     # JName, as in Job Name.
     tmpl_str = tmpl_str.replace("#JNAME#",filename[2:] + 'bsh2')
     tmpl_str = tmpl_str.replace("#FILENAME#",'merge_partitioned_output_' + filename)
-    # assuming that we will have just one processor compile all the partitioned datasets
-    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(0))
     new_f = open('all_partitions_compilation_' + filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()

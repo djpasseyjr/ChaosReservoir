@@ -133,7 +133,7 @@ def chain(n):
     for i in range(n - 1):
         A[i+1, i] = 1
     return A
-    
+
 def loop(n):
     A = sparse.lil_matrix((n,n))
     for i in range(n - 1):
@@ -179,7 +179,7 @@ def generate_adj(network, param,n=None):
                       ]
 
     if network not in network_options:
-        raise ValueError('{network} not in {network_options}')
+        raise ValueError(f'{network} not in {network_options}')
 
     if network == 'barab1':
         return barab1(n)
