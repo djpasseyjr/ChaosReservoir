@@ -93,6 +93,10 @@ class Visualize:
           'sigma': 'Sigma',
           'spect_rad':'Spectral Radius',
           'ridge_alpha': 'Ridge Alpha (Regularization)'}
+        self.legend_size = 10
+        # self.figure_width_per_column = 6.5
+        self.figure_width_per_column = 9 # when legend is bigger (legend_size = 10)
+        self.figure_height_per_row = 3 #or low as 2.5
 
     def merge_compiled(self,compiled1, compiled2):
        """ Merge two compiled dictionaries """
@@ -177,11 +181,11 @@ class Visualize:
         if dep not in ['mean_pred','mean_err']:
             print(f'{dep} is not acceptable as dependent variable ')
 
-        #HS is for hspace
-        # HS = 2
-        fig_height = 3 * len(hyp_p)
-        fig_width = 13
-        fig, ax = plt.subplots(len(hyp_p),2,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
+        num_columns = 2
+
+        fig_height = self.figure_height_per_row * len(hyp_p)
+        fig_width = self.figure_width_per_column * num_columns
+        fig, ax = plt.subplots(len(hyp_p),num_columns,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
         #     gs = gridspec.GridSpec(1,len(hyp_p),figure=fig,hspace=HS)
         rp = x.remove_p.unique()
         # each subplot is a different hyperparameter
@@ -199,11 +203,11 @@ class Visualize:
                 A.reset_index(inplace=True)
                 ax[i][1].semilogy(A['index'],A['remove_p'],label=p)
 
-            leg0 = ax[i][0].legend(prop={'size': 5},bbox_to_anchor=(-0.2, 0.5))
+            leg0 = ax[i][0].legend(prop={'size': self.legend_size},bbox_to_anchor=(-0.2, 0.5))
             ax[i][0].set_title(f'{v} Value Comparison')
             ax[i][0].set_xlabel('remove_p')
 
-            leg1 = ax[i][1].legend(prop={'size': 5},bbox_to_anchor=(1.2, 0.5))
+            leg1 = ax[i][1].legend(prop={'size': self.legend_size},bbox_to_anchor=(1.2, 0.5))
             ax[i][1].set_xlabel('remove_p')
             ax[i][1].set_ylabel('# nets (log)')
             ax[i][1].set_title(f'{v} value counts per value')
@@ -224,6 +228,103 @@ class Visualize:
                 fig.savefig(loc + f'Optimize_{t}_{month}_{day}_at_{hour}_{minute}.png',bbox_inches='tight',bbox_extra_artists=[my_suptitle,leg0,leg1])
             else:
                 fig.savefig(loc + f'Optimize_{t}_by_fit_{month}_{day}_at_{hour}_{minute}.png',bbox_inches='tight',bbox_extra_artists=[my_suptitle,leg0,leg1])
+
+    def view_dependents():
+        """
+        View both the mean_pred and mean_error
+         """
+        raise NotImplementedError('not done')
+        # fix legend size
+        # parameters for function
+        resolution = int(1e2)
+        verbose = False
+        fig_height = 3 * len(hyp_p)
+        fig_width = 13
+        fig, ax = plt.subplots(len(hyp_p),2,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
+
+        rp = x.remove_p.unique()
+        # each subplot is a different hyperparameter
+        #for each subplot, plot all unique values of that parameter
+        t = 'watts5'
+        # dep for dependendent variable
+
+
+        e = x[x.net == t].copy()
+        for i,v in enumerate(hyp_p):
+            for j,p in enumerate(x[v].unique()):
+                S = e[e[v] == p].groupby(e.remove_p).aggregate(np.mean)['mean_pred'].copy()
+                ax[i][0].plot(S.index,S.values,label=p) #if one topology
+                ax[i][0].scatter(S.index,S.values)
+
+                S = e[e[v] == p].groupby(e.remove_p).aggregate(np.mean)['mean_err'].copy()
+                ax[i][1].plot(S.index,S.values,label=p) #if one topology
+                ax[i][1].scatter(S.index,S.values)
+
+
+            leg0 = ax[i][0].legend(prop={'size': 8},bbox_to_anchor=(-0.2, 0.5))
+            ax[i][0].set_title(f'Mean Predict; {parameter_names[v]} Value Comparison')
+            ax[i][0].set_xlabel('Edge Removal %')
+            ax[i][0].set_ylabel('Mean Prediction Duration')
+            leg1 = ax[i][1].legend(prop={'size': 8},bbox_to_anchor=(1.2, 0.5))
+            ax[i][1].set_title(f'Mean Fit Error; {parameter_names[v]} Value Comparison')
+            ax[i][1].set_xlabel('Edge Removal %')
+            ax[i][1].set_ylabel('Mean Fit Error')
+
+        my_suptitle = fig.suptitle(f'{t.upper()} Hyper-Parameter Comparison', fontsize=16,y=1.01)
+        plt.tight_layout()
+
+    def view_topology():
+        """view the dependent variables as well as the net count distribution per parameter value  """
+        raise NotImplementedError('not done')
+        # with NCD
+        #change parameter_names
+        # add self.legend_size
+        # add save figure
+        # add parameters to function (topology, etc)
+        resolution = int(1e2)
+        verbose = False
+        fig_height = 3 * len(hyp_p)
+        fig_width = 20
+        legend_size = 10
+        fig, ax = plt.subplots(len(hyp_p),3,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
+
+        rp = x.remove_p.unique()
+        # each subplot is a different hyperparameter
+        #for each subplot, plot all unique values of that parameter
+        t = 'erdos'
+        # dep for dependendent variable
+
+        e = x[x.net == t].copy()
+        for i,v in enumerate(hyp_p):
+            for j,p in enumerate(x[v].unique()):
+                S = e[e[v] == p].groupby(e.remove_p).aggregate(np.mean)['mean_pred'].copy()
+                ax[i][0].plot(S.index,S.values,label=p) #if one topology
+                ax[i][0].scatter(S.index,S.values)
+
+                S = e[e[v] == p].groupby(e.remove_p).aggregate(np.mean)['mean_err'].copy()
+                ax[i][1].plot(S.index,S.values,label=p) #if one topology
+                ax[i][1].scatter(S.index,S.values)
+
+                A = pd.DataFrame(x.loc[(x.net == t) & (x[v] == p)]['remove_p'].value_counts())
+                A.reset_index(inplace=True)
+                ax[i][2].semilogy(A['index'],A['remove_p'],label=p)
+
+
+            leg0 = ax[i][0].legend(prop={'size': legend_size},bbox_to_anchor=(-0.2, 0.5))
+            ax[i][0].set_title(f'Mean Predict; {parameter_names[v]} Value Comparison')
+            ax[i][0].set_xlabel('Edge Removal %')
+            ax[i][0].set_ylabel('Mean Prediction Duration')
+            leg1 = ax[i][1].legend(prop={'size': legend_size},bbox_to_anchor=(1.2, 0.5))
+            ax[i][1].set_title(f'Mean Fit Error; {parameter_names[v]} Value Comparison')
+            ax[i][1].set_xlabel('Edge Removal %')
+            ax[i][1].set_ylabel('Mean Fit Error')
+            leg2 = ax[i][2].legend(prop={'size': legend_size},bbox_to_anchor=(1.2, 0.5))
+            ax[i][2].set_xlabel('Edge Removal %')
+            ax[i][2].set_ylabel('# nets (log)')
+            ax[i][2].set_title(f'{parameter_names[v]} value counts per value')
+
+        my_suptitle = fig.suptitle(f'{t.upper()} Comprehensive View', fontsize=16,y=1.02)
+        plt.tight_layout()
 
     def compare_parameter(self,
         parameter,
@@ -261,11 +362,11 @@ class Visualize:
             num_unique_nets = len(self.data.keys())
             compare_all = self.data.keys()
 
+        num_columns = 1
+        fig_height = self.figure_height_per_row * num_unique_nets
+        fig_width = self.figure_width_per_column * num_columns
 
-        fig_height = num_unique_nets * 2.5
-        fig_width = 6.4
-
-        fig, ax = plt.subplots(num_unique_nets,1,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
+        fig, ax = plt.subplots(num_unique_nets,num_columns,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
 
         #each subplot is a topology
         #then all values for the hyper-parameter are compared
@@ -280,7 +381,7 @@ class Visualize:
                 S = e[e[v] == p].groupby(e.remove_p).aggregate(np.mean)[dep].copy()
                 ax[i].plot(S.index,S.values,label=p) #if one topology
                 ax[i].scatter(S.index,S.values)
-            leg0 = ax[i].legend(loc='lower left',prop={'size': 5},bbox_to_anchor=(1.1, 0.5))
+            leg0 = ax[i].legend(loc='lower left',prop={'size': self.legend_size},bbox_to_anchor=(1.1, 0.5))
             ax[i].set_title(t)
         # title_ = v.upper().replace('_',' ')
         # fig.suptitle(f'{title_} Comparison For All Topologies', fontsize=16,y=1.03)
