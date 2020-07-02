@@ -18,6 +18,7 @@ verbose = #VERBOSE#
 COLNAMES = [
     "mean_pred",
     "mean_err",
+    "net",
     "adj_size",
     "topo_p",
     "gamma",
