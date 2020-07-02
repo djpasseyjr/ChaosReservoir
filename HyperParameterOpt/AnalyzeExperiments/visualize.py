@@ -201,6 +201,7 @@ class Visualize:
 
                 A = pd.DataFrame(x.loc[(x.net == t) & (x[v] == p)]['remove_p'].value_counts())
                 A.reset_index(inplace=True)
+                A.sort_values(by='index',inplace=True) 
                 ax[i][1].semilogy(A['index'],A['remove_p'],label=p)
 
             leg0 = ax[i][0].legend(prop={'size': self.legend_size},bbox_to_anchor=(-0.2, 0.5))
@@ -316,6 +317,7 @@ class Visualize:
 
                 A = pd.DataFrame(x.loc[(x.net == t) & (x[v] == p)]['remove_p'].value_counts())
                 A.reset_index(inplace=True)
+                A.sort_values(by='index',inplace=True)
                 ax[i][2].semilogy(A['index'],A['remove_p'],label=p)
 
 
