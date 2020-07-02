@@ -232,7 +232,8 @@ class Visualize:
     def view_dependents():
         """
         View both the mean_pred and mean_error
-         """
+
+        """
         raise NotImplementedError('not done')
         # fix legend size
         # parameters for function
@@ -240,6 +241,8 @@ class Visualize:
         verbose = False
         fig_height = 3 * len(hyp_p)
         fig_width = 13
+
+        #In this case, sharey=True would make the visualization nearly useless
         fig, ax = plt.subplots(len(hyp_p),2,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
 
         rp = x.remove_p.unique()
@@ -274,18 +277,24 @@ class Visualize:
         plt.tight_layout()
 
     def view_topology():
-        """view the dependent variables as well as the net count distribution per parameter value  """
+        """view the dependent variables as well as the net count distribution per parameter value
+
+        """
         raise NotImplementedError('not done')
         # with NCD
         #change parameter_names
         # add self.legend_size
         # add save figure
         # add parameters to function (topology, etc)
+        # add legend_x and legend_y
         resolution = int(1e2)
         verbose = False
         fig_height = 3 * len(hyp_p)
-        fig_width = 20
+        fig_width = 25
         legend_size = 10
+        legend_x = -0.2
+        legend_y = 0.7
+        # In this case, sharey=True would make the visualization nearly useless
         fig, ax = plt.subplots(len(hyp_p),3,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
 
         rp = x.remove_p.unique()
@@ -310,15 +319,15 @@ class Visualize:
                 ax[i][2].semilogy(A['index'],A['remove_p'],label=p)
 
 
-            leg0 = ax[i][0].legend(prop={'size': legend_size},bbox_to_anchor=(-0.2, 0.5))
+            leg0 = ax[i][0].legend(prop={'size': legend_size},bbox_to_anchor=(legend_x, legend_y))
             ax[i][0].set_title(f'Mean Predict; {parameter_names[v]} Value Comparison')
             ax[i][0].set_xlabel('Edge Removal %')
             ax[i][0].set_ylabel('Mean Prediction Duration')
-            leg1 = ax[i][1].legend(prop={'size': legend_size},bbox_to_anchor=(1.2, 0.5))
+            leg1 = ax[i][1].legend(prop={'size': legend_size},bbox_to_anchor=(legend_x, legend_y))
             ax[i][1].set_title(f'Mean Fit Error; {parameter_names[v]} Value Comparison')
             ax[i][1].set_xlabel('Edge Removal %')
             ax[i][1].set_ylabel('Mean Fit Error')
-            leg2 = ax[i][2].legend(prop={'size': legend_size},bbox_to_anchor=(1.2, 0.5))
+            leg2 = ax[i][2].legend(prop={'size': legend_size},bbox_to_anchor=(legend_x, legend_y))
             ax[i][2].set_xlabel('Edge Removal %')
             ax[i][2].set_ylabel('# nets (log)')
             ax[i][2].set_title(f'{parameter_names[v]} value counts per value')
