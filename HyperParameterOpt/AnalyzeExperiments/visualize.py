@@ -15,10 +15,10 @@ class Visualize:
         Merge the data by topology
 
         parameters:
-            dir        (str): str describing the path to directory where files are located, if none then
+            dir        (str): str describing the path to directory where filenames are located, if none then
                                 the path is assumed to be the working directory
             file_list  (list): list containing file names that should be considered, this gives the user the option
-                                of neglecting some files
+                                of neglecting some filenames
 
         """
         filenames = {
@@ -68,23 +68,33 @@ class Visualize:
                         'loop', 'chain',
                         'ident'
                       }
-        for i in files.keys():
+        for i in filenames.keys():
             if i not in network_options:
                 raise ValueError(f'{i} is not a valid topology in \n{network_options}')
 
         #create one dataframe per topology
-        for i in files.keys():
-            l = files[i]
+        for i in filenames.keys():
+            edit = False #boolean to avoid errors in creating dataframe
+            l = filenames[i]
             if len(l) == 0:
                 pass
             elif len(l) == 1:
-                self.data[i] = pd.DataFrame(pickle.load(open(path + l[0],'rb')))
+                edit = True
+                a = pickle.load(open(path + l[0],'rb'))
             elif len(l) > 1:
+                edit = True
                 #initialize starting with one
                 a = pickle.load(open(path + l[0],'rb'))
                 for j in l[1:]:
                     a = self.merge_compiled(a,pickle.load(open(path + j,'rb')))
-                self.data[i] = pd.DataFrame(a)
+
+            if edit:
+                df = pd.DataFrame(a)
+                df.columns = [a.lower().replace(' ','_') for a in df.columns]
+                df.drop(index=df[df['adj_size'].isnull()].index,inplace=True)
+                if "net" not in df.columns:
+                    print(f'net column isnt in {filenames[i]}')
+                self.data[i] = df
 
         #used in compare_parameters (at least)
         self.parameter_names = {'adj_size':'Network Size',
@@ -201,7 +211,7 @@ class Visualize:
 
                 A = pd.DataFrame(x.loc[(x.net == t) & (x[v] == p)]['remove_p'].value_counts())
                 A.reset_index(inplace=True)
-                A.sort_values(by='index',inplace=True) 
+                A.sort_values(by='index',inplace=True)
                 ax[i][1].semilogy(A['index'],A['remove_p'],label=p)
 
             leg0 = ax[i][0].legend(prop={'size': self.legend_size},bbox_to_anchor=(-0.2, 0.5))
