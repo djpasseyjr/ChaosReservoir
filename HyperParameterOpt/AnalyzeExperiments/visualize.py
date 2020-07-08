@@ -35,7 +35,6 @@ class Visualize:
              ,'no_edges':[]
              ,'loop':[]
              ,'chain':[]
-             ,'ident':[]
          }
 
         if file_list is None:
@@ -58,7 +57,6 @@ class Visualize:
 
 
         print('try where dir is none, and otherwise')
-        print('ask if sharedy should be a parameter for everything, or just some things')
 
         self.data = dict()
         #check to see if there is a key that is unexpected (unexpected topology )
@@ -105,6 +103,21 @@ class Visualize:
           'sigma': 'Sigma',
           'spect_rad':'Spectral Radius',
           'ridge_alpha': 'Ridge Alpha (Regularization)'}
+        self.topo_names = {
+             'barab1':'Barabasi One'
+             ,'barab2':'Barabasi Two'
+             ,'erdos':'Erdos Reyni'
+             ,'random_digraph':'Random Directed Graph'
+             ,'ident':'Identity'
+             ,'watts2':'Watts Strogatz 2'
+             ,'watts4':'Watts Strogatz 4'
+             ,'watts3':'Watts Strogatz 3'
+             ,'watts5':'Watts Strogatz 4'
+             ,'geom':'Random Geometric'
+             ,'no_edges':'No Edges'
+             ,'loop':'Loop Network'
+             ,'chain':'Chain Network'
+         }
         self.legend_size = 10
         # self.figure_width_per_column = 6.5
         self.figure_width_per_column = 9 # when legend is bigger (legend_size = 10)
@@ -156,6 +169,7 @@ class Visualize:
         self,
         x,
         t,
+        loc,
         dep = 'mean_pred',
         savefig = None,
         res = int(1e2),
@@ -169,6 +183,7 @@ class Visualize:
         Parameters:
             x       (df):  dataframe containing the data
             t       (str): topology
+            loc     (str): location / directory for output files
             dep     (str): dependent variable
             savefig (str): location to save figure, if None, then don't save the figure
             res     (int): resolution of images
@@ -230,7 +245,7 @@ class Visualize:
             else:
                 ax[i][0].set_ylabel('Mean Err')
 
-        my_suptitle = fig.suptitle(f'{t} Hyper-Parameter Comparison', fontsize=16,y=1.03)
+        my_suptitle = fig.suptitle(f'{self.topo_names[t]} Hyper-Parameter Comparison', fontsize=16,y=1.03)
         plt.tight_layout()
         plt.show()
 
@@ -278,15 +293,15 @@ class Visualize:
 
 
             leg0 = ax[i][0].legend(prop={'size': 8},bbox_to_anchor=(-0.2, 0.5))
-            ax[i][0].set_title(f'Mean Predict; {parameter_names[v]} Value Comparison')
+            ax[i][0].set_title(f'Mean Predict; {self.parameter_names[v]} Value Comparison')
             ax[i][0].set_xlabel('Edge Removal %')
             ax[i][0].set_ylabel('Mean Prediction Duration')
             leg1 = ax[i][1].legend(prop={'size': 8},bbox_to_anchor=(1.2, 0.5))
-            ax[i][1].set_title(f'Mean Fit Error; {parameter_names[v]} Value Comparison')
+            ax[i][1].set_title(f'Mean Fit Error; {self.parameter_names[v]} Value Comparison')
             ax[i][1].set_xlabel('Edge Removal %')
             ax[i][1].set_ylabel('Mean Fit Error')
 
-        my_suptitle = fig.suptitle(f'{t.upper()} Hyper-Parameter Comparison', fontsize=16,y=1.01)
+        my_suptitle = fig.suptitle(f'{self.topo_names[t]} Hyper-Parameter Comparison', fontsize=16,y=1.01)
         plt.tight_layout()
 
     def view_topology():
@@ -334,23 +349,24 @@ class Visualize:
 
 
             leg0 = ax[i][0].legend(prop={'size': legend_size},bbox_to_anchor=(legend_x, legend_y))
-            ax[i][0].set_title(f'Mean Predict; {parameter_names[v]} Value Comparison')
+            ax[i][0].set_title(f'Mean Predict; {self.parameter_names[v]} Value Comparison')
             ax[i][0].set_xlabel('Edge Removal %')
             ax[i][0].set_ylabel('Mean Prediction Duration')
             leg1 = ax[i][1].legend(prop={'size': legend_size},bbox_to_anchor=(legend_x, legend_y))
-            ax[i][1].set_title(f'Mean Fit Error; {parameter_names[v]} Value Comparison')
+            ax[i][1].set_title(f'Mean Fit Error; {self.parameter_names[v]} Value Comparison')
             ax[i][1].set_xlabel('Edge Removal %')
             ax[i][1].set_ylabel('Mean Fit Error')
             leg2 = ax[i][2].legend(prop={'size': legend_size},bbox_to_anchor=(legend_x, legend_y))
             ax[i][2].set_xlabel('Edge Removal %')
             ax[i][2].set_ylabel('# nets (log)')
-            ax[i][2].set_title(f'{parameter_names[v]} value counts per value')
+            ax[i][2].set_title(f'{self.parameter_names[v]} value counts per value')
 
-        my_suptitle = fig.suptitle(f'{t.upper()} Comprehensive View', fontsize=16,y=1.02)
+        my_suptitle = fig.suptitle(f'{self.topo_names[t]} Comprehensive View', fontsize=16,y=1.02)
         plt.tight_layout()
 
     def compare_parameter(self,
         parameter,
+        loc,
         dep = 'mean_pred',
         savefig = False,
         res = int(1e2),
@@ -369,15 +385,15 @@ class Visualize:
             compare_all (list): indicates which topologies to include in the comparison, if None then compare all available in self.data
 
         """
-        input = dict()
-        input['t'] = t
-        input['dep'] = dep
-        input['savefig'] = savefig
-        input['res'] = res
-        tol_results = self.tolerance(input)
-        dep = tol_results['dep']
-        resolution = tol_results['res']
-        parameter = tol_results['parameter']
+        # input = dict()
+        # input['t'] = t
+        # input['dep'] = dep
+        # input['savefig'] = savefig
+        # input['res'] = res
+        # tol_results = self.tolerance(input)
+        # dep = tol_results['dep']
+        # resolution = tol_results['res']
+        # parameter = tol_results['parameter']
 
         if compare_all:
             num_unique_nets = len(compare_all)
@@ -430,14 +446,30 @@ class Visualize:
 
     def all(self
         ,savefigs = False
-        ,resolution=int(1e2)):
-        """ The method will will create all the visuals """
+        ,resolution=int(1e2)
+        ,loc=None):
+        """ The method will will create all the visuals
 
-        for i in self.data.keys():
+        Parameters
+            savefigs    (bool): save the figures
+            resolution  (int): resolution for the figures
+            loc         (str): location / directory for output files
+
+        """
+        if not loc:
+             loc = ''
+        else:
+            if loc[-1] != '/':
+                loc += '/'
+        print('loc is',loc)
+
+
+        for t in self.data.keys():
             for d in ['mean_pred','mean_err']:
                 self.view_parameters(
-                    self.data[i]
-                    ,i
+                    self.data[t]
+                    ,t
+                    ,loc
                     ,dep = d
                     ,savefig=savefigs
                     ,res=resolution
@@ -448,6 +480,7 @@ class Visualize:
             for d in ['mean_pred','mean_err']:
                 def compare_parameter(self,
                     v,
+                    loc,
                     dep = d,
                     savefig = savefigs,
                     res = int(1e2),
@@ -456,9 +489,9 @@ class Visualize:
                     ):
                     pass
 
-        print('done with view_parameters ')
+        print('done with compare_parameter ')
 
-        print('done with view_parameters')
+
 
 
 # visualization tools & functions
