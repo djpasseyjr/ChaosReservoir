@@ -232,13 +232,13 @@ class Visualize:
                 ax[i][1].semilogy(A['index'],A['remove_p'],label=p)
 
             leg0 = ax[i][0].legend(prop={'size': self.legend_size},bbox_to_anchor=(-0.2, 0.5))
-            ax[i][0].set_title(f'{v} Value Comparison')
+            ax[i][0].set_title(f'{self.parameter_names[v]} Value Comparison')
             ax[i][0].set_xlabel('remove_p')
 
             leg1 = ax[i][1].legend(prop={'size': self.legend_size},bbox_to_anchor=(1.2, 0.5))
             ax[i][1].set_xlabel('remove_p')
             ax[i][1].set_ylabel('# nets (log)')
-            ax[i][1].set_title(f'{v} value counts per value')
+            ax[i][1].set_title(f'{self.parameter_names[v]} value counts per value')
 
             if dep == 'mean_pred':
                 ax[i][0].set_ylabel('Mean pred')
