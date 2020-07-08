@@ -48,12 +48,14 @@ class Visualize:
                     filenames[j].append(i)
 
         self.filenames = filenames
+
+        path = ''
         if dir:
             if dir[-1] != '/':
                 path = dir + '/'
-        else:
-            #to simply upcoming code
-            path = ''
+            else:
+                path = dir
+
 
         print('try where dir is none, and otherwise')
         print('ask if sharedy should be a parameter for everything, or just some things')
@@ -452,6 +454,7 @@ class Visualize:
                     verbose = resolution,
                     compare_all = None,
                     ):
+                    pass
 
         print('done with view_parameters ')
 
