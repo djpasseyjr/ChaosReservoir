@@ -5,97 +5,24 @@ from matplotlib import pyplot as plt
 import pickle
 import datetime as dt                   # to add the date and time into the figure title
 
-print('should I include boolean for plt.show - like if we just wanted to save the figures & not see them (like while running in super-computer) ?')
+SAVEFIGS = True
+RESOLUTION = int(1e2)
+DIR = None
+FILE_LIST = None
+LOC = None
 
 class Visualize:
     """Visualization tool"""
 
-    def __init__(self,dir=None,file_list=None):
+    def __init__(self,df_dict):
         """
-        Merge the data by topology
+        Initialize data members for visualizations
 
-        parameters:
-            dir        (str): str describing the path to directory where filenames are located, if none then
-                                the path is assumed to be the working directory
-            file_list  (list): list containing file names that should be considered, this gives the user the option
-                                of neglecting some filenames
-
+        Parameters:
+            df_dict     (dict): keys are topology name strings, and values are the dataframe for
+                                that topology, aka output of df_dict function
         """
-        filenames = {
-             'barab1':[]
-             ,'barab2':[]
-             ,'erdos':[]
-             ,'random_digraph':[]
-             ,'ident':[]
-             ,'watts2':[]
-             ,'watts4':[]
-             ,'watts3':[] #will become watts2 as well
-             ,'watts5':[] #will become watts4 as well
-             ,'geom':[]
-             ,'no_edges':[]
-             ,'loop':[]
-             ,'chain':[]
-         }
-
-        if file_list is None:
-            file_list = os.listdir(dir)
-
-        #cast as a set then as a list, to avoid duplicates
-        for i in list(set(file_list)):
-            for j in filenames.keys():
-                if j in i:
-                    filenames[j].append(i)
-
-        self.filenames = filenames
-
-        path = ''
-        if dir:
-            if dir[-1] != '/':
-                path = dir + '/'
-            else:
-                path = dir
-
-
-        print('try where dir is none, and otherwise')
-
-        self.data = dict()
-        #check to see if there is a key that is unexpected (unexpected topology )
-        network_options = {'barab1', 'barab2',
-                        'erdos', 'random_digraph',
-                        'watts3', 'watts5',
-                        'watts2','watts4',
-                        'geom', 'no_edges',
-                        'loop', 'chain',
-                        'ident'
-                      }
-        for i in filenames.keys():
-            if i not in network_options:
-                raise ValueError(f'{i} is not a valid topology in \n{network_options}')
-
-        #create one dataframe per topology
-        for i in filenames.keys():
-            edit = False #boolean to avoid errors in creating dataframe
-            l = filenames[i]
-            if len(l) == 0:
-                pass
-            elif len(l) == 1:
-                edit = True
-                a = pickle.load(open(path + l[0],'rb'))
-            elif len(l) > 1:
-                edit = True
-                #initialize starting with one
-                a = pickle.load(open(path + l[0],'rb'))
-                for j in l[1:]:
-                    a = self.merge_compiled(a,pickle.load(open(path + j,'rb')))
-
-            if edit:
-                df = pd.DataFrame(a)
-                df.columns = [a.lower().replace(' ','_') for a in df.columns]
-                df.drop(index=df[df['adj_size'].isnull()].index,inplace=True)
-                if "net" not in df.columns:
-                    print(f'net column isnt in {filenames[i]}')
-                self.data[i] = df
-
+        self.data = df_dict
         #used in compare_parameters (at least)
         self.parameter_names = {'adj_size':'Network Size',
           'topo_p': 'Mean Degree / Rewiring Prob',
@@ -118,6 +45,13 @@ class Visualize:
              ,'loop':'Loop Network'
              ,'chain':'Chain Network'
          }
+        self.var_names = {
+        'mean_pred':'Avg. Accuracy Dur.'
+        ,'mean_err':'Avg. Fit Error'
+        ,'remove_p':'Edge Removal %'
+        ,'ncd':'# Nets (log)' #net count distribution
+        }
+        self.axis_names
         self.legend_size = 10
         # self.figure_width_per_column = 6.5
         self.figure_width_per_column = 9 # when legend is bigger (legend_size = 10)
@@ -238,17 +172,15 @@ class Visualize:
 
             leg0 = ax[i][0].legend(prop={'size': self.legend_size},bbox_to_anchor=(-0.2, 0.5))
             ax[i][0].set_title(f'{self.parameter_names[v]} Value Comparison')
-            ax[i][0].set_xlabel('remove_p')
+            ax[i][0].set_xlabel(self.var_names['remove_p'])
+            ax[i][0].set_ylabel(self.var_names[dep])
 
             leg1 = ax[i][1].legend(prop={'size': self.legend_size},bbox_to_anchor=(1.2, 0.5))
-            ax[i][1].set_xlabel('remove_p')
-            ax[i][1].set_ylabel('# nets (log)')
+            ax[i][1].set_xlabel(self.var_names['remove_p'])
+            ax[i][1].set_ylabel(self.var_names['ncd'])
             ax[i][1].set_title(f'{self.parameter_names[v]} value counts per value')
 
-            if dep == 'mean_pred':
-                ax[i][0].set_ylabel('Mean pred')
-            else:
-                ax[i][0].set_ylabel('Mean Err')
+
 
         my_suptitle = fig.suptitle(f'{self.topo_names[t]} Hyper-Parameter Comparison', fontsize=16,y=1.03)
         plt.tight_layout()
@@ -299,12 +231,12 @@ class Visualize:
 
             leg0 = ax[i][0].legend(prop={'size': 8},bbox_to_anchor=(-0.2, 0.5))
             ax[i][0].set_title(f'Mean Predict; {self.parameter_names[v]} Value Comparison')
-            ax[i][0].set_xlabel('Edge Removal %')
-            ax[i][0].set_ylabel('Mean Prediction Duration')
+            ax[i][0].set_xlabel(self.var_names['remove_p'])
+            ax[i][0].set_ylabel(self.var_names['mean_pred'])
             leg1 = ax[i][1].legend(prop={'size': 8},bbox_to_anchor=(1.2, 0.5))
             ax[i][1].set_title(f'Mean Fit Error; {self.parameter_names[v]} Value Comparison')
-            ax[i][1].set_xlabel('Edge Removal %')
-            ax[i][1].set_ylabel('Mean Fit Error')
+            ax[i][1].set_xlabel(self.var_names['remove_p'])
+            ax[i][1].set_ylabel(self.var_names['mean_err'])
 
         my_suptitle = fig.suptitle(f'{self.topo_names[t]} Hyper-Parameter Comparison', fontsize=16,y=1.01)
         plt.tight_layout()
@@ -378,7 +310,7 @@ class Visualize:
         savefig = False,
         res = int(1e2),
         verbose = False,
-        compare_topos = None,
+        compare_topos = None
         ):
         """For a given Parameter, compare the topologies
         display all the topologies
@@ -428,13 +360,14 @@ class Visualize:
         for i,t in enumerate(compare_topos):
             e = self.data[t].copy()
             for j,p in enumerate(e[v].unique()):
-                if verbose:
-                    print(i,v,j,p,'\n')
                 S = e[e[v] == p].groupby(e.remove_p).aggregate(np.mean)[dep].copy()
                 ax[i].plot(S.index,S.values,label=p) #if one topology
                 ax[i].scatter(S.index,S.values)
             leg0 = ax[i].legend(loc='lower left',prop={'size': self.legend_size},bbox_to_anchor=(1.1, 0.5))
-            ax[i].set_title(t)
+            ax[i].set_title(self.topo_names[t])
+            ax[i].set_xlabel(self.var_names['remove_p'])
+            ax[i].set_ylabel(self.var_names[dep])
+        print('we need axis labels')
         # title_ = v.upper().replace('_',' ')
         # fig.suptitle(f'{title_} Comparison For All Topologies', fontsize=16,y=1.03)
         my_suptitle = fig.suptitle(f'{self.parameter_names[v]} Comparison For All Topologies', fontsize=16,y=1.03)
@@ -459,7 +392,7 @@ class Visualize:
         raise NotImplementedError('network_statistics not done ')
 
     def all(self
-        ,savefigs=False
+        ,savefigs=True
         ,resolution=int(1e2)
         ,loc=None
         ,verbose=False):
@@ -477,8 +410,6 @@ class Visualize:
         else:
             if loc[-1] != '/':
                 loc += '/'
-        # print('loc is',loc)
-
 
         for t in self.data.keys():
             for d in ['mean_pred','mean_err']:
@@ -505,11 +436,112 @@ class Visualize:
                     compare_topos = None,
                     )
         print('done with compare_parameter ')
+        print('axis labels for compare_parameter')
+
+class Optimize:
+    """ """
+    def __init__(self):
+        """ """
+        raise NotImplementedError("n/a")
+
+def df_dict(dir=None,file_list=None):
+    """
+    Build a dictionary with topology dataframes which will serve as input for both Visualize & Optimize
+    - Merge the data by topology
+
+    parameters:
+        dir        (str): str describing the path to directory where filenames are located, if none then
+                            the pa«th is assumed to be the working directory
+        file_list  (list): list containing file names that should be considered, this gives the user the option
+                            of neglecting some filenames
+    """
+    filenames = {
+         'barab1':[]
+         ,'barab2':[]
+         ,'erdos':[]
+         ,'random_digraph':[]
+         ,'ident':[]
+         ,'watts2':[]
+         ,'watts4':[]
+         ,'watts3':[] #will become watts2 as well
+         ,'watts5':[] #will become watts4 as well
+         ,'geom':[]
+         ,'no_edges':[]
+         ,'loop':[]
+         ,'chain':[]
+     }
+
+    if file_list is None:
+        file_list = os.listdir(dir)
+
+    #cast as a set then as a list, to avoid duplicates
+    for i in list(set(file_list)):
+        for j in filenames.keys():
+            if j in i:
+                filenames[j].append(i)
+
+    path = ''
+    if dir:
+        if dir[-1] != '/':
+            path = dir + '/'
+        else:
+            path = dir
+
+    print('try where dir is none, and otherwise')
+
+    df_dict = dict()
+    #check to see if there is a key that is unexpected (unexpected topology )
+    network_options = {'barab1', 'barab2',
+                    'erdos', 'random_digraph',
+                    'watts3', 'watts5',
+                    'watts2','watts4',
+                    'geom', 'no_edges',
+                    'loop', 'chain',
+                    'ident'
+                  }
+    for i in filenames.keys():
+        if i not in network_options:
+            raise ValueError(f'{i} is not a valid topology in \n{network_options}')
+
+    #create one dataframe per topology
+    for i in filenames.keys():
+        edit = False #boolean to avoid errors in creating dataframe
+        l = filenames[i]
+        if len(l) == 0:
+            pass
+        elif len(l) == 1:
+            edit = True
+            a = pickle.load(open(path + l[0],'rb'))
+        elif len(l) > 1:
+            edit = True
+            #initialize starting with one
+            a = pickle.load(open(path + l[0],'rb'))
+            for j in l[1:]:
+                a = self.merge_compiled(a,pickle.load(open(path + j,'rb')))
+
+        if edit:
+            df = pd.DataFrame(a)
+            df.columns = [a.lower().replace(' ','_') for a in df.columns]
+            df.drop(index=df[df['adj_size'].isnull()].index,inplace=True)
+            if "net" not in df.columns:
+                print(f'net column isnt in {filenames[i]}')
+            df_dict[i] = df
+
+    return df_dict
+
+print('how to exclude certain parameter values ? ')
+
+def main():
+    """ Use df_dict, to initialize Visualize & Optimize classes, and to run the `all` method for each class """
+    # DIR FILE_LIST parameters defined at top of script, for easy modification in VIM
+    d = df_dict(DIR,FILE_LIST)
+
+    V = Visualize(d)
+    V.all(SAVEFIGS,RESOLUTION,LOC)
+
+    # O = Optimize(d)
 
 
 
 
-# visualization tools & functions
-
-#Visuals I've done so far
-# comapre topologies on one plot (like with additional topologies )
+main()
