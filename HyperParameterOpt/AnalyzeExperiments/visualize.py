@@ -7,6 +7,8 @@ import datetime as dt                   # to add the date and time into the figu
 
 print('should I include boolean for plt.show - like if we just wanted to save the figures & not see them (like while running in super-computer) ?')
 
+
+
 class Visualize:
     """Visualization tool"""
 
@@ -169,7 +171,7 @@ class Visualize:
         self,
         x,
         t,
-        loc,
+        loc=None,
         dep = 'mean_pred',
         savefig = None,
         res = int(1e2),
@@ -201,6 +203,12 @@ class Visualize:
                             'loop', 'chain',
                             'ident'
                           ]
+
+        if not loc:
+             loc = ''
+        else:
+            if loc[-1] != '/':
+                loc += '/'
 
         if t not in network_options:
             raise ValueError(f'{t} not in {network_options}')
@@ -247,7 +255,7 @@ class Visualize:
 
         my_suptitle = fig.suptitle(f'{self.topo_names[t]} Hyper-Parameter Comparison', fontsize=16,y=1.03)
         plt.tight_layout()
-        plt.show()
+        # plt.show()
 
         if savefig:
             month, day = dt.datetime.now().month, dt.datetime.now().day
@@ -311,6 +319,7 @@ class Visualize:
         raise NotImplementedError('not done')
         # with NCD
         #change parameter_names
+        print('where is hyp_p initialized')
         # add self.legend_size
         # add save figure
         # add parameters to function (topology, etc)
@@ -329,6 +338,7 @@ class Visualize:
         # each subplot is a different hyperparameter
         #for each subplot, plot all unique values of that parameter
         t = 'erdos'
+        print('t=',t,'\nshould probably be adjusted to not be hard coded ')
         # dep for dependendent variable
 
         e = x[x.net == t].copy()
@@ -371,18 +381,18 @@ class Visualize:
         savefig = False,
         res = int(1e2),
         verbose = False,
-        compare_all = None,
+        compare_topos = None,
         ):
         """For a given Parameter, compare the topologies
         display all the topologies
 
         Parameters:
-            parameter   (str): string describing the parameter to compare
-            dep         (str): dependent variable
-            savefig     (bool): whether or not to export the figure
-            res         (int): resolution of images
-            verbose     (str): debugging purposes
-            compare_all (list): indicates which topologies to include in the comparison, if None then compare all available in self.data
+            parameter       (str): string describing the parameter to compare
+            dep             (str): dependent variable
+            savefig         (bool): whether or not to export the figure
+            res             (int): resolution of images
+            verbose         (str): debugging purposes
+            compare_topos   (list): indicates which topologies to include in the comparison, if None then compare all available in self.data
 
         """
         # input = dict()
@@ -395,11 +405,17 @@ class Visualize:
         # resolution = tol_results['res']
         # parameter = tol_results['parameter']
 
-        if compare_all:
-            num_unique_nets = len(compare_all)
+        if not loc:
+             loc = ''
+        else:
+            if loc[-1] != '/':
+                loc += '/'
+
+        if compare_topos:
+            num_unique_nets = len(compare_topos)
         else:
             num_unique_nets = len(self.data.keys())
-            compare_all = self.data.keys()
+            compare_topos = self.data.keys()
 
         num_columns = 1
         fig_height = self.figure_height_per_row * num_unique_nets
@@ -412,7 +428,7 @@ class Visualize:
 
         v = parameter
 
-        for i,t in enumerate(compare_all):
+        for i,t in enumerate(compare_topos):
             e = self.data[t].copy()
             for j,p in enumerate(e[v].unique()):
                 if verbose:
@@ -426,6 +442,7 @@ class Visualize:
         # fig.suptitle(f'{title_} Comparison For All Topologies', fontsize=16,y=1.03)
         my_suptitle = fig.suptitle(f'{self.parameter_names[v]} Comparison For All Topologies', fontsize=16,y=1.03)
         plt.tight_layout()
+        # plt.show()
 
         if savefig:
             month, day = dt.datetime.now().month, dt.datetime.now().day
@@ -445,7 +462,7 @@ class Visualize:
         raise NotImplementedError('network_statistics not done ')
 
     def all(self
-        ,savefigs = False
+        ,savefigs=False
         ,resolution=int(1e2)
         ,loc=None):
         """ The method will will create all the visuals
@@ -461,7 +478,7 @@ class Visualize:
         else:
             if loc[-1] != '/':
                 loc += '/'
-        print('loc is',loc)
+        # print('loc is',loc)
 
 
         for t in self.data.keys():
@@ -478,17 +495,15 @@ class Visualize:
 
         for v in self.parameter_names:
             for d in ['mean_pred','mean_err']:
-                def compare_parameter(self,
+                self.compare_parameter(self,
                     v,
                     loc,
                     dep = d,
                     savefig = savefigs,
                     res = int(1e2),
                     verbose = resolution,
-                    compare_all = None,
-                    ):
-                    pass
-
+                    compare_topos = None,
+                    )
         print('done with compare_parameter ')
 
 
