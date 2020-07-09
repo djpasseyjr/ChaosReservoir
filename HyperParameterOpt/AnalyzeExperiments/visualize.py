@@ -7,8 +7,6 @@ import datetime as dt                   # to add the date and time into the figu
 
 print('should I include boolean for plt.show - like if we just wanted to save the figures & not see them (like while running in super-computer) ?')
 
-
-
 class Visualize:
     """Visualization tool"""
 
@@ -191,8 +189,7 @@ class Visualize:
             res     (int): resolution of images
             verbose (str): debugging purposes
         """
-        hyp_p = ['adj_size', 'topo_p', 'gamma', 'sigma',
-           'spect_rad', 'ridge_alpha']
+        hyp_p = self.parameter_names.keys()
         # hyp_p = hyp_p[:2] #don't plot as much
         resolution = res
         network_options = ['barab1', 'barab2',
@@ -421,7 +418,7 @@ class Visualize:
         fig_height = self.figure_height_per_row * num_unique_nets
         fig_width = self.figure_width_per_column * num_columns
 
-        fig, ax = plt.subplots(num_unique_nets,num_columns,sharey=False,dpi=resolution,figsize=(fig_width,fig_height))
+        fig, ax = plt.subplots(num_unique_nets,num_columns,sharey=False,dpi=res,figsize=(fig_width,fig_height))
 
         #each subplot is a topology
         #then all values for the hyper-parameter are compared
@@ -464,13 +461,15 @@ class Visualize:
     def all(self
         ,savefigs=False
         ,resolution=int(1e2)
-        ,loc=None):
+        ,loc=None
+        ,verbose=False):
         """ The method will will create all the visuals
 
         Parameters
             savefigs    (bool): save the figures
             resolution  (int): resolution for the figures
             loc         (str): location / directory for output files
+            verbose     (str): verbose output
 
         """
         if not loc:
@@ -487,21 +486,22 @@ class Visualize:
                     self.data[t]
                     ,t
                     ,loc
-                    ,dep = d
+                    ,dep=d
                     ,savefig=savefigs
                     ,res=resolution
                     )
         print('done with view_parameters ')
+        # print('uncomment view_parameters while testing other functions')
 
-        for v in self.parameter_names:
+        for p in self.parameter_names.keys():
             for d in ['mean_pred','mean_err']:
-                self.compare_parameter(self,
-                    v,
+                self.compare_parameter(
+                    p,
                     loc,
                     dep = d,
                     savefig = savefigs,
-                    res = int(1e2),
-                    verbose = resolution,
+                    res = resolution,
+                    verbose = verbose,
                     compare_topos = None,
                     )
         print('done with compare_parameter ')
