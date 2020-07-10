@@ -10,6 +10,7 @@ RESOLUTION = int(1e2)
 DIR = None
 FILE_LIST = None
 LOC = None
+NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
 
 class Visualize:
     """Visualization tool"""
@@ -440,9 +441,71 @@ class Visualize:
 
 class Optimize:
     """ """
-    def __init__(self):
-        """ """
+    def __init__(self,df_dict):
+        """
+        Parameters:
+            df_dict     (dict): keys are topology name strings, and values are the dataframe for
+                                that topology, aka output of df_dict function
+        """
+        self.data = df_dict
+
+    def win(self,num_winners=5):
+        """
+        Get top `num_winners` from each topology for both model types (thinned or not thinned)
+        as well as winners out of any topology (comparing) by model type (thinned or not thinned)
+        as well as winners out of all model types out of all topologies (the best model from this data)
+
+        Assume "dense" means not thinned in this case
+
+        Parameters:
+            num_winners     (int): number of winners from each topology to consider
+
+        Returns:
+            results  (dict): contains the following keys and results
+                topos    (dict): dictionary containing dataframes for each topologys best with thinning and no thinning ('dense')
+                compare  (dict): compares all the topologies, to see which topologies are the best
+                best     (df): merged & sorts the two dataFrames in compare values
+        """
+        if num_winners <= 0:
+            raise ValueError('num_winners should be greater than zero')
+
+        # create dictionaries by topology then by thinned or not thinned / "dense"
+        #only include topologies that there is data for
+        for i in self.data.keys():
+            self.topos[i] = {'thinned':None,'dense':None}
+            self.compare[i] = {'thinned':None,'dense':None}
+
+        for i in self.data.keys():
+            temp = self.data[i].copy()
+
+            dense = temp[temp.remove_p == 0].copy()
+            x = dense.groupby(['exp_num']).aggregate(np.mean)
+            self.topos[i]['dense'] = x.sort_values(by='mean_pred',ascending=False,inplace=True).iloc[:num_winners]
+
+            # exclude equal to zero to can compare whether a thinned network can beat a non thinned network
+            # and to avoid having a not thinned network appear in both sides
+            thin = temp[temp.remove_p > 0].copy()
+            y = temp.groupby(['exp_num']).aggregate(np.mean)
+            self.topos[i]['thinned'] = y.sort_values(by='mean_pred',ascending=False,inplace=True).iloc[:num_winners]
+
+        # combine all the dense networks, and the thinned ones to see compare topologies -
+        # start with the first
+        for m in ['thinned','dense']:
+            start = self.data[self.data.keys()[0]][m]
+            for i in self.data.keys()[1:]
+
+        # compare whether thinned did better than the not thinned (dense)
+
+        results = dict()
+        results['topos'] = self.topos
+        results['compare'] = self.compare
+        results['best'] = self.best
+
+        print('is best sorted?')
         raise NotImplementedError("n/a")
+        return results
+
+
 
 def df_dict(dir=None,file_list=None):
     """
@@ -524,12 +587,11 @@ def df_dict(dir=None,file_list=None):
             df.columns = [a.lower().replace(' ','_') for a in df.columns]
             df.drop(index=df[df['adj_size'].isnull()].index,inplace=True)
             if "net" not in df.columns:
-                print(f'net column isnt in {filenames[i]}')
+                df['net'] = i
+                print(f'`net` column wasnt in:\n{filenames[i]}')
             df_dict[i] = df
 
     return df_dict
-
-print('how to exclude certain parameter values ? ')
 
 def main():
     """ Use df_dict, to initialize Visualize & Optimize classes, and to run the `all` method for each class """
@@ -541,7 +603,7 @@ def main():
 
     # O = Optimize(d)
 
-
-
+print('how to exclude certain parameter values ? ')
+print('how to handle case where some dictinaries wont have net but other dicts of that topology might')
 
 main()
