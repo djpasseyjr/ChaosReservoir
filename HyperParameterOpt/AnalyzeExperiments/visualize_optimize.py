@@ -9,17 +9,17 @@ import time
 # DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
 FILE_LIST = [
     'compiled_output_f2_38_barab2.pkl'
+    ,'compiled_output_jw44_barab2.pkl'
     ,'compiled_output_jw39_barab1.pkl'
-    'compiled_output_jw40_watts3.pkl'
+    ,'compiled_output_jw43_barab1.pkl'
+    ,'compiled_output_jw40_watts3.pkl'
     ,'compiled_output_jw45_watts3.pkl'
+    ,'compiled_output_jj6_random_digraph.pkl'
+    ,'compiled_output_jj7_erdos.pkl'
     ,'compiled_output_jw53_ident.pkl'
     ,'compiled_output_jw54_loop.pkl'
     ,'compiled_output_jw55_no_edges.pkl'
-    ,'compiled_output_jj7_erdos.pkl'
     ,'compiled_output_jw56_chain.pkl'
-    ,'compiled_output_jj6_random_digraph.pkl'
-    ,'compiled_output_jw39_barab1.pkl'
-    ,'compiled_output_jw43_barab1.pkl'
 ]
 
 SAVEFIGS = True
@@ -510,10 +510,12 @@ class Optimize:
         best = pd.DataFrame()
         for m in ['thinned','dense']:
             df = self.topos[list(self.data.keys())[0]][m]
-            df['net'] = list(self.data.keys())[0]
+            if 'net' not in df.columns:
+                df['net'] = list(self.data.keys())[0]
             for i in list(self.data.keys())[1:]:
                 temp = self.topos[i][m]
-                temp['net'] = i
+                if 'net' not in temp.columns:
+                    temp['net'] = i
                 df = df.append(temp,ignore_index=False)
             df.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
             self.compare[m] = df
