@@ -4,26 +4,34 @@ import seaborn as sb
 from matplotlib import pyplot as plt
 import pickle
 import datetime as dt                   # to add the date and time into the figure title
+import time
 
 # DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
-# FILE_LIST = [
-#     'compiled_output_jw40_watts3.pkl'
-#     ,'compiled_output_jw45_watts3.pkl'
-#     # ,'compiled_output_jj3_random_digraph.pkl'
-#     # ,'compiled_output_jw53_ident.pkl'
-#     # ,'compiled_output_jw54_loop.pkl'
-# ]
+FILE_LIST = [
+    'compiled_output_f2_38_barab2.pkl'
+    ,'compiled_output_jw39_barab1.pkl'
+    'compiled_output_jw40_watts3.pkl'
+    ,'compiled_output_jw45_watts3.pkl'
+    ,'compiled_output_jw53_ident.pkl'
+    ,'compiled_output_jw54_loop.pkl'
+    ,'compiled_output_jw55_no_edges.pkl'
+    ,'compiled_output_jj7_erdos.pkl'
+    ,'compiled_output_jw56_chain.pkl'
+    ,'compiled_output_jj6_random_digraph.pkl'
+    ,'compiled_output_jw39_barab1.pkl'
+    ,'compiled_output_jw43_barab1.pkl'
+]
 
 SAVEFIGS = True
-RESOLUTION = int(1e2)
+RESOLUTION = int(1e3)
 DIR = None
-FILE_LIST = None
+# FILE_LIST = None
 NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
 
 #selection for either 'visualize' or 'optimize' or None (means both)
-SELECTION = None
+SELECTION = 'optimize'
 # LOCATION FOR OUTPUT FILES
-LOC = None
+LOC = 'BEST_DATA_AS_OF_7_15'
 
 class Visualize:
     """Visualization tool"""
@@ -646,15 +654,22 @@ def main(selection=None):
         else:
             l = [selection]
 
+
     # DIR FILE_LIST parameters defined at top of script, for easy modification in VIM
+    start = time.time()
     d = df_dict(DIR,FILE_LIST)
+    print(f'DF_DICT construction time (minutes):',round((time.time() - start )/ 60,1))
 
     if 'visualize' in l:
+        start = time.time()
         V = Visualize(d)
         V.all(SAVEFIGS,RESOLUTION,LOC)
+        print(f'Visualization time (minutes):',round((time.time() - start )/ 60,1))
     if 'optimize' in l:
+        start = time.time()
         O = Optimize(d)
         results = O.win(NUM_WINNERS,LOC)
+        print(f'Optimization time (minutes):',round((time.time() - start )/ 60,1))
         return results
 
 print('how to exclude certain parameter values ? ')
