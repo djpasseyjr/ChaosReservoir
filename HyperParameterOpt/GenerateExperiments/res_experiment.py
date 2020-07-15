@@ -305,6 +305,7 @@ def experiment(
 
         results[i]['mean_pred'] = np.array(results[i]['pred']).mean()
         results[i]['mean_err'] = np.array(results[i]['err']).mean()
-        pickle.dump(results, open(fname,"wb"))
         # print('"Net complete -- \nMean Pred',results[i]['mean_pred'],'\nMean Error',results[i]['mean_err'])
         i += 1
+    #only dump the results if all the networks succeed 
+    pickle.dump(results, open(fname,"wb"))
