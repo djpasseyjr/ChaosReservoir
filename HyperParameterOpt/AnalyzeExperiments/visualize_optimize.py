@@ -18,7 +18,7 @@ SAVEFIGS = True
 RESOLUTION = int(1e2)
 DIR = None
 FILE_LIST = None
-print('uncomment DIR & FILE_LIST')
+
 LOC = None
 NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
 
@@ -492,9 +492,12 @@ class Optimize:
         best = pd.DataFrame()
         for m in ['thinned','dense']:
             df = self.topos[list(self.data.keys())[0]][m]
+            df['net'] = list(self.data.keys())[0]
             for i in list(self.data.keys())[1:]:
                 temp = self.topos[i][m]
+                temp['net'] = i
                 df = df.append(temp,ignore_index=False)
+            df.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
             self.compare[m] = df
             best = best.append(df,ignore_index=False)
 
@@ -621,7 +624,6 @@ def main():
 
     V = Visualize(d)
     V.all(SAVEFIGS,RESOLUTION,LOC)
-    print('uncomment visualize in main')
 
     O = Optimize(d)
     results = O.win(NUM_WINNERS)
