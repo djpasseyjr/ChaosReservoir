@@ -5,8 +5,14 @@ from matplotlib import pyplot as plt
 import pickle
 import datetime as dt                   # to add the date and time into the figure title
 
-DIR = None
-FILE_LIST = []
+DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
+FILE_LIST = [
+    'compiled_output_jw40_watts3.pkl'
+    ,'compiled_output_jw45_watts3.pkl'
+    # ,'compiled_output_jj3_random_digraph.pkl'
+    # ,'compiled_output_jw53_ident.pkl'
+    # ,'compiled_output_jw54_loop.pkl'
+]
 
 SAVEFIGS = True
 RESOLUTION = int(1e2)
@@ -61,21 +67,6 @@ class Visualize:
         # self.figure_width_per_column = 6.5
         self.figure_width_per_column = 9 # when legend is bigger (legend_size = 10)
         self.figure_height_per_row = 3 #or low as 2.5
-
-    def merge_compiled(self,compiled1, compiled2):
-       """ Merge two compiled dictionaries """
-       if isinstance(compiled1, str) and isinstance(compiled2, str):
-           compiled1 = pickle.load(open(compiled1, 'rb'))
-           compiled2 = pickle.load(open(compiled2, 'rb'))
-       # Shift experiment number for compiled2
-       total_exp = np.max(compiled1["exp_num"])
-       exp_nums = np.array(compiled2["exp_num"])
-       exp_nums[exp_nums >= 0] += total_exp
-       compiled2["exp_num"] = list(exp_nums)
-       # Merge
-       for k in compiled1.keys():
-           compiled1[k] += compiled2[k]
-       return compiled1
 
     def tolerance(self, **kwargs):
         """A helper function to increase the fault tolerance of the class
@@ -452,6 +443,9 @@ class Optimize:
                                 that topology, aka output of df_dict function
         """
         self.data = df_dict
+        self.topos = dict()
+        self.compare = dict()
+        self.best = dict()
 
     def win(self,num_winners=5):
         """
@@ -482,22 +476,24 @@ class Optimize:
             temp = self.data[i].copy()
 
             dense = temp[temp.remove_p == 0].copy()
-            x = dense.groupby(['exp_num']).aggregate(np.mean)
-            self.topos[i]['dense'] = x.sort_values(by='mean_pred',ascending=False,inplace=True).iloc[:num_winners]
+            x = dense.groupby(['exp_num']).aggregate(np.mean).copy()
+            x.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
+            self.topos[i]['dense'] = x.iloc[:num_winners]
             # exclude equal to zero to can compare whether a thinned network can beat a non thinned network
             # and to avoid having a not thinned network appear in both sides
             thin = temp[temp.remove_p > 0].copy()
-            y = temp.groupby(['exp_num']).aggregate(np.mean)
-            self.topos[i]['thinned'] = y.sort_values(by='mean_pred',ascending=False,inplace=True).iloc[:num_winners]
+            y = temp.groupby(['exp_num']).aggregate(np.mean).copy()
+            y.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
+            self.topos[i]['thinned'] = y.iloc[:num_winners]
 
         # combine all the dense networks together, and the thinned ones together to see compare topologies for
         # either thinned or dense -
         # then combine the dense & the thinned ones together to get the best
         best = pd.DataFrame()
         for m in ['thinned','dense']:
-            df = self.topos[self.data.keys()[0]][m]
-            for i in self.data.keys()[1:]:
-                temp = self.topos[i][m].T
+            df = self.topos[list(self.data.keys())[0]][m]
+            for i in list(self.data.keys())[1:]:
+                temp = self.topos[i][m]
                 df = df.append(temp,ignore_index=False)
             self.compare[m] = df
             best = best.append(df,ignore_index=False)
@@ -516,6 +512,21 @@ class Optimize:
         df.to_pickle(f'best_as_of_{month}_{day}_at_{hour}_{minute}.pkl')
 
         return results
+
+def merge_compiled(compiled1, compiled2):
+   """ Merge two compiled dictionaries """
+   if isinstance(compiled1, str) and isinstance(compiled2, str):
+       compiled1 = pickle.load(open(compiled1, 'rb'))
+       compiled2 = pickle.load(open(compiled2, 'rb'))
+   # Shift experiment number for compiled2
+   total_exp = np.max(compiled1["exp_num"])
+   exp_nums = np.array(compiled2["exp_num"])
+   exp_nums[exp_nums >= 0] += total_exp
+   compiled2["exp_num"] = list(exp_nums)
+   # Merge
+   for k in compiled1.keys():
+       compiled1[k] += compiled2[k]
+   return compiled1
 
 def df_dict(dir=None,file_list=None):
     """
@@ -590,7 +601,7 @@ def df_dict(dir=None,file_list=None):
             #initialize starting with one
             a = pickle.load(open(path + l[0],'rb'))
             for j in l[1:]:
-                a = self.merge_compiled(a,pickle.load(open(path + j,'rb')))
+                a = merge_compiled(a,pickle.load(open(path + j,'rb')))
 
         if edit:
             df = pd.DataFrame(a)
@@ -614,7 +625,9 @@ def main():
 
     O = Optimize(d)
     results = O.win(NUM_WINNERS)
+    return results
 
 print('how to exclude certain parameter values ? ')
 
-main()
+if __name__ == "__main__":
+    main()
