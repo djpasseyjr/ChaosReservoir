@@ -5,19 +5,19 @@ from matplotlib import pyplot as plt
 import pickle
 import datetime as dt                   # to add the date and time into the figure title
 
-DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
-FILE_LIST = [
-    'compiled_output_jw40_watts3.pkl'
-    ,'compiled_output_jw45_watts3.pkl'
-    # ,'compiled_output_jj3_random_digraph.pkl'
-    # ,'compiled_output_jw53_ident.pkl'
-    # ,'compiled_output_jw54_loop.pkl'
-]
+# DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
+# FILE_LIST = [
+#     'compiled_output_jw40_watts3.pkl'
+#     ,'compiled_output_jw45_watts3.pkl'
+#     # ,'compiled_output_jj3_random_digraph.pkl'
+#     # ,'compiled_output_jw53_ident.pkl'
+#     # ,'compiled_output_jw54_loop.pkl'
+# ]
 
 SAVEFIGS = True
 RESOLUTION = int(1e2)
-# DIR = None
-# FILE_LIST = None
+DIR = None
+FILE_LIST = None
 print('uncomment DIR & FILE_LIST')
 LOC = None
 NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
@@ -619,8 +619,8 @@ def main():
     # DIR FILE_LIST parameters defined at top of script, for easy modification in VIM
     d = df_dict(DIR,FILE_LIST)
 
-    # V = Visualize(d)
-    # V.all(SAVEFIGS,RESOLUTION,LOC)
+    V = Visualize(d)
+    V.all(SAVEFIGS,RESOLUTION,LOC)
     print('uncomment visualize in main')
 
     O = Optimize(d)
