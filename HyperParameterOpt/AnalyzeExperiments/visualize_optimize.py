@@ -5,10 +5,14 @@ from matplotlib import pyplot as plt
 import pickle
 import datetime as dt                   # to add the date and time into the figure title
 
+DIR = None
+FILE_LIST = []
+
 SAVEFIGS = True
 RESOLUTION = int(1e2)
-DIR = None
-FILE_LIST = None
+# DIR = None
+# FILE_LIST = None
+print('uncomment DIR & FILE_LIST')
 LOC = None
 NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
 
@@ -455,7 +459,7 @@ class Optimize:
         as well as winners out of any topology (comparing) by model type (thinned or not thinned)
         as well as winners out of all model types out of all topologies (the best model from this data)
 
-        Assume "dense" means not thinned in this case
+        Assume "dense" means not thinned in this case, remove_p = 0
 
         Parameters:
             num_winners     (int): number of winners from each topology to consider
@@ -473,39 +477,45 @@ class Optimize:
         #only include topologies that there is data for
         for i in self.data.keys():
             self.topos[i] = {'thinned':None,'dense':None}
-            self.compare[i] = {'thinned':None,'dense':None}
+            self.compare = {'thinned':None,'dense':None}
 
-        for i in self.data.keys():
             temp = self.data[i].copy()
 
             dense = temp[temp.remove_p == 0].copy()
             x = dense.groupby(['exp_num']).aggregate(np.mean)
             self.topos[i]['dense'] = x.sort_values(by='mean_pred',ascending=False,inplace=True).iloc[:num_winners]
-
             # exclude equal to zero to can compare whether a thinned network can beat a non thinned network
             # and to avoid having a not thinned network appear in both sides
             thin = temp[temp.remove_p > 0].copy()
             y = temp.groupby(['exp_num']).aggregate(np.mean)
             self.topos[i]['thinned'] = y.sort_values(by='mean_pred',ascending=False,inplace=True).iloc[:num_winners]
 
-        # combine all the dense networks, and the thinned ones to see compare topologies -
-        # start with the first
+        # combine all the dense networks together, and the thinned ones together to see compare topologies for
+        # either thinned or dense -
+        # then combine the dense & the thinned ones together to get the best
+        best = pd.DataFrame()
         for m in ['thinned','dense']:
-            start = self.data[self.data.keys()[0]][m]
-            for i in self.data.keys()[1:]
+            df = self.topos[self.data.keys()[0]][m]
+            for i in self.data.keys()[1:]:
+                temp = self.topos[i][m].T
+                df = df.append(temp,ignore_index=False)
+            self.compare[m] = df
+            best = best.append(df,ignore_index=False)
 
-        # compare whether thinned did better than the not thinned (dense)
+        self.best = best
 
         results = dict()
         results['topos'] = self.topos
         results['compare'] = self.compare
         results['best'] = self.best
 
-        print('is best sorted?')
-        raise NotImplementedError("n/a")
+        #write the best dataframe to a pickle file
+        #because in the super computer returning the results might not be useful
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        df.to_pickle(f'best_as_of_{month}_{day}_at_{hour}_{minute}.pkl')
+
         return results
-
-
 
 def df_dict(dir=None,file_list=None):
     """
@@ -598,12 +608,13 @@ def main():
     # DIR FILE_LIST parameters defined at top of script, for easy modification in VIM
     d = df_dict(DIR,FILE_LIST)
 
-    V = Visualize(d)
-    V.all(SAVEFIGS,RESOLUTION,LOC)
+    # V = Visualize(d)
+    # V.all(SAVEFIGS,RESOLUTION,LOC)
+    print('uncomment visualize in main')
 
-    # O = Optimize(d)
+    O = Optimize(d)
+    results = O.win(NUM_WINNERS)
 
 print('how to exclude certain parameter values ? ')
-print('how to handle case where some dictinaries wont have net but other dicts of that topology might')
 
 main()
