@@ -18,9 +18,12 @@ SAVEFIGS = True
 RESOLUTION = int(1e2)
 DIR = None
 FILE_LIST = None
-
-LOC = None
 NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
+
+#selection for either 'visualize' or 'optimize' or None (means both)
+SELECTION = None
+# LOCATION FOR OUTPUT FILES
+LOC = None
 
 class Visualize:
     """Visualization tool"""
@@ -447,7 +450,7 @@ class Optimize:
         self.compare = dict()
         self.best = dict()
 
-    def win(self,num_winners=5):
+    def win(self,num_winners=5,loc=None):
         """
         Get top `num_winners` from each topology for both model types (thinned or not thinned)
         as well as winners out of any topology (comparing) by model type (thinned or not thinned)
@@ -457,6 +460,7 @@ class Optimize:
 
         Parameters:
             num_winners     (int): number of winners from each topology to consider
+            loc             (str): location/directory for output file
 
         Returns:
             results  (dict): contains the following keys and results
@@ -466,6 +470,12 @@ class Optimize:
         """
         if num_winners <= 0:
             raise ValueError('num_winners should be greater than zero')
+
+        if not loc:
+             loc = ''
+        else:
+            if loc[-1] != '/':
+                loc += '/'
 
         # create dictionaries by topology then by thinned or not thinned / "dense"
         #only include topologies that there is data for
@@ -512,7 +522,10 @@ class Optimize:
         #because in the super computer returning the results might not be useful
         month, day = dt.datetime.now().month, dt.datetime.now().day
         hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
-        df.to_pickle(f'best_as_of_{month}_{day}_at_{hour}_{minute}.pkl')
+        file = f'best_as_of_{month}_{day}_at_{hour}_{minute}.pkl'
+        #location may be basically empty
+        name = loc + file
+        df.to_pickle(name)
 
         return results
 
@@ -617,19 +630,34 @@ def df_dict(dir=None,file_list=None):
 
     return df_dict
 
-def main():
-    """ Use df_dict, to initialize Visualize & Optimize classes, and to run the `all` method for each class """
+def main(selection=None):
+    """ Use df_dict, to initialize Visualize & Optimize classes, and to run the `all` method for each class
+    The selection parameter is useful when wanting to run just one of 'visualize' or 'optimize'
+
+    Parameters:
+        selection (str): If None, then both Visualize & Optimize
+    """
+    options = ['visualize','optimize']
+    if selection is None:
+        l = options
+    else:
+        if selection not in options:
+            raise ValueError(f'{selection} must be None or in {options}')
+        else:
+            l = [selection]
+
     # DIR FILE_LIST parameters defined at top of script, for easy modification in VIM
     d = df_dict(DIR,FILE_LIST)
 
-    V = Visualize(d)
-    V.all(SAVEFIGS,RESOLUTION,LOC)
-
-    O = Optimize(d)
-    results = O.win(NUM_WINNERS)
-    return results
+    if 'visualize' in l:
+        V = Visualize(d)
+        V.all(SAVEFIGS,RESOLUTION,LOC)
+    if 'optimize' in l:
+        O = Optimize(d)
+        results = O.win(NUM_WINNERS,LOC)
+        return results
 
 print('how to exclude certain parameter values ? ')
 
 if __name__ == "__main__":
-    main()
+    main(SELECTION)
