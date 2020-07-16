@@ -5,33 +5,37 @@ from matplotlib import pyplot as plt
 import pickle
 import datetime as dt                   # to add the date and time into the figure title
 import time
+import os
 
 # DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
 FILE_LIST = [
-    'compiled_output_f2_38_barab2.pkl'
-    ,'compiled_output_jw44_barab2.pkl'
-    ,'compiled_output_jw39_barab1.pkl'
-    ,'compiled_output_jw43_barab1.pkl'
-    ,'compiled_output_jw40_watts3.pkl'
-    ,'compiled_output_jw45_watts3.pkl'
-    ,'compiled_output_jj6_random_digraph.pkl'
-    ,'compiled_output_jj7_erdos.pkl'
-    ,'compiled_output_jw53_ident.pkl'
-    ,'compiled_output_jw54_loop.pkl'
-    ,'compiled_output_jw55_no_edges.pkl'
-    ,'compiled_output_jw56_chain.pkl'
+    # 'compiled_output_f2_38_barab2.pkl'
+#     ,'compiled_output_jw44_barab2.pkl'
+#     ,'compiled_output_jw39_barab1.pkl'
+#     ,'compiled_output_jw43_barab1.pkl'
+#     ,'compiled_output_jw40_watts3.pkl'
+#     ,'compiled_output_jw45_watts3.pkl'
+#     ,'compiled_output_jj6_random_digraph.pkl'
+#     ,'compiled_output_jj7_erdos.pkl'
+#     ,'compiled_output_jw53_ident.pkl'
+    # ,'compiled_output_jw54_loop.pkl'
+    # ,'compiled_output_jw55_no_edges.pkl'
+#     ,'compiled_output_jw56_chain.pkl'
 ]
 
 SAVEFIGS = True
 RESOLUTION = int(1e3)
 DIR = None
-# FILE_LIST = None
+FILE_LIST = None
 NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
 
 #selection for either 'visualize' or 'optimize' or None (means both)
 SELECTION = 'optimize'
+# SELECTION = 'visualize'
+SELECTION = 'None'
 # LOCATION FOR OUTPUT FILES
-LOC = 'BEST_DATA_AS_OF_7_15'
+LOC = 'BEST_DATA_AS_OF_7_16'
+LOC = None
 
 class Visualize:
     """Visualization tool"""
@@ -68,12 +72,11 @@ class Visualize:
              ,'chain':'Chain Network'
          }
         self.var_names = {
-        'mean_pred':'Avg. Accuracy Dur.'
-        ,'mean_err':'Avg. Fit Error'
-        ,'remove_p':'Edge Removal %'
-        ,'ncd':'# Nets (log)' #net count distribution
+            'mean_pred':'Avg. Accuracy Dur.'
+            ,'mean_err':'Avg. Fit Error'
+            ,'remove_p':'Edge Removal %'
+            ,'ncd':'# Nets (log)' #net count distribution
         }
-        self.axis_names
         self.legend_size = 10
         # self.figure_width_per_column = 6.5
         self.figure_width_per_column = 9 # when legend is bigger (legend_size = 10)
@@ -374,7 +377,6 @@ class Visualize:
             ax[i].set_title(self.topo_names[t])
             ax[i].set_xlabel(self.var_names['remove_p'])
             ax[i].set_ylabel(self.var_names[dep])
-        print('we need axis labels')
         # title_ = v.upper().replace('_',' ')
         # fig.suptitle(f'{title_} Comparison For All Topologies', fontsize=16,y=1.03)
         my_suptitle = fig.suptitle(f'{self.parameter_names[v]} Comparison For All Topologies', fontsize=16,y=1.03)
@@ -397,6 +399,32 @@ class Visualize:
     def network_statistics(self):
         """ """
         raise NotImplementedError('network_statistics not done ')
+
+    def ncc(self,
+        loc,
+        savefig = False,
+        res = int(1e2),
+        verbose = False,
+        ):
+        """ Generate figures to look at the number of connected components for each remove_p value """
+        # each row is a topology, and each column is either nscc or nwcc
+
+        num_columns = 2
+        num_topos = len(list(self.data.keys()))
+        fig_height = self.figure_height_per_row * num_topos
+        fig_width = self.figure_width_per_column * num_columns
+        fig, ax = plt.subplots(num_topos,num_columns,sharey=False,dpi=res,figsize=(fig_width,fig_height))
+
+
+        # for i,t in enumerate(self.data.keys()):
+        #     e = self.data[t].copy()
+        #     for j,p in enumerate(['nscc','nwcc']):
+        #         #use seaborn box & whisker plot with axes?
+        #         ax[i][j].
+
+        raise NotImplementedError('ncc not done ')
+
+
 
     def all(self
         ,savefigs=True
@@ -444,6 +472,9 @@ class Visualize:
                     )
         print('done with compare_parameter ')
         print('axis labels for compare_parameter')
+
+
+        print('done with number of connected components')
 
 class Optimize:
     """ """
@@ -509,17 +540,17 @@ class Optimize:
         # then combine the dense & the thinned ones together to get the best
         best = pd.DataFrame()
         for m in ['thinned','dense']:
-            df = self.topos[list(self.data.keys())[0]][m]
+            df = self.topos[list(self.data.keys())[0]][m].copy()
             if 'net' not in df.columns:
                 df['net'] = list(self.data.keys())[0]
             for i in list(self.data.keys())[1:]:
                 temp = self.topos[i][m]
                 if 'net' not in temp.columns:
-                    temp['net'] = i
-                df = df.append(temp,ignore_index=False)
+                    temp.loc[:,'net'] = i
+                df = df.append(temp,ignore_index=True)
             df.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
             self.compare[m] = df
-            best = best.append(df,ignore_index=False)
+            best = best.append(df,ignore_index=True)
 
         self.best = best
 
@@ -535,7 +566,7 @@ class Optimize:
         file = f'best_as_of_{month}_{day}_at_{hour}_{minute}.pkl'
         #location may be basically empty
         name = loc + file
-        df.to_pickle(name)
+        best.to_pickle(name)
 
         return results
 
@@ -633,8 +664,10 @@ def df_dict(dir=None,file_list=None):
             df = pd.DataFrame(a)
             df.columns = [a.lower().replace(' ','_') for a in df.columns]
             df.drop(index=df[df['adj_size'].isnull()].index,inplace=True)
+            s = df['exp_num'].value_counts()
+            df.loc[:,'num_nets_by_exp'] = [s[i] for i in df['exp_num']]
             if "net" not in df.columns:
-                df['net'] = i
+                df.loc[:,'net'] = i
                 print(f'`net` column wasnt in:\n{filenames[i]}')
             df_dict[i] = df
 
@@ -676,5 +709,4 @@ def main(selection=None):
 
 print('how to exclude certain parameter values ? ')
 
-if __name__ == "__main__":
-    main(SELECTION)
+main(SELECTION)
