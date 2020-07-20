@@ -2,6 +2,7 @@ import subprocess
 import os
 import time
 import pandas as pd
+import datetime as dt
 
 """The goal of this file is to be able to organize and move organize
 directories that have immediate children files into children directories """
@@ -9,10 +10,6 @@ directories that have immediate children files into children directories """
 
 #create function to organize partial datasets
 #   don't move the last partial dataset from each partition index, I want to investigate those
-
-
-
-
 
 def separate(l):
     """Separate slurm files from other files by name, called by mv_slurm function
@@ -35,16 +32,14 @@ def separate(l):
 
     return (slurms,others)
 
-#organize the slurm files
-def mv_slurm(loc=None,num_to_name=None):
+def slurm_batches(loc):
     """
-    Assuming a large number of slurm files from different batches are in one directory then organize that directory
+    Investigate the batch numbers within one directory
 
     Parameters:
         loc                 (str): location to work, if None, then assumed working directory
-        num_to_name         (dict): dictionary containing batch numbers to names for directories,
+
     """
-    start = time.time()
     if not loc:
          loc = ''
     else:
@@ -61,6 +56,7 @@ def mv_slurm(loc=None,num_to_name=None):
     l , other = separate(f)
 
     #move non_slurm files into other directory
+    #wildcards in subprocess could be more efficient, not worth investigating though
     if len(other) > 0:
         print('other files are in slurm directory')
         month, day = dt.datetime.now().month, dt.datetime.now().day
@@ -82,8 +78,73 @@ def mv_slurm(loc=None,num_to_name=None):
     unique_batch_numbers = s['batch_num'].unique()
     print('slurm batch counts \n')
     print(s['batch_num'].value_counts())
+
+#organize the slurm files
+def mv_slurm(loc=None,num_to_name=None):
+    """
+    Assuming a large number of slurm files from different batches are in one directory then organize that directory
+    slurm-
+
+    Parameters:
+        loc                 (str): location to work, if None, then assumed working directory
+        num_to_name         (dict): dictionary containing batch numbers to names for directories,
+    """
+    start = time.time()
+    if not loc:
+         loc = ''
+    else:
+        if loc[-1] != '/':
+            loc += '/'
+
+
+
+    directory_list = os.listdir(loc)
+
+    #parse the slurn names
+    files = [a.split('.') for a in directory_list]
+    f = [l[0] for l in files]
+    # there might be a directory therefore not a [1] index
+    #list comprehension is faster, but for loop allows for more control
+    file_endings = set()
+    for l in files:
+        try:
+            file_endings.add(l[1])
+        except:
+            pass
+    l , other = separate(f)
+
+    #move non_slurm files into other directory
+    #wildcards in subprocess could be more efficient, not worth investigating though
+    if len(other) > 0:
+        print('other files are in slurm directory')
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        name = f'OTHER_{month}_{day}_at_{hour}_{minute}'
+        #make directory
+        subprocess.run(['mkdir',loc + name])
+        #move other files into directory
+        for i in other:
+            # the other file could be a directory containing slurm
+            if 'OTHER' not in i and 'SLURM' not in i:
+                #could be .txt, or .png
+                for j in file_endings:
+                    #not super efficient but it is effective to go through all file_endings,
+                    file_name = i + '.' + j
+                    subprocess.run(['mv',loc + file_name,loc + f'{name}/'])
+
+    s = pd.DataFrame(l,columns=['batch_num','file_num'])
+    unique_batch_numbers = s['batch_num'].unique()
+    print('slurm batch counts \n')
+    print(s['batch_num'].value_counts())
+
     for i in unique_batch_numbers:
         vals = s.loc[s.batch_num == i].file_num.values
+        #make directories
+        if num_to_name:
+            subprocess.run(['mkdir',loc + f'SLURM_{num_to_name[i]}/'])
+        else:
+            subprocess.run(['mkdir',loc + f'SLURM_{i}/'])
+
         for j in vals:
             if num_to_name:
                 subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{num_to_name[i]}/'])
@@ -91,7 +152,6 @@ def mv_slurm(loc=None,num_to_name=None):
                 subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{i}/'])
 
     print(f'done moving slurm files in {loc}\n after {round((time.time() - start )/ 60,1)} minutes')
-
 
 def directory(network):
     """
@@ -183,8 +243,8 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None):
         working_directory_name = loc
     print(f'done moving {filename_prefix}.pkl files in {working_directory_name}\n')
 
-def batch_pkl_movement(d,verbose=True):
-    """ Organize the different topology directories
+#def batch_pkl_movement(d,verbose=True):
+""" Organize the different topology directories
 
     Parameters:
         d           (dict): According to format below, as inputs for move_pkl
@@ -200,15 +260,16 @@ def batch_pkl_movement(d,verbose=True):
                 ,'num_partitions':32
                 ,'loc':None}
         }
-     """
-     for i in d.keys():
-         start = time.time()
-
-         move_pkl(filename_prefix=i,
-             num_experiments=d[i]['num_experiments'],
-             num_partitions=d[i]['num_partitions'],
-             loc=d[i]['loc'])
-
-         runtime = time.time() - start
-         if verbose:
-             print(f'finished with {i} after {round((time.time() - start )/ 60,1)} minutes')
+"""
+     #pass
+     # for i in d.keys():
+     #     start = time.time()
+     #
+     #     move_pkl(filename_prefix=i,
+     #     num_experiments=d[i]['num_experiments'],
+     #     num_partitions=d[i]['num_partitions'],
+     #     loc=d[i]['loc'])
+     #
+     #     runtime = time.time() - start
+     #     if verbose:
+     #         print(f'finished with {i} after {round((time.time() - start )/ 60,1)} minutes')
