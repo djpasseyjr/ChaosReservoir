@@ -3,6 +3,7 @@ import os
 import time
 import pandas as pd
 import datetime as dt
+import glob #for using wildcards
 
 """The goal of this file is to be able to organize and move organize
 directories that have immediate children files into children directories """
@@ -10,6 +11,10 @@ directories that have immediate children files into children directories """
 
 #create function to organize partial datasets
 #   don't move the last partial dataset from each partition index, I want to investigate those
+
+def ls_topo():
+    """ Investigate the topology  """
+
 
 def separate(l):
     """Separate slurm files from other files by name, called by mv_slurm function
@@ -72,7 +77,6 @@ def slurm_batches(loc):
         print(f'\t{i}:\'\'')
     print('}')
     print('add commas')
-
 
 #organize the slurm files
 def mv_slurm(loc=None,num_to_name=None):
@@ -209,7 +213,7 @@ def range_inator(max_experiments,nsplit):
     # output.append((a,b-1))
     return output
 
-def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None):
+def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None,delete_py=True):
     """ Move the .pkl resulting files into directories by partition
 
     Parameters:
@@ -217,7 +221,7 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None):
         num_experiments     (int):
         num_partitions      (int):
         loc                 (str): location to work, if None, then assumed working directory
-
+        delete_py           (bool): if True, then the .py files will be deleted
     """
     if not loc:
          loc = ''
@@ -226,6 +230,10 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None):
             loc += '/'
 
     l = range_inator(num_experiments,num_partitions)
+
+    if delete_py:
+        for file in glob.glob(loc + f"{filename_prefix}_*.py"):
+            os.remove(file)
 
     #make directories
     for i in range(num_partitions):
@@ -243,6 +251,15 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None):
     else:
         working_directory_name = loc
     print(f'done moving {filename_prefix}.pkl files in {working_directory_name}\n')
+
+def update_partition_scripts():
+    """Update the compile partition based upon the .pkl files being moved """
+    pass
+
+    #need number of parititons
+    dir = directory(filename_prefix.strip('_')[1])
+    tmpl_str.replace(f"DIR = {dir}",f"DIR = {dir}/{}")
+
 
 #def batch_pkl_movement(d,verbose=True):
 """ Organize the different topology directories
