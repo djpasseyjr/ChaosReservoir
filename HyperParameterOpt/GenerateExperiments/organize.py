@@ -1,26 +1,97 @@
 import subprocess
 import os
+import time
+import pandas as pd
 
 """The goal of this file is to be able to organize and move organize
 directories that have immediate children files into children directories """
 
-print('if im using os.listdir to organize, it will include directories where i might not want it to ')
 
-#create function to move .pkl files
-""" the best thing for the .pkl organizer would to be to organize according to range-inator
-    so I  need to know what the total number of experiments is,
-    this is why the main.py file is so important
+#create function to organize partial datasets
+#   don't move the last partial dataset from each partition index, I want to investigate those
 
-    then once I have the partitions, make the directories for each partition,
-    loop through each file putting it into the new directory
 
-    It would be really cool to just pass in name of the main file, and it's location
-    have my code read in the main file and figure out how many partitions I had chosen
-    as well as how many experiments there will be
 
-    Then for it to run on all the main files and the topology directories
 
-"""
+
+def separate(l):
+    """Separate slurm files from other files by name, called by mv_slurm function
+
+    Parameters:
+        l   (list): list of filenames in a certain directory
+
+    Returns:
+        (slurms,others): tuple of lists where
+                slurms is a list containing file names of slurm files
+                others is a list containing file names of non-slurm files
+    """
+    slurms = []
+    others = []
+    for i in l:
+        if 'slurm-' in i:
+            slurms.append(i[6:].split('_'))
+        else:
+            others.append(i)
+
+    return (slurms,others)
+
+#organize the slurm files
+def mv_slurm(loc=None,num_to_name=None):
+    """
+    Assuming a large number of slurm files from different batches are in one directory then organize that directory
+
+    Parameters:
+        loc                 (str): location to work, if None, then assumed working directory
+        num_to_name         (dict): dictionary containing batch numbers to names for directories,
+    """
+    start = time.time()
+    if not loc:
+         loc = ''
+    else:
+        if loc[-1] != '/':
+            loc += '/'
+
+    directory_list = os.listdir(loc)
+
+    #parse the slurn names
+    files = [a.split('.') for a in directory_list]
+    f = [l[0] for l in files]
+    file_endings = set([l[1] for l in files])
+
+    l , other = separate(f)
+
+    #move non_slurm files into other directory
+    if len(other) > 0:
+        print('other files are in slurm directory')
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        name = f'OTHER_{month}_{day}_at_{hour}_{minute}'
+        #make directory
+        subprocess.run(['mkdir',loc + name])
+        #move other files into directory
+        for i in other:
+            # the other file could be a directory containing slurm
+            if 'OTHER' not in i and 'SLURM' not in i:
+                #could be .txt, or .png
+                for j in file_endings:
+                    #not super efficient but it is effective to go through all file_endings,
+                    file_name = i + '.' + j
+                    subprocess.run(['mv',loc + file_name,loc + f'{name}/'])
+
+    s = pd.DataFrame(l,columns=['batch_num','file_num'])
+    unique_batch_numbers = s['batch_num'].unique()
+    print('slurm batch counts \n')
+    print(s['batch_num'].value_counts())
+    for i in unique_batch_numbers:
+        vals = s.loc[s.batch_num == i].file_num.values
+        for j in vals:
+            if num_to_name:
+                subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{num_to_name[i]}/'])
+            else:
+                subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{i}/'])
+
+    print(f'done moving slurm files in {loc}\n after {round((time.time() - start )/ 60,1)} minutes')
+
 
 def directory(network):
     """
@@ -103,12 +174,41 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None):
     for i,t in enumerate(l):
         a,b = t
         for j in range(a,b):
+            #doesn't throw an error if file doesn't exist, just has `returncode=1` as output which isn't stored in this case
             subprocess.run(['mv',loc + f'{filename_prefix}_{j}.pkl',loc + f'{filename_prefix}_result_files_{i}/'])
 
-#I could probably run this program with multiple calls to this function and just use the loc parameter
+    if loc == '':
+        working_directory_name = os.getcwd()
+    else:
+        working_directory_name = loc
+    print(f'done moving {filename_prefix}.pkl files in {working_directory_name}\n')
 
+def batch_pkl_movement(d,verbose=True):
+    """ Organize the different topology directories
 
-#create function to organize partial datasets
-#   don't move the last partial dataset from each partition index, I want to investigate those
+    Parameters:
+        d           (dict): According to format below, as inputs for move_pkl
+        verbose     (str)
 
-#organize the slurm files
+        #fnp = file_name_prefix
+        d = {'file_name_prefix':{
+                'num_experiments':60000
+                ,'num_partitions':16
+                ,'loc':None}
+            ,'fnp_2':{
+                'num_experiments':70000
+                ,'num_partitions':32
+                ,'loc':None}
+        }
+     """
+     for i in d.keys():
+         start = time.time()
+
+         move_pkl(filename_prefix=i,
+             num_experiments=d[i]['num_experiments'],
+             num_partitions=d[i]['num_partitions'],
+             loc=d[i]['loc'])
+
+         runtime = time.time() - start
+         if verbose:
+             print(f'finished with {i} after {round((time.time() - start )/ 60,1)} minutes')
