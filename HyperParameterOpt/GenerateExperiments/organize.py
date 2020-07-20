@@ -59,25 +59,20 @@ def slurm_batches(loc):
     #wildcards in subprocess could be more efficient, not worth investigating though
     if len(other) > 0:
         print('other files are in slurm directory')
-        month, day = dt.datetime.now().month, dt.datetime.now().day
-        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
-        name = f'OTHER_{month}_{day}_at_{hour}_{minute}'
-        #make directory
-        subprocess.run(['mkdir',loc + name])
-        #move other files into directory
-        for i in other:
-            # the other file could be a directory containing slurm
-            if 'OTHER' not in i and 'SLURM' not in i:
-                #could be .txt, or .png
-                for j in file_endings:
-                    #not super efficient but it is effective to go through all file_endings,
-                    file_name = i + '.' + j
-                    subprocess.run(['mv',loc + file_name,loc + f'{name}/'])
+        print(other)
+        print('\n')
 
     s = pd.DataFrame(l,columns=['batch_num','file_num'])
     unique_batch_numbers = s['batch_num'].unique()
     print('slurm batch counts \n')
     print(s['batch_num'].value_counts())
+    #construct num_to_name dictionary
+    print('num_to_names = {'')
+    for i in s.batch_num:
+        print(f'\t{i}:\'\'')
+    print('}')
+    print('add commas')
+
 
 #organize the slurm files
 def mv_slurm(loc=None,num_to_name=None):
