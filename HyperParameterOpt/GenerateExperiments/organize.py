@@ -96,8 +96,6 @@ def mv_slurm(loc=None,num_to_name=None):
         if loc[-1] != '/':
             loc += '/'
 
-
-
     directory_list = os.listdir(loc)
 
     #parse the slurn names
@@ -116,7 +114,7 @@ def mv_slurm(loc=None,num_to_name=None):
     #move non_slurm files into other directory
     #wildcards in subprocess could be more efficient, not worth investigating though
     if len(other) > 0:
-        print('other files are in slurm directory')
+        print(f'there are {len(other)} other files are in slurm directory')
         month, day = dt.datetime.now().month, dt.datetime.now().day
         hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
         name = f'OTHER_{month}_{day}_at_{hour}_{minute}'
@@ -134,22 +132,30 @@ def mv_slurm(loc=None,num_to_name=None):
 
     s = pd.DataFrame(l,columns=['batch_num','file_num'])
     unique_batch_numbers = s['batch_num'].unique()
+    sbc = s['batch_num'].value_counts()
     print('slurm batch counts \n')
-    print(s['batch_num'].value_counts())
+    print(sbc)
 
     for i in unique_batch_numbers:
-        vals = s.loc[s.batch_num == i].file_num.values
+
         #make directories
         if num_to_name:
             subprocess.run(['mkdir',loc + f'SLURM_{num_to_name[i]}/'])
         else:
             subprocess.run(['mkdir',loc + f'SLURM_{i}/'])
-
-        for j in vals:
+        #there might only be one file from that batch
+        if sbc[i] == 1:
             if num_to_name:
-                subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{num_to_name[i]}/'])
+                subprocess.run(['mv',loc + f'slurm-{i}.out',loc + f'SLURM_{num_to_name[i]}/'])
             else:
-                subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{i}/'])
+                subprocess.run(['mv',loc + f'slurm-{i}.out',loc + f'SLURM_{i}/'])
+        else:
+            vals = s.loc[s.batch_num == i].file_num.values
+            for j in vals:
+                if num_to_name:
+                    subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{num_to_name[i]}/'])
+                else:
+                    subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{i}/'])
 
     print(f'done moving slurm files in {loc}\n after {round((time.time() - start )/ 60,1)} minutes')
 
