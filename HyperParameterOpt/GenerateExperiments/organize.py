@@ -13,8 +13,8 @@ directories that have immediate children files into children directories """
 #   don't move the last partial dataset from each partition index, I want to investigate those
 
 def ls_topo():
-    """ Investigate the topology  """
-
+    """ Investigate the topology directory to see which batches are included """
+    pass
 
 def separate(l):
     """Separate slurm files from other files by name, called by mv_slurm function
@@ -252,17 +252,24 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None,delete_py=
         working_directory_name = loc
     print(f'done moving {filename_prefix}.pkl files in {working_directory_name}\n')
 
-def update_partition_scripts():
-    """Update the compile partition based upon the .pkl files being moved """
-    pass
+def update_partition_scripts(filename_prefix,num_partitions):
+    """Update the compile partition based upon the .pkl files being moved
 
+    Parameters:
+        filename_prefix     (str):
+        num_partitions      (int):
+
+    """
     #need number of parititons
-    dir = directory(filename_prefix.strip('_')[1])
-    tmpl_str.replace(f"DIR = {dir}",f"DIR = {dir}/{}")
+    for i in range(num_partitions):
+        pc_script = new_name = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
+        dir = directory(filename_prefix.strip('_')[1])
+        with open(pc_script,'rw') as pcs:
+            pcs.replace(f"DIR = {dir}",f"DIR = {dir}/{filename_prefix}_result_files_{i}'}")
 
 
-#def batch_pkl_movement(d,verbose=True):
-""" Organize the different topology directories
+def batch_pkl_movement(d,verbose=True):
+    """ Organize the different topology directories
 
     Parameters:
         d           (dict): According to format below, as inputs for move_pkl
@@ -278,16 +285,19 @@ def update_partition_scripts():
                 ,'num_partitions':32
                 ,'loc':None}
         }
-"""
-     #pass
-     # for i in d.keys():
-     #     start = time.time()
-     #
-     #     move_pkl(filename_prefix=i,
-     #     num_experiments=d[i]['num_experiments'],
-     #     num_partitions=d[i]['num_partitions'],
-     #     loc=d[i]['loc'])
-     #
-     #     runtime = time.time() - start
-     #     if verbose:
-     #         print(f'finished with {i} after {round((time.time() - start )/ 60,1)} minutes')
+    """
+    for i in d.keys():
+        start = time.time()
+
+        move_pkl(filename_prefix=i,
+        num_experiments=d[i]['num_experiments'],
+        num_partitions=d[i]['num_partitions'],
+        loc=d[i]['loc'])
+
+        runtime = time.time() - start
+        if verbose:
+            print(f'finished with {i} after {round((time.time() - start )/ 60,1)} minutes')
+
+        update_partition_scripts(filename_prefix=i,num_partitions=d[i]['num_partitions'])
+        if verbose:
+            print(f'finished updating partition scripts for {i}')
