@@ -8,13 +8,21 @@ import glob #for using wildcards
 """The goal of this file is to be able to organize and move organize
 directories that have immediate children files into children directories """
 
+DEBUG = True
 
 #create function to organize partial datasets
-#   don't move the last partial dataset from each partition index, I want to investigate those
+def partial_data():
+    """ """
+    raise NotImplementedError('partial_data is not done')
+    print('dont move the last partial dataset from each partition index, I want to investigate those')
 
 def ls_topo():
     """ Investigate the topology directory to see which batches are included """
     pass
+    #just use ipython
+    #import os
+    #l = sorted(os.listdir())
+    #manually investigate `l`
 
 def separate(l):
     """Separate slurm files from other files by name, called by mv_slurm function
@@ -72,13 +80,12 @@ def slurm_batches(loc):
     print('slurm batch counts \n')
     print(s['batch_num'].value_counts())
     #construct num_to_name dictionary
-    print('num_to_names = {'')
+    print('num_to_names = {')
     for i in s.batch_num:
         print(f'\t{i}:\'\'')
     print('}')
     print('add commas')
 
-#organize the slurm files
 def mv_slurm(loc=None,num_to_name=None):
     """
     Assuming a large number of slurm files from different batches are in one directory then organize that directory
@@ -179,7 +186,7 @@ def directory(network):
                         'chain', 'loop',
                         'ident']
     if network not in network_options:
-        raise ValueError('{network} not in {network_options}')
+        raise ValueError(f'{network} not in {network_options}')
 
     if network == 'barab1' or network == 'barab2':
         DIR = 'Barabasi'
@@ -252,20 +259,40 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None,delete_py=
         working_directory_name = loc
     print(f'done moving {filename_prefix}.pkl files in {working_directory_name}\n')
 
-def update_partition_scripts(filename_prefix,num_partitions):
+def update_partition_scripts(filename_prefix,num_partitions,copy_files=True):
     """Update the compile partition based upon the .pkl files being moved
 
     Parameters:
         filename_prefix     (str):
         num_partitions      (int):
+        copy_files          (bool): make duplicates of the partition_compilation files to avoid being overwritten
 
     """
+    if copy_files:
+        print('copy files not developed yet')
+        print('how to search for just directories using subprocess, as to verify if the copy directory has already been made ')
+        print('should copies include date & time, thats kinda weird cuz I expect this to be run only once except during development')
+        #make a directory for the files
+        #copy the files using subprocess
+
     #need number of parititons
     for i in range(num_partitions):
-        pc_script = new_name = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
-        dir = directory(filename_prefix.strip('_')[1])
-        with open(pc_script,'rw') as pcs:
-            pcs.replace(f"DIR = {dir}",f"DIR = {dir}/{filename_prefix}_result_files_{i}'}")
+        pc_script = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
+        topo = filename_prefix.split('_')
+        dir = directory(topo[1])
+
+        with open(pc_script,'r') as pcs:
+            file_str = pcs.read()
+
+        find = f"DIR = \"{dir}\""
+        new = f"DIR = \"{dir}/{filename_prefix}_result_files_{i}\""
+        file_str.replace(find,new)
+
+        new_name = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
+        new_f = open(new_name,'w')
+        new_f.write(file_str)
+        new_f.close()
+
 
 
 def batch_pkl_movement(d,verbose=True):
@@ -286,6 +313,12 @@ def batch_pkl_movement(d,verbose=True):
                 ,'loc':None}
         }
     """
+    #an alternative to this function is just to make the call
+    # to move_pkl many times from a different script,
+    # but this function will time the movements
+    # & this function will also do the update_partition_scripts
+    # which is convenient
+
     for i in d.keys():
         start = time.time()
 

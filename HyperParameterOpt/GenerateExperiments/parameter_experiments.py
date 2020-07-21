@@ -192,7 +192,7 @@ def directory(network):
                         'chain', 'loop',
                         'ident']
     if network not in network_options:
-        raise ValueError('{network} not in {network_options}')
+        raise ValueError(f'{network} not in {network_options}')
 
     if network == 'barab1' or network == 'barab2':
         DIR = 'Barabasi'
@@ -258,7 +258,7 @@ def write_bash_script(
     new_f.close()
     # print('NEXT: sg fslg_webb_reservoir \"sbatch',filename +'.sh\"')
 
-    #post_completion script is outdated 
+    #post_completion script is outdated
 
     #removed cleanup file
 
