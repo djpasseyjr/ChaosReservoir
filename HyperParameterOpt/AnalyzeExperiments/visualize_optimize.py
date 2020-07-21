@@ -11,14 +11,14 @@ import os
 FILE_LIST = [
     # 'compiled_output_f2_38_barab2.pkl'
 #     ,'compiled_output_jw44_barab2.pkl'
-#     ,'compiled_output_jw39_barab1.pkl'
-#     ,'compiled_output_jw43_barab1.pkl'
-#     ,'compiled_output_jw40_watts3.pkl'
-#     ,'compiled_output_jw45_watts3.pkl'
+    ,'compiled_output_jw39_barab1.pkl'
+    ,'compiled_output_jw43_barab1.pkl'
+    ,'compiled_output_jw40_watts3.pkl'
+    ,'compiled_output_jw45_watts3.pkl'
 #     ,'compiled_output_jj6_random_digraph.pkl'
 #     ,'compiled_output_jj7_erdos.pkl'
 #     ,'compiled_output_jw53_ident.pkl'
-    # ,'compiled_output_jw54_loop.pkl'
+    ,'compiled_output_jw54_loop.pkl'
     # ,'compiled_output_jw55_no_edges.pkl'
 #     ,'compiled_output_jw56_chain.pkl'
 ]
@@ -26,7 +26,7 @@ FILE_LIST = [
 SAVEFIGS = True
 RESOLUTION = int(1e3)
 DIR = None
-FILE_LIST = None
+# FILE_LIST = None
 NUM_WINNERS = 5 #find top NUM_WINNERS in grid search optimization
 
 #selection for either 'visualize' or 'optimize' or None (means both)
@@ -34,8 +34,105 @@ SELECTION = 'optimize'
 # SELECTION = 'visualize'
 SELECTION = 'None'
 # LOCATION FOR OUTPUT FILES
-LOC = 'BEST_DATA_AS_OF_7_16'
 LOC = None
+LOC = 'BEST_DATA_AS_OF_7_16'
+
+class Optimize:
+    """ """
+    def __init__(self,df_dict):
+        """
+        Parameters:
+            df_dict     (dict): keys are topology name strings, and values are the dataframe for
+                                that topology, aka output of df_dict function
+        """
+        self.data = df_dict
+        self.topos = dict()
+        self.compare = dict()
+        self.best = dict()
+
+    def win(self,num_winners=5,loc=None,save_best=True):
+        """
+        Get top `num_winners` from each topology for both model types (thinned or not thinned)
+        as well as winners out of any topology (comparing) by model type (thinned or not thinned)
+        as well as winners out of all model types out of all topologies (the best model from this data)
+
+        Assume "dense" means not thinned in this case, remove_p = 0
+
+        Parameters:
+            num_winners     (int): number of winners from each topology to consider
+            loc             (str): location/directory for output file
+            save_best       (bool): whether to save the best results as a pkl file
+
+        Returns:
+            results  (dict): contains the following keys and results
+                topos    (dict): dictionary containing dataframes for each topologys best with thinning and no thinning ('dense')
+                compare  (dict): compares all the topologies, to see which topologies are the best
+                best     (df): merged & sorts the two dataFrames in compare values
+
+        """
+        if num_winners <= 0:
+            raise ValueError('num_winners should be greater than zero')
+
+        if not loc:
+             loc = ''
+        else:
+            if loc[-1] != '/':
+                loc += '/'
+
+        # create dictionaries by topology then by thinned or not thinned / "dense"
+        #only include topologies that there is data for
+        for i in self.data.keys():
+            self.topos[i] = {'thinned':None,'dense':None}
+            self.compare = {'thinned':None,'dense':None}
+
+            temp = self.data[i].copy()
+
+            dense = temp[temp.remove_p == 0].copy()
+            x = dense.groupby(['exp_num']).aggregate(np.mean).copy()
+            x.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
+            self.topos[i]['dense'] = x.iloc[:num_winners]
+            # exclude equal to zero to can compare whether a thinned network can beat a non thinned network
+            # and to avoid having a not thinned network appear in both sides
+            thin = temp[temp.remove_p > 0].copy()
+            y = temp.groupby(['exp_num']).aggregate(np.mean).copy()
+            y.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
+            self.topos[i]['thinned'] = y.iloc[:num_winners]
+
+        # combine all the dense networks together, and the thinned ones together to see compare topologies for
+        # either thinned or dense -
+        # then combine the dense & the thinned ones together to get the best
+        best = pd.DataFrame()
+        for m in ['thinned','dense']:
+            df = self.topos[list(self.data.keys())[0]][m].copy()
+            if 'net' not in df.columns:
+                df['net'] = list(self.data.keys())[0]
+            for i in list(self.data.keys())[1:]:
+                temp = self.topos[i][m]
+                if 'net' not in temp.columns:
+                    temp.loc[:,'net'] = i
+                df = df.append(temp,ignore_index=True)
+            df.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
+            self.compare[m] = df
+            best = best.append(df,ignore_index=True)
+
+        self.best = best
+
+        results = dict()
+        results['topos'] = self.topos
+        results['compare'] = self.compare
+        results['best'] = self.best
+
+        #write the best dataframe to a pickle file
+        #because in the super computer returning the results might not be useful
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        file = f'best_as_of_{month}_{day}_at_{hour}_{minute}.pkl'
+        #location may be basically empty
+        if save_best:
+            name = loc + file
+            best.to_pickle(name)
+
+        return results
 
 class Visualize:
     """Visualization tool"""
@@ -189,8 +286,6 @@ class Visualize:
             ax[i][1].set_xlabel(self.var_names['remove_p'])
             ax[i][1].set_ylabel(self.var_names['ncd'])
             ax[i][1].set_title(f'{self.parameter_names[v]} value counts per value')
-
-
 
         my_suptitle = fig.suptitle(f'{self.topo_names[t]} Hyper-Parameter Comparison', fontsize=16,y=1.03)
         plt.tight_layout()
@@ -373,13 +468,13 @@ class Visualize:
                 S = e[e[v] == p].groupby(e.remove_p).aggregate(np.mean)[dep].copy()
                 ax[i].plot(S.index,S.values,label=p) #if one topology
                 ax[i].scatter(S.index,S.values)
-            leg0 = ax[i].legend(loc='lower left',prop={'size': self.legend_size},bbox_to_anchor=(1.1, 0.5))
+            leg0 = ax[i].legend(loc='lower left',prop={'size': self.legend_size},bbox_to_anchor=(1.1, 1))
             ax[i].set_title(self.topo_names[t])
             ax[i].set_xlabel(self.var_names['remove_p'])
             ax[i].set_ylabel(self.var_names[dep])
         # title_ = v.upper().replace('_',' ')
         # fig.suptitle(f'{title_} Comparison For All Topologies', fontsize=16,y=1.03)
-        my_suptitle = fig.suptitle(f'{self.parameter_names[v]} Comparison For All Topologies', fontsize=16,y=1.03)
+        my_suptitle = fig.suptitle(f'{self.parameter_names[v]} Comparison For All Topologies', fontsize=16,y=1.02)
         plt.tight_layout()
         # plt.show()
 
@@ -395,6 +490,12 @@ class Visualize:
         """Plot all the topologies against each other """
         print('how to limit to either a subset of parameters, or best')
         raise NotImplementedError('contrast_topos not done ')
+
+        # use the best network from each topology as given by the optimize class
+
+        O = Optimize(self.data)
+        winners = O.win(num_winners=1)['best']
+        
 
     def network_statistics(self):
         """ """
@@ -423,8 +524,6 @@ class Visualize:
         #         ax[i][j].
 
         raise NotImplementedError('ncc not done ')
-
-
 
     def all(self
         ,savefigs=True
@@ -476,8 +575,8 @@ class Visualize:
 
         print('done with number of connected components')
 
-class Optimize:
-    """ """
+class Evaluate:
+    """This class is for briefly evaluating the datasets to identify bias, nullity, and other unevenness in the data """
     def __init__(self,df_dict):
         """
         Parameters:
@@ -485,90 +584,15 @@ class Optimize:
                                 that topology, aka output of df_dict function
         """
         self.data = df_dict
-        self.topos = dict()
-        self.compare = dict()
-        self.best = dict()
+        self.results = pd.DataFrame()
 
-    def win(self,num_winners=5,loc=None):
-        """
-        Get top `num_winners` from each topology for both model types (thinned or not thinned)
-        as well as winners out of any topology (comparing) by model type (thinned or not thinned)
-        as well as winners out of all model types out of all topologies (the best model from this data)
+    def total_net_counts(self):
+        """Identify how many experiments (25 nets) there are per remove value """
+        pass
 
-        Assume "dense" means not thinned in this case, remove_p = 0
-
-        Parameters:
-            num_winners     (int): number of winners from each topology to consider
-            loc             (str): location/directory for output file
-
-        Returns:
-            results  (dict): contains the following keys and results
-                topos    (dict): dictionary containing dataframes for each topologys best with thinning and no thinning ('dense')
-                compare  (dict): compares all the topologies, to see which topologies are the best
-                best     (df): merged & sorts the two dataFrames in compare values
-        """
-        if num_winners <= 0:
-            raise ValueError('num_winners should be greater than zero')
-
-        if not loc:
-             loc = ''
-        else:
-            if loc[-1] != '/':
-                loc += '/'
-
-        # create dictionaries by topology then by thinned or not thinned / "dense"
-        #only include topologies that there is data for
-        for i in self.data.keys():
-            self.topos[i] = {'thinned':None,'dense':None}
-            self.compare = {'thinned':None,'dense':None}
-
-            temp = self.data[i].copy()
-
-            dense = temp[temp.remove_p == 0].copy()
-            x = dense.groupby(['exp_num']).aggregate(np.mean).copy()
-            x.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
-            self.topos[i]['dense'] = x.iloc[:num_winners]
-            # exclude equal to zero to can compare whether a thinned network can beat a non thinned network
-            # and to avoid having a not thinned network appear in both sides
-            thin = temp[temp.remove_p > 0].copy()
-            y = temp.groupby(['exp_num']).aggregate(np.mean).copy()
-            y.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
-            self.topos[i]['thinned'] = y.iloc[:num_winners]
-
-        # combine all the dense networks together, and the thinned ones together to see compare topologies for
-        # either thinned or dense -
-        # then combine the dense & the thinned ones together to get the best
-        best = pd.DataFrame()
-        for m in ['thinned','dense']:
-            df = self.topos[list(self.data.keys())[0]][m].copy()
-            if 'net' not in df.columns:
-                df['net'] = list(self.data.keys())[0]
-            for i in list(self.data.keys())[1:]:
-                temp = self.topos[i][m]
-                if 'net' not in temp.columns:
-                    temp.loc[:,'net'] = i
-                df = df.append(temp,ignore_index=True)
-            df.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
-            self.compare[m] = df
-            best = best.append(df,ignore_index=True)
-
-        self.best = best
-
-        results = dict()
-        results['topos'] = self.topos
-        results['compare'] = self.compare
-        results['best'] = self.best
-
-        #write the best dataframe to a pickle file
-        #because in the super computer returning the results might not be useful
-        month, day = dt.datetime.now().month, dt.datetime.now().day
-        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
-        file = f'best_as_of_{month}_{day}_at_{hour}_{minute}.pkl'
-        #location may be basically empty
-        name = loc + file
-        best.to_pickle(name)
-
-        return results
+    def contain_net_stats(self):
+        """ """
+        pass
 
 def merge_compiled(compiled1, compiled2):
    """ Merge two compiled dictionaries """
@@ -664,6 +688,8 @@ def df_dict(dir=None,file_list=None):
             df = pd.DataFrame(a)
             df.columns = [a.lower().replace(' ','_') for a in df.columns]
             df.drop(index=df[df['adj_size'].isnull()].index,inplace=True)
+            df.drop(index=df[df['adj_size'] == 0 ].index,inplace=True)
+            df.drop(index=df[df['gamma'] == 0 ].index,inplace=True)
             s = df['exp_num'].value_counts()
             df.loc[:,'num_nets_by_exp'] = [s[i] for i in df['exp_num']]
             if "net" not in df.columns:
@@ -707,6 +733,23 @@ def main(selection=None):
         print(f'Optimization time (minutes):',round((time.time() - start )/ 60,1))
         return results
 
+def test_visuals():
+    """ """
+    d = df_dict(DIR,FILE_LIST)
+    V = Visualize(d)
+    V.compare_parameter(
+        'spect_rad',
+        loc=None,
+        dep = 'mean_pred',
+        savefig = False,
+        res = int(1e2),
+        verbose = False,
+        compare_topos = ['barab1','watts3','loop'],
+    )
+
+
 print('how to exclude certain parameter values ? ')
 
-main(SELECTION)
+# main(SELECTION)
+print('main is commented out')
+test_visuals()
