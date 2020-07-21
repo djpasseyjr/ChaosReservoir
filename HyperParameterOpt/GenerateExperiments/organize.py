@@ -274,6 +274,7 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=True):
         print('should copies include date & time, thats kinda weird cuz I expect this to be run only once except during development')
         #make a directory for the files
         #copy the files using subprocess
+        #link: https://stackoverflow.com/questions/7419665/python-move-and-overwrite-files-and-folders?rq=1
 
     #need number of parititons
     for i in range(num_partitions):
@@ -284,9 +285,11 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=True):
         with open(pc_script,'r') as pcs:
             file_str = pcs.read()
 
+
         find = f"DIR = \"{dir}\""
         new = f"DIR = \"{dir}/{filename_prefix}_result_files_{i}\""
-        file_str.replace(find,new)
+        #can't forget to reassign the string or nothing happens
+        file_str = file_str.replace(find,new)
 
         new_name = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
         new_f = open(new_name,'w')
