@@ -104,7 +104,7 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
                 print(info)
 
         # This will only include files that had data in the count
-        if (i - failed_file_count) % 10000:
+        if (i - failed_file_count) % int(NEXPERIMENTS / 3):
             pickle.dump(compiled, open('partial_compiled_output_' + filename_prefix + "_" + str(partition_index) + "_" + str(save_file_index)+ '.pkl', 'wb'))
             save_file_index += 1
 
