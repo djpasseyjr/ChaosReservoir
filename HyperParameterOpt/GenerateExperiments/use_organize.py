@@ -9,11 +9,11 @@ from organize import *
 # move_pkl('w61_watts2', 82620,8,loc='Watts')
 # move_pkl('w62_watts2', 82620,8,loc='Watts')
 
-update_partition_scripts('jw58_barab1',4,copy_files=False)
+# update_partition_scripts('jw58_barab1',4,copy_files=False)
 update_partition_scripts('jw59_barab1',4,copy_files=False)
-# update_partition_scripts('jw60_watts2',8,copy_files=True)
-# update_partition_scripts('w61_watts2',8,copy_files=True)
-# update_partition_scripts('w62_watts2',8,copy_files=True)
+update_partition_scripts('jw60_watts2',8,copy_files=True)
+update_partition_scripts('w61_watts2',8,copy_files=True)
+update_partition_scripts('w62_watts2',8,copy_files=True)
 
 """
 Traceback (most recent call last):

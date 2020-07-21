@@ -259,7 +259,7 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None,delete_py=
         working_directory_name = loc
     print(f'done moving {filename_prefix}.pkl files in {working_directory_name}\n')
 
-def update_partition_scripts(filename_prefix,num_partitions,copy_files=True):
+def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
     """Update the compile partition based upon the .pkl files being moved
 
     Parameters:
@@ -269,12 +269,18 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=True):
 
     """
     if copy_files:
-        print('copy files not developed yet')
-        print('how to search for just directories using subprocess, as to verify if the copy directory has already been made ')
-        print('should copies include date & time, thats kinda weird cuz I expect this to be run only once except during development')
+        # print('how to search for just directories using subprocess, as to verify if the copy directory has already been made ')
+        # print('should copies include date & time, thats kinda weird cuz I expect this to be run only once except during development')
         #make a directory for the files
         #copy the files using subprocess
         #link: https://stackoverflow.com/questions/7419665/python-move-and-overwrite-files-and-folders?rq=1
+        new_directory = f'old_partition_compilation_{filename_prefix}_scripts'
+        subprocess.run(['mkdir',new_directory])
+        #copy files
+        for i in range(num_partitions):
+            pc_script = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
+            subprocess.run(['cp',pc_script,new_directory + '/' + pc_script])
+
 
     #need number of parititons
     for i in range(num_partitions):
