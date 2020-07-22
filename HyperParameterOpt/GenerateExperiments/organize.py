@@ -10,6 +10,34 @@ directories that have immediate children files into children directories """
 
 DEBUG = True
 
+def directory_lengths(write_results=True):
+    """ Get a table of subdirectories from working directory and the number of files in each subdirectory
+
+    Parameters:
+        write_results (bool)
+
+    Return Table
+    """
+    subfolders = [f.name for f in os.scandir() if f.is_dir()]
+    if '__pycache__' in subfolders:
+        subfolders.remove('__pycache__')
+    if '.ipynb_checkpoints' in subfolders:
+        subfolders.remove('.ipynb_checkpoints')
+    results = dict()
+    for i,d in enumerate(subfolders):
+        results[i] = {'directory':d,'len':len(os.listdir(d))}
+
+    df = pd.DataFrame(results).T
+    if write_results:
+        with open('dir_lengths_table.txt','w') as f:
+            f.write(str(df.sort_values(by='len',ascending=False)))
+
+    return df
+
+def tar_subdirectories():
+    """ """
+    raise
+
 #create function to organize partial datasets
 def partial_data():
     """ """
@@ -51,6 +79,7 @@ def partial_data():
         # tar up the directory
         # todo
         # delete the old directory ?
+        pass
 
 def ls_topo():
     """ Investigate the topology directory to see which batches are included """
