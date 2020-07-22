@@ -180,7 +180,7 @@ def generate_adj(network, param,n=None):
     # the directory function in parameter_experiments.py needs to have the same
     #       network_options as this function, so if more topologies are added, the directory
     #       function in the other file should also be edited
-    network_options = ['barab1', 'barab2',
+    network_options = ['barab1', 'barab2', 'barab4'
                         'erdos', 'random_digraph',
                         'watts3', 'watts5',
                         'watts2','watts4',
@@ -190,7 +190,7 @@ def generate_adj(network, param,n=None):
                       ]
 
     if network not in network_options:
-        raise ValueError('{network} not in {network_options}')
+        raise ValueError(f'{network} not in {network_options}')
 
     if network == 'barab1':
         return barab1(n)
