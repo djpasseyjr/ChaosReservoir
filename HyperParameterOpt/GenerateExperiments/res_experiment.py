@@ -196,6 +196,8 @@ def generate_adj(network, param,n=None):
         return barab1(n)
     if network == 'barab2':
         return barab2(n)
+    if network == 'barab4':
+        return barab4(n)
     if network == 'erdos':
         return erdos(param, n)
     if network == 'random_digraph':
