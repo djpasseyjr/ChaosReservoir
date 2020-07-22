@@ -4,11 +4,16 @@ import time
 import pandas as pd
 import datetime as dt
 import glob #for using wildcards
+import tarfile #may not work in the supercomputer
 
-"""The goal of this file is to be able to organize and move organize
-directories that have immediate children files into children directories """
-
-DEBUG = True
+def get_subdirectories():
+    """ """
+    subfolders = [f.name for f in os.scandir() if f.is_dir()]
+    if '__pycache__' in subfolders:
+        subfolders.remove('__pycache__')
+    if '.ipynb_checkpoints' in subfolders:
+        subfolders.remove('.ipynb_checkpoints')
+    return subfolders
 
 def directory_lengths(write_results=True):
     """ Get a table of subdirectories from working directory and the number of files in each subdirectory
@@ -18,11 +23,7 @@ def directory_lengths(write_results=True):
 
     Return Table
     """
-    subfolders = [f.name for f in os.scandir() if f.is_dir()]
-    if '__pycache__' in subfolders:
-        subfolders.remove('__pycache__')
-    if '.ipynb_checkpoints' in subfolders:
-        subfolders.remove('.ipynb_checkpoints')
+    subfolders = get_subdirectories()
     results = dict()
     for i,d in enumerate(subfolders):
         results[i] = {'directory':d,'len':len(os.listdir(d))}
@@ -34,31 +35,68 @@ def directory_lengths(write_results=True):
 
     return df
 
-def tar_subdirectories():
-    """ """
-    raise
+def tar_subdirectories(remove_old=False,verbose=True):
+    """
+    Parameters:
+        remove_old  (bool): remove old directory after archiving the data
+        verbose     (bool): state how long the taring process took
+    """
+    #tar directories with only data inside it? or just assume
+    subfolders = get_subdirectories()
+    results = dict()
+    if verbose:
+        print(f'there are {len(subfolders)} directories to archive')
+    print('do the directories in subfolders need to end in slash?')
+    for i,d in enumerate(subfolders):
+        dir_length = len(os.listdir(d))
+        if  dir_length == 0:
+            print(f'{d} has no children')
+        else:
+            start = time.time()
+            mtb = tarfile.open(f'{d}.tar','w')
+            mtb.add(d)
+            mtb.close()
+            min = (time.time() - start) / 60
+            if verbose:
+                print(f'{d} took {round(min,2)} minutes to tar {dir_length} files}')
+            if remove_old:
+                subprocess.run(['rm','-r',f'{d}'])
+                if verbose:
+                    print(f'{d} removed')
+            results[i] = {'dir':d,'len':dir_length,'min':round(min,2)}
+    if verbose:
+        df = pd.DataFrame(results).T
+        with open('tar_subfolders_results.txt','w') as f:
+            f.write(str(df.sort_values(by='min',ascending=False)))
+
+    # print('make sure the tar file isnt zipped, the data should be efficiently accessible ')
+    # raise NotImplementedError('tar_subdirectories not finished')
+    pass
 
 #create function to organize partial datasets
-def partial_data():
-    """ """
-    raise NotImplementedError('partial_data is not done')
-    print('dont move the last partial dataset from each partition index, I want to investigate those')
+def partial_data(tar=True,remove_old=True):
+    """
+    organize partial datasets
 
+    Parameters:
+        tar         (bool): tar up the datasets after moving the move important dataset
+        remove_old  (bool): remove the unarchived data
+
+    """
     # get a list of all the partial dataset directories
-
+    subfolders = get_subdirectories()
     # find out what the max filename is
-
     # pull out the partial dataset with the highest index
-    # directories = ['partial_w69_chain_1']
-    # directories = ['partial_w71_loop_0']
-    for d in directories:
+    for d in subfolders:
         l = os.listdir(d)
         splits = [x.split('.') for x in l]
         titles = [int(x[0].split('_')[-1]) for x in splits]
 
+        # raise
         #check to make sure the index number for the partial datasets is the same for all piles
         # to avoid case where partial_compiled_output_w69_chain_0_" & "partial_compiled_output_w69_chain_1_" are in same directory
         # TODO
+        # or have it get the max from each of those indices
 
 
         file_prefix_list = splits[0][0].split('_')[:-1]
@@ -76,18 +114,10 @@ def partial_data():
         else:
             subprocess.run(['cp',f'{d}/{name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
 
-        # tar up the directory
-        # todo
-        # delete the old directory ?
-        pass
-
-def ls_topo():
-    """ Investigate the topology directory to see which batches are included """
-    pass
-    #just use ipython
-    #import os
-    #l = sorted(os.listdir())
-    #manually investigate `l`
+    # tar up the directory
+    # delete the old directory
+    if tar:
+        tar_subdirectories(remove_old=remove_old,verbose=True)
 
 def separate(l):
     """Separate slurm files from other files by name, called by mv_slurm function
@@ -369,8 +399,6 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
         new_f.close()
 
     print('finished updating pc scripts')
-
-
 
 def batch_pkl_movement(d,verbose=True):
     """ Organize the different topology directories
