@@ -16,6 +16,42 @@ def partial_data():
     raise NotImplementedError('partial_data is not done')
     print('dont move the last partial dataset from each partition index, I want to investigate those')
 
+    # get a list of all the partial dataset directories
+
+    # find out what the max filename is
+
+    # pull out the partial dataset with the highest index
+    # directories = ['partial_w69_chain_1']
+    # directories = ['partial_w71_loop_0']
+    for d in directories:
+        l = os.listdir(d)
+        splits = [x.split('.') for x in l]
+        titles = [int(x[0].split('_')[-1]) for x in splits]
+
+        #check to make sure the index number for the partial datasets is the same for all piles
+        # to avoid case where partial_compiled_output_w69_chain_0_" & "partial_compiled_output_w69_chain_1_" are in same directory
+        # TODO
+
+
+        file_prefix_list = splits[0][0].split('_')[:-1]
+        #recreate the name without the file index
+        #ex "partial_compiled_output_w69_chain_0_"
+        name_base = ''
+        for i in file_prefix_list:
+            name_base += i
+            name_base += '_'
+        nums = np.array(titles)
+        max = np.max(nums)
+        # move the max file
+        if d[-1] == '/':
+            subprocess.run(['cp',f'{d + name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+        else:
+            subprocess.run(['cp',f'{d}/{name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+
+        # tar up the directory
+        # todo
+        # delete the old directory ?
+
 def ls_topo():
     """ Investigate the topology directory to see which batches are included """
     pass
@@ -280,6 +316,7 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
         for i in range(num_partitions):
             pc_script = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
             subprocess.run(['cp',pc_script,new_directory + '/' + pc_script])
+        print('finished copying pc files')
 
 
     #need number of parititons
@@ -301,6 +338,8 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
         new_f = open(new_name,'w')
         new_f.write(file_str)
         new_f.close()
+
+    print('finished updating pc scripts')
 
 
 
