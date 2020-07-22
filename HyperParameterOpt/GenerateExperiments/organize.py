@@ -4,7 +4,7 @@ import time
 import pandas as pd
 import datetime as dt
 import glob #for using wildcards
-import tarfile #may not work in the supercomputer
+# import tarfile #may not work in the supercomputer
 
 def get_subdirectories():
     """ """
@@ -35,14 +35,16 @@ def directory_lengths(write_results=True):
 
     return df
 
-def tar_subdirectories(remove_old=False,verbose=True):
+def tar_subdirectories(subfolders=None,remove_old=False,verbose=True):
     """
     Parameters:
+        subfolders (list): list of directory strings, if None then all subdirectories
         remove_old  (bool): remove old directory after archiving the data
         verbose     (bool): state how long the taring process took
     """
     #tar directories with only data inside it? or just assume
-    subfolders = get_subdirectories()
+    if subfolders is None:
+        subfolders = get_subdirectories()
     results = dict()
     if verbose:
         print(f'there are {len(subfolders)} directories to archive')
@@ -58,7 +60,7 @@ def tar_subdirectories(remove_old=False,verbose=True):
             mtb.close()
             min = (time.time() - start) / 60
             if verbose:
-                print(f'{d} took {round(min,2)} minutes to tar {dir_length} files}')
+                print(f'{d} took {round(min,2)} minutes to tar {dir_length} files')
             if remove_old:
                 subprocess.run(['rm','-r',f'{d}'])
                 if verbose:
@@ -69,11 +71,8 @@ def tar_subdirectories(remove_old=False,verbose=True):
         with open('tar_subfolders_results.txt','w') as f:
             f.write(str(df.sort_values(by='min',ascending=False)))
 
-    # print('make sure the tar file isnt zipped, the data should be efficiently accessible ')
-    # raise NotImplementedError('tar_subdirectories not finished')
-    pass
+    print('make sure the tar file isnt zipped, the data should be efficiently accessible ')
 
-#create function to organize partial datasets
 def partial_data(tar=True,remove_old=True):
     """
     organize partial datasets
@@ -87,37 +86,47 @@ def partial_data(tar=True,remove_old=True):
     subfolders = get_subdirectories()
     # find out what the max filename is
     # pull out the partial dataset with the highest index
+    if tar:
+        tar_list = [] # list to tar up
     for d in subfolders:
         l = os.listdir(d)
-        splits = [x.split('.') for x in l]
-        titles = [int(x[0].split('_')[-1]) for x in splits]
 
-        # raise
-        #check to make sure the index number for the partial datasets is the same for all piles
-        # to avoid case where partial_compiled_output_w69_chain_0_" & "partial_compiled_output_w69_chain_1_" are in same directory
-        # TODO
-        # or have it get the max from each of those indices
+        if len(l) > 0 and 'partial' in d:
+            splits = [x.split('.') for x in l]
+            titles = [int(x[0].split('_')[-1]) for x in splits]
+
+            # raise
+            #check to make sure the index number for the partial datasets is the same for all piles
+            # to avoid case where partial_compiled_output_w69_chain_0_" & "partial_compiled_output_w69_chain_1_" are in same directory
+            # TODO
+            # or have it get the max from each of those indices
 
 
-        file_prefix_list = splits[0][0].split('_')[:-1]
-        #recreate the name without the file index
-        #ex "partial_compiled_output_w69_chain_0_"
-        name_base = ''
-        for i in file_prefix_list:
-            name_base += i
-            name_base += '_'
-        nums = np.array(titles)
-        max = np.max(nums)
-        # move the max file
-        if d[-1] == '/':
-            subprocess.run(['cp',f'{d + name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+            file_prefix_list = splits[0][0].split('_')[:-1]
+            #recreate the name without the file index
+            #ex "partial_compiled_output_w69_chain_0_"
+            name_base = ''
+            for i in file_prefix_list:
+                name_base += i
+                name_base += '_'
+            nums = np.array(titles)
+            max = np.max(nums)
+            # move the max file
+            if d[-1] == '/':
+                subprocess.run(['cp',f'{d + name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+            else:
+                subprocess.run(['cp',f'{d}/{name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+            tar.append(d)
         else:
-            subprocess.run(['cp',f'{d}/{name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+            print(f'{d} has no data or isnt a partial dataset directory')
 
     # tar up the directory
     # delete the old directory
     if tar:
-        tar_subdirectories(remove_old=remove_old,verbose=True)
+        # might be faster to know how many files in each directory before taring them up
+        directory_lengths(write_results=True)
+        # only tar up partial dataset directories
+        tar_subdirectories(tar_list,remove_old=remove_old,verbose=True)
 
 def separate(l):
     """Separate slurm files from other files by name, called by mv_slurm function
@@ -260,6 +269,8 @@ def mv_slurm(loc=None,num_to_name=None):
 
     print(f'done moving slurm files in {loc}\n after {round((time.time() - start )/ 60,1)} minutes')
 
+    print('do you want to tar up the slurm directories by batch??')
+
 def directory(network):
     """
     Given a certain topology, output the string of the
@@ -377,7 +388,6 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
             subprocess.run(['cp',pc_script,new_directory + '/' + pc_script])
         print('finished copying pc files')
 
-
     #need number of parititons
     for i in range(num_partitions):
         pc_script = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
@@ -423,6 +433,7 @@ def batch_pkl_movement(d,verbose=True):
     # but this function will time the movements
     # & this function will also do the update_partition_scripts
     # which is convenient
+    raise NotImplementedError('not finished')
 
     for i in d.keys():
         start = time.time()
