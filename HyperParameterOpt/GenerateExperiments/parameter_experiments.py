@@ -299,6 +299,11 @@ def generate_experiments(
                                 if temp_counter >= num_experiments_per_file:
                                     temp_counter = 0
                                     file_count += 1
+                                    
+    # Count the final potentially partial job file
+    if temp_counter != 0:
+        file_count += 1
+        
     if verbose:
         print('\ntotal number of files/jobs',file_count)
     #in order to run all the experiments on the supercomputer we need the main bash script

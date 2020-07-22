@@ -24,7 +24,7 @@ def empty_result_dict(num_experiments, nets_per_experiment):
 def add_to_net_data(net_data, data_dict, start_idx):
     """ Get data from adjacency matrix and add to dict """
     for k in data_dict.keys():
-        A = data_dict[k][‘adj’]
+        A = data_dict[k]['adj']
         # Get stats
         g = nx.DiGraph(A.T)
         n = A.shape[0]
@@ -32,7 +32,8 @@ def add_to_net_data(net_data, data_dict, start_idx):
         scc_sz = [len(c) for c in scc]
         wcc = [list(c) for c in nx.weakly_connected_components(g)]
         wcc_sz = [len(c) for c in wcc]
-        diam =
+        # Diameter of the largest scc
+        diam = nx.diameter(nx.subgraph(g, scc[np.argmax(scc_sz)]))
         # Add to dictionary
         net_data["max_wcc"][start_idx + k] = np.max(wcc_sz)/n
         net_data["max_scc"][start_idx + k] = np.max(wcc_sz)/n
@@ -41,7 +42,7 @@ def add_to_net_data(net_data, data_dict, start_idx):
         net_data["nwcc"][start_idx + k] = len(wcc)
         net_data["assort"][start_idx + k] = nx.degree_assortativity_coefficient(g)
         net_data["cluster"][start_idx + k] = nx.average_clustering(g)
-        net_data["diam"][start_idx + k] =
+        net_data["diam"][start_idx + k] = diam
 
 def net_stats(DIR, filename_prefix, num_experiments, nets_per_experiment):
     """

@@ -14,7 +14,7 @@ The code in this repository assumes that the [`rescomp`](https://github.com/djpa
 ### Plan
 * [x] Write code to generate jobs for the super computer
 * [x] Write code to compile data from the jobs
-* [ ] Write code to extract network information from graphs
+* [x] Write code to extract network information from graphs
 * [ ] Write statistical analysis pipeline 
 * [x] Generate hyper parameter overview jobs
 * [x] Run all hyper parameter overview jobs for all topologies
