@@ -4,7 +4,8 @@ import time
 import pandas as pd
 import datetime as dt
 import glob #for using wildcards
-# import tarfile #may not work in the supercomputer
+import tarfile #may not work in the supercomputer
+import numpy as np
 
 def get_subdirectories():
     """ """
@@ -86,8 +87,8 @@ def partial_data(tar=True,remove_old=True):
     subfolders = get_subdirectories()
     # find out what the max filename is
     # pull out the partial dataset with the highest index
-    if tar:
-        tar_list = [] # list to tar up
+
+    tar_list = [] # list to tar up
     for d in subfolders:
         l = os.listdir(d)
 
@@ -113,9 +114,9 @@ def partial_data(tar=True,remove_old=True):
             max = np.max(nums)
             # move the max file
             if d[-1] == '/':
-                subprocess.run(['cp',f'{d + name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+                subprocess.run(['mv',f'{d + name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
             else:
-                subprocess.run(['cp',f'{d}/{name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
+                subprocess.run(['mv',f'{d}/{name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
             tar.append(d)
         else:
             print(f'{d} has no data or isnt a partial dataset directory')
@@ -202,11 +203,11 @@ def mv_slurm(loc=None,num_to_name=None):
     start = time.time()
     if not loc:
          loc = ''
+         directory_list = os.listdir()
     else:
         if loc[-1] != '/':
             loc += '/'
-
-    directory_list = os.listdir(loc)
+            directory_list = os.listdir(loc)
 
     #parse the slurn names
     files = [a.split('.') for a in directory_list]
