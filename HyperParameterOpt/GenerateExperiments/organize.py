@@ -74,7 +74,7 @@ def tar_subdirectories(subfolders=None,remove_old=False,verbose=True):
 
     print('make sure the tar file isnt zipped, the data should be efficiently accessible ')
 
-def partial_data(tar=True,remove_old=True):
+def partial_data(tar=True,remove_old=True,verbose=True):
     """
     organize partial datasets
 
@@ -89,7 +89,7 @@ def partial_data(tar=True,remove_old=True):
     # pull out the partial dataset with the highest index
 
     tar_list = [] # list to tar up
-    for d in subfolders:
+    for i,d in enumerate(subfolders):
         l = os.listdir(d)
 
         if len(l) > 0 and 'partial' in d:
@@ -117,9 +117,12 @@ def partial_data(tar=True,remove_old=True):
                 subprocess.run(['mv',f'{d + name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
             else:
                 subprocess.run(['mv',f'{d}/{name_base + str(max)}.pkl',f'{name_base + str(max)}.pkl'])
-            tar.append(d)
+            tar_list.append(d)
+
         else:
             print(f'{d} has no data or isnt a partial dataset directory')
+        if verbose:
+            print(f'{round(i / len(subfolders),2) * 100} % done (before taring)')
 
     # tar up the directory
     # delete the old directory
@@ -250,20 +253,20 @@ def mv_slurm(loc=None,num_to_name=None):
     for i in unique_batch_numbers:
 
         #make directories
-        if num_to_name:
+        if i in num_to_name.keys():
             subprocess.run(['mkdir',loc + f'SLURM_{num_to_name[i]}/'])
         else:
             subprocess.run(['mkdir',loc + f'SLURM_{i}/'])
         #there might only be one file from that batch
         if sbc[i] == 1:
-            if num_to_name:
+            if i in num_to_name.keys():
                 subprocess.run(['mv',loc + f'slurm-{i}.out',loc + f'SLURM_{num_to_name[i]}/'])
             else:
                 subprocess.run(['mv',loc + f'slurm-{i}.out',loc + f'SLURM_{i}/'])
         else:
             vals = s.loc[s.batch_num == i].file_num.values
             for j in vals:
-                if num_to_name:
+                if i in num_to_name.keys():
                     subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{num_to_name[i]}/'])
                 else:
                     subprocess.run(['mv',loc + f'slurm-{i}_{j}.out',loc + f'SLURM_{i}/'])
