@@ -76,9 +76,9 @@ for a in network_sizes:
                             print('\nbatch',filename_prefix)
                             number_of_experiments = len(a)*len(b)*len(c)*len(d)*len(e)*len(f)*len(g)
                             print('number_of_experiments',number_of_experiments)
-                            exper_per = math.ceil(number_of_experiments / 1001)
+                            exper_per = ceil(number_of_experiments / 1001)
                             print('input for experiments_per_file',exper_per)
-                            print('estimated file count',math.ceil(number_of_experiments / exper_per))
+                            print('estimated file count',ceil(number_of_experiments / exper_per))
                             #Calculate hours for each file
                             hours = ceil(minutes_per_experiment*number_of_experiments/60)
                             #Write all main files
