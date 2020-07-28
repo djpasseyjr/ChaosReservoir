@@ -5,6 +5,7 @@ from math import floor
 from math import ceil
 from scipy import integrate
 import numpy as np
+import pandas as pd
 
 """ Here the user can input parameter ranges, and then parameter_experiments.py
 will create individual experiment files, and bash scripts, to be run.
@@ -62,6 +63,10 @@ super_bash_script = '#!/bin/bash\n\n'
 batch_count = len(network_sizes) * len(gamma_vals) * len(sigma_vals) * len(spectr_vals) * len(topo_p_vals) * len(ridge_alphas) * len(remove_p_list)
 print('number of batches',batch_count)
 
+# for quickly viewing the parameters for the batches after the fact
+quick_view = dict()
+count = 0
+
 for a in network_sizes:
     for b in gamma_vals:
         for c in sigma_vals:
@@ -73,14 +78,19 @@ for a in network_sizes:
                             with open('main_template.py','r') as file:
                                 tmpl_str = file.read()
 
-                            print('\nbatch',filename_prefix)
                             number_of_experiments = len(a)*len(b)*len(c)*len(d)*len(e)*len(f)*len(g)
-                            print('number_of_experiments',number_of_experiments)
                             exper_per = ceil(number_of_experiments / 1001)
-                            print('input for experiments_per_file',exper_per)
-                            print('estimated file count',ceil(number_of_experiments / exper_per))
+                            est_num_file = ceil(number_of_experiments / exper_per)
                             #Calculate hours for each file
                             hours = ceil(minutes_per_experiment*exper_per/60)
+
+                            #for understanding what happened
+                            quick_view[count] = {'name':filename_prefix
+                            ,'num_exp':number_of_experiments
+                            ,'exp_per_job':exper_per
+                            ,'est_num_file':est_num_file
+                            ,'hrs_per_job':hours}
+
                             #Write all main files
                             tmpl_str = tmpl_str.replace("#USERID#",USER_ID)
                             tmpl_str = tmpl_str.replace("#BATCH_NUM#",str(BATCH_NUMBER))
@@ -115,7 +125,12 @@ for a in network_sizes:
                             super_bash_script += f"\npython {filename_prefix}_main.py\nbash run_{filename_prefix}.sh"
 
                             BATCH_NUMBER += 1
+                            count += 1
 
 with open(f'super_bash_{filename_prefix}.sh','w') as sbIO:
     sbIO.write(super_bash_script)
+
+df = pd.DataFrame(quick_view).T
+df.to_csv(f'view_{filename_prefix}_generation.csv')
+
 print('finished')
