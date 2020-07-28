@@ -80,7 +80,7 @@ for a in network_sizes:
                             print('input for experiments_per_file',exper_per)
                             print('estimated file count',ceil(number_of_experiments / exper_per))
                             #Calculate hours for each file
-                            hours = ceil(minutes_per_experiment*number_of_experiments/60)
+                            hours = ceil(minutes_per_experiment*exper_per/60)
                             #Write all main files
                             tmpl_str = tmpl_str.replace("#USERID#",USER_ID)
                             tmpl_str = tmpl_str.replace("#BATCH_NUM#",str(BATCH_NUMBER))
