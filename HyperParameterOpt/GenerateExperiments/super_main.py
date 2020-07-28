@@ -49,7 +49,7 @@ minutes_per_job = 0
 memory_per_job = 3
 
 # parameters below should be a list of lists
-network_sizes = [[3000]]
+network_sizes = [[500],[1500],[2000]]
 # network_size = [None], #None means network size will be random between 2k-3.5k
 gamma_vals = [[1]]
 sigma_vals = [[0.01]]
@@ -57,6 +57,8 @@ spectr_vals = [[1]]
 topo_p_vals = [[None]]
 ridge_alphas = [[0.001]]
 remove_p_list = [[0.1,0.5,0.8]]
+
+super_bash_script = '#!/bin/bash\n\n'
 
 for a in network_sizes:
     for b in gamma_vals:
@@ -75,18 +77,18 @@ for a in network_sizes:
                             tmpl_str = tmpl_str.replace("#PARTITIONS#",str(PARTITION_NUM))
                             tmpl_str = tmpl_str.replace("#COMP_HOURS#",str(compilation_hours_per_partition))
                             tmpl_str = tmpl_str.replace("#COMP_MEM#",str(compilation_memory_per_partition))
-                                                        
+
                             tmpl_str = tmpl_str.replace("#BASH2#",str(bash2_desired))
                             tmpl_str = tmpl_str.replace("#BASH2_HOURS#",str(bash2_walltime_hours))
                             tmpl_str = tmpl_str.replace("#BASH2_MEM#",str(bash2_memory_required))
-                                                        
+
                             tmpl_str = tmpl_str.replace("#NETS_PER#",str(nets_per_experiment))
                             tmpl_str = tmpl_str.replace("#ORBITS_PER#",str(orbits_per_experiment))
                             tmpl_str = tmpl_str.replace("#EXPERIMENTS_PER#",str(num_experiments_per_file))
                             tmpl_str = tmpl_str.replace("#TOPOLOGY#",str(topology))
                             tmpl_str = tmpl_str.replace("#HOURS#",str(hours))
                             tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
-                                                        
+
                             tmpl_str = tmpl_str.replace("#SIZES#",str(a))
                             tmpl_str = tmpl_str.replace("#GAMMAS#",str(b))
                             tmpl_str = tmpl_str.replace("#SIGMAS#",str(c))
@@ -94,10 +96,15 @@ for a in network_sizes:
                             tmpl_str = tmpl_str.replace("#TOPO_PS#",str(e))
                             tmpl_str = tmpl_str.replace("#RIDGE_ALPHAS#",str(f))
                             tmpl_str = tmpl_str.replace("#REMOVE_PS#",str(g))
-                                                        
-                            new_f = open(USER_ID + str(BATCH_NUMBER) + "_" + topology + '_main.py','w')
+
+                            filename_prefix = USER_ID + str(BATCH_NUMBER) + "_" + topology
+                            new_f = open(filename_prefix + '_main.py','w')
                             new_f.write(tmpl_str)
                             new_f.close()
+
+                            super_bash_script += f"\npython {filename_prefix}_main.py\nbash run_{filename_prefix}.sh"
+
                             BATCH_NUMBER += 1
-                            
-    
+
+with open(f'super_bash_{filename_prefix}.sh','w') as sbIO:
+    sbIO.write(super_bash_script)
