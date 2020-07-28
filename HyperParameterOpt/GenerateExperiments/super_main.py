@@ -67,10 +67,18 @@ for a in network_sizes:
                 for e in topo_p_vals:
                     for f in ridge_alphas:
                         for g in remove_p_list:
+                            filename_prefix = USER_ID + str(BATCH_NUMBER) + "_" + topology
                             with open('main_template.py','r') as file:
                                 tmpl_str = file.read()
+
+                            print('\nbatch',filename_prefix)
+                            number_of_experiments = len(a)*len(b)*len(c)*len(d)*len(e)*len(f)*len(g)
+                            print('number_of_experiments',number_of_experiments)
+                            exper_per = math.ceil(number_of_experiments / 1001)
+                            print('input for experiments_per_file',exper_per)
+                            print('estimated file count',math.ceil(number_of_experiments / exper_per))
                             #Calculate hours for each file
-                            hours = ceil(minutes_per_experiment*len(a)*len(b)*len(c)*len(d)*len(e)*len(f)*len(g)/60)
+                            hours = ceil(minutes_per_experiment*number_of_experiments/60)
                             #Write all main files
                             tmpl_str = tmpl_str.replace("#USERID#",USER_ID)
                             tmpl_str = tmpl_str.replace("#BATCH_NUM#",str(BATCH_NUMBER))
@@ -84,7 +92,7 @@ for a in network_sizes:
 
                             tmpl_str = tmpl_str.replace("#NETS_PER#",str(nets_per_experiment))
                             tmpl_str = tmpl_str.replace("#ORBITS_PER#",str(orbits_per_experiment))
-                            tmpl_str = tmpl_str.replace("#EXPERIMENTS_PER#",str(num_experiments_per_file))
+                            tmpl_str = tmpl_str.replace("#EXPERIMENTS_PER#",str(exper_per))
                             tmpl_str = tmpl_str.replace("#TOPOLOGY#",str(topology))
                             tmpl_str = tmpl_str.replace("#HOURS#",str(hours))
                             tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
@@ -97,7 +105,7 @@ for a in network_sizes:
                             tmpl_str = tmpl_str.replace("#RIDGE_ALPHAS#",str(f))
                             tmpl_str = tmpl_str.replace("#REMOVE_PS#",str(g))
 
-                            filename_prefix = USER_ID + str(BATCH_NUMBER) + "_" + topology
+
                             new_f = open(filename_prefix + '_main.py','w')
                             new_f.write(tmpl_str)
                             new_f.close()
@@ -108,3 +116,4 @@ for a in network_sizes:
 
 with open(f'super_bash_{filename_prefix}.sh','w') as sbIO:
     sbIO.write(super_bash_script)
+print('finished')
