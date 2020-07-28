@@ -59,6 +59,8 @@ ridge_alphas = [[0.001]]
 remove_p_list = [[0.1,0.5,0.8]]
 
 super_bash_script = '#!/bin/bash\n\n'
+batch_count = len(network_sizes) * len(gamma_vals) * len(sigma_vals) * len(spectr_vals) * len(topo_p_vals) * len(ridge_alphas) * len(remove_p_list)
+print('number of batches',batch_count)
 
 for a in network_sizes:
     for b in gamma_vals:
