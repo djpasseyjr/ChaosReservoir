@@ -49,7 +49,7 @@ minutes_per_job = 0
 memory_per_job = 3
 
 # parameters below should be a list of lists
-network_sizes = [[500],[1500],[2000]]
+network_sizes = [[500],[1500],[2500]]
 # network_size = [None], #None means network size will be random between 2k-3.5k
 gamma_vals = [[1]]
 sigma_vals = [[0.01]]
