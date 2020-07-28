@@ -30,7 +30,8 @@ def write_dependency_bash(filename_prefix):
     new_f = open('run_' + filename_prefix +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('\nbash run_' + filename_prefix +'.sh')
+    # print('\nbash run_' + filename_prefix +'.sh') #not needed for supermain
+    pass
 
 def range_inator(max_experiments,nsplit):
     """Input is number of experiments and number of desired partitions,

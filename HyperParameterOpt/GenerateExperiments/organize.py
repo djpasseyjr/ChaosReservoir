@@ -76,7 +76,7 @@ def tar_subdirectories(subfolders=None,remove_old=False,verbose=True):
 
 def partial_data(tar=True,remove_old=True,verbose=True):
     """
-    organize partial datasets
+    organize partial datasets, recommended to use sbatch cuz it can take over an hour
 
     Parameters:
         tar         (bool): tar up the datasets after moving the move important dataset

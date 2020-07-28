@@ -1,4 +1,4 @@
-# tarball_partition_compilation_w69_chain_15.py
+# SHORTER tarball_partition_compilation_w69_chain_15.py
 # located in `cd69` directory
 import numpy as np
 import pickle
@@ -9,21 +9,21 @@ import traceback
 import networkx as nx
 import tarfile
 
-DIR = "AdditionalTopos/w69_chain_result_files/w69_chain_result_files_15"
-tarball_name = "AdditionalTopos/w69_chain_result_files/w69_chain_result_files_15.tar"
+# DIR = "AdditionalTopos/w69_chain_result_files/w69_chain_result_files_15"
+DIR = "AdditionalTopos/w69_chain_result_files/"
+tarball_name = DIR + "w69_chain_result_files_15.tar"
 tarball_directory = "w69_chain_result_files_15/"
 filename_prefix = "w69_chain"
-# NEXPERIMENTS = 82620 - 77445
+NEXPERIMENTS = 82620 - 77445
 
-NEXPERIMENTS = 77455 - 77445 #for testing purposes do fewer files
-print('during test the file_list is smaller')
-print('consider using extract all')
+# NEXPERIMENTS = 77455 - 77445 #for testing purposes do fewer files
+
 NETS_PER_EXPERIMENT = 25
 num_experiments_per_file = 83
 #verbose will become a parameter in main
 verbose = True
 partition_index = 15
-partial_data = False
+partial_data = True
 
 COLNAMES = [
     "mean_pred",
@@ -73,7 +73,7 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
     errors_thrown = 0
 
     # Make dictionary for storing all data
-    compiled = empty_result_dict(77455 - 77445, nets_per_experiment)
+    compiled = empty_result_dict(82620 - 77445, nets_per_experiment)
 
     # we also need the prefix of the files, or can we use os.listdir()
     # path is probably directory plus filename prefix
@@ -90,13 +90,14 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
     with tarfile.open(tarball_name,'r') as mtb:
         # the first element is just the
         list_files = mtb.getnames()[1:]
+        print(list_files)
         # for i in range(77445,77455):
-        print('during testing the NEXPERIMENTS is decreased ')
+        mtb.extractall(path=DIR)
         for i,file in enumerate(list_files):
             # Load next data dictionary
             try:
-                f = mtb.extractfile(file)
-                data_dict = pickle.load(open(f,'rb'))
+                data_dict = pickle.load(open(DIR + file,'rb'))
+
                 # Add data to compiled dictionary
                 add_to_compiled(compiled, data_dict, start_idx)
                 add_net_stats(compiled, data_dict, start_idx)
@@ -126,7 +127,7 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
             if partial_data:
                 # This will only include files that had data in the count
                 if (i - failed_file_count) % int(NEXPERIMENTS / 3):
-                    pickle.dump(compiled, open('partial_compiled_output_' + filename_prefix + "_" + str(partition_index) + "_" + str(save_file_index)+ '.pkl', 'wb'))
+                    pickle.dump(compiled, open('3partial_compiled_tarball_' + filename_prefix + "_" + str(partition_index) + "_" + str(save_file_index)+ '.pkl', 'wb'))
                     save_file_index += 1
 
     #write final dict to pkl file
@@ -153,9 +154,10 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
 
         failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(sorted(list(set(failed_experiment_identifiers)))) + '\n# corresponds to the # in FNAME in experiment() call'
 
-        #only write to the file once, the file will close automatically
-        with open(f'{filename_prefix}_compiling_tarball_notes_{partition_index}.txt','w') as f:
+        only write to the file once, the file will close automatically
+        with open(f'3{filename_prefix}_compiling_tarball_notes_{partition_index}.txt','w') as f:
             f.write(file + errors_message + failures + timing + failed_exp)
+        pass
 
 def empty_result_dict(num_experiments, nets_per_experiment):
     """ Make empty dictionary for compiling data """

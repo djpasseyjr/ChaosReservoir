@@ -1,8 +1,8 @@
 #!/bin/bash
 
-#create a copy of the main
-cp main.py #FILENAME_PREFIX#_main.py
-echo "copied main.py to #FILENAME_PREFIX#_main.py"
+# not needed with supermain
+# cp main.py #FILENAME_PREFIX#_main.py
+# echo "copied main.py to #FILENAME_PREFIX#_main.py"
 
 echo "starting --dependency=singleton --job-name=#JOB_NAME#"
 echo "starting --dependency=singleton --job-name=#JOB_NAME#" >> my_saved_ids.txt
