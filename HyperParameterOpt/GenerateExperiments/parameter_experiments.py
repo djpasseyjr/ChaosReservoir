@@ -185,7 +185,7 @@ def directory(network):
         DIR (str): The directory where the individual experiment.py files will be stored
     """
     # the network options here should match the generate_adj function in res_experiment.py
-    network_options = ['barab1', 'barab2',
+    network_options = ['barab1', 'barab2', 'barab4',
                         'erdos', 'random_digraph',
                         'watts3', 'watts5',
                         'watts2','watts4',
@@ -195,7 +195,7 @@ def directory(network):
     if network not in network_options:
         raise ValueError(f'{network} not in {network_options}')
 
-    if network == 'barab1' or network == 'barab2':
+    if network in ['barab1','barab2','barab4']:
         DIR = 'Barabasi'
     if network == 'erdos':
         DIR = 'Erdos'

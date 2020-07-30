@@ -172,7 +172,7 @@ def add_net_stats(compiled, data_dict, start_idx):
         # Add to dictionary
         compiled["max_wcc"][start_idx + k] = np.max(wcc_sz)/n
         compiled["max_scc"][start_idx + k] = np.max(scc_sz)/n
-        compiled["singletons"][start_idx + k] = np.sum(np.array(scc_sz) == 1)
+        compiled["singletons"][start_idx + k] = np.sum(np.array(wcc_sz) == 1)
         compiled["nscc"][start_idx + k] = len(scc)
         compiled["nwcc"][start_idx + k] = len(wcc)
         compiled["assort"][start_idx + k] = assort(g)

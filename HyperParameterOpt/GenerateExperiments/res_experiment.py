@@ -43,6 +43,8 @@ def barab2(n=None):
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
 
+
+
 def erdos(mean_degree,n=None):
     """ Erdos-Renyi random graph.
     Parameter
@@ -169,7 +171,7 @@ def generate_adj(network, param,n=None):
     # the directory function in parameter_experiments.py needs to have the same
     #       network_options as this function, so if more topologies are added, the directory
     #       function in the other file should also be edited
-    network_options = ['barab1', 'barab2',
+    network_options = ['barab1', 'barab2', 'barab4',
                         'erdos', 'random_digraph',
                         'watts3', 'watts5',
                         'watts2','watts4',
@@ -185,6 +187,8 @@ def generate_adj(network, param,n=None):
         return barab1(n)
     if network == 'barab2':
         return barab2(n)
+    if network == 'barab4':
+        return barab4(n)
     if network == 'erdos':
         return erdos(param, n)
     if network == 'random_digraph':
@@ -307,5 +311,5 @@ def experiment(
         results[i]['mean_err'] = np.array(results[i]['err']).mean()
         # print('"Net complete -- \nMean Pred',results[i]['mean_pred'],'\nMean Error',results[i]['mean_err'])
         i += 1
-    #only dump the results if all the networks succeed 
+    #only dump the results if all the networks succeed
     pickle.dump(results, open(fname,"wb"))
