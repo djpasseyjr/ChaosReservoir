@@ -486,7 +486,7 @@ class Visualize:
             else:
                 fig.savefig(loc + f'Compare_{parameter}_by_fit_{month}_{day}_at_{hour}_{minute}.png',bbox_inches='tight',bbox_extra_artists=[my_suptitle,leg0])
 
-    def contrast_topos(self):
+    def contrast_topos(self,savefigs):
         """Plot all the topologies against each other """
         print('how to limit to either a subset of parameters, or best')
         raise NotImplementedError('contrast_topos not done ')
@@ -494,8 +494,22 @@ class Visualize:
         # use the best network from each topology as given by the optimize class
 
         O = Optimize(self.data)
-        winners = O.win(num_winners=1)['best']
-        
+        results = O.win(num_winners=1)
+        thin = results['compare']['thinned']
+        dense = results['compare']['dense']
+        # get the parameters for each topology, then we want to see as remove_p varies (note uneven amount of data)
+
+
+        #4 SUBPLOTS, top left is horizontal bar graph which each topology, compare (best thinned) & dense per topo on one plot
+        #top right is distribution of networks
+        #bottom left is comparison as remove_p varies
+        #bottom right is ncd (net count distribution)
+
+
+        # to do the bottom left, get the parameters for each topology
+
+        if savefigs:
+            raise NotImplementedError('not done')
 
     def network_statistics(self):
         """ """
@@ -609,16 +623,18 @@ def merge_compiled(compiled1, compiled2):
        compiled1[k] += compiled2[k]
    return compiled1
 
-def df_dict(dir=None,file_list=None):
+def df_dict(dir=None,file_list=None,drop_partial_experiments=None):
     """
     Build a dictionary with topology dataframes which will serve as input for both Visualize & Optimize
     - Merge the data by topology
 
     parameters:
-        dir        (str): str describing the path to directory where filenames are located, if none then
-                            the pa«th is assumed to be the working directory
-        file_list  (list): list containing file names that should be considered, this gives the user the option
-                            of neglecting some filenames
+        dir                         (str): str describing the path to directory where filenames are located, if none then
+                                            the path is assumed to be the working directory
+        file_list                   (list): list containing file names that should be considered, this gives the user the option
+                                            of neglecting some filenames
+        drop_partial_experiments    (int): if None, then dont drop the partial experiments, otherwise drop all the nets that
+                                            have fewer than this value in num_nets_by_exp
     """
     filenames = {
          'barab1':[]
@@ -692,6 +708,12 @@ def df_dict(dir=None,file_list=None):
             df.drop(index=df[df['gamma'] == 0 ].index,inplace=True)
             s = df['exp_num'].value_counts()
             df.loc[:,'num_nets_by_exp'] = [s[i] for i in df['exp_num']]
+            if drop_partial_experiments:
+                if drop_partial_experiments > df['num_nets_by_exp'].max():
+                    raise ValueError(f'cant drop {drop_partial_experiments} which is more than the max of {df['num_nets_by_exp'].max()}')
+                else:
+                    #drop the networks
+                    df.drop(index=df[df['num_nets_by_exp'] > drop_partial_experiments ].index,inplace=True)
             if "net" not in df.columns:
                 df.loc[:,'net'] = i
                 print(f'`net` column wasnt in:\n{filenames[i]}')
