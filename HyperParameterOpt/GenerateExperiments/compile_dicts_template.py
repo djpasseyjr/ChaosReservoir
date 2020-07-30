@@ -178,6 +178,9 @@ def add_net_stats(compiled, data_dict, start_idx):
         compiled["assort"][start_idx + k] = assort(g)
         compiled["cluster"][start_idx + k] = nx.average_clustering(g)
         compiled["diam"][start_idx + k] = diam
+        if np.max(A) - np.min(A) < 1e-8:
+            # If the edge weights aren't uniform edge weight is set to none
+            compiled["edge_weight"][start_idx + k] = np.max(A)
 
 def merge_compiled(compiled1, compiled2):
     """ Merge two compiled dictionaries """
