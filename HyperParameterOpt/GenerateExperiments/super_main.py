@@ -132,7 +132,8 @@ with open(f'super_bash_{filename_prefix}.sh','w') as sbIO:
 
 df = pd.DataFrame(quick_view).T
 show = ['name','num_exp','exp_per_job','est_num_file','hrs_per_job']
-# df.to_csv(f'view_{filename_prefix}_generation.csv')
+# keep the csv just in case there is a big super batch and we want to sort the view better
+df[show].to_csv(f'view_{filename_prefix}_generation.csv')
 #make a table view instead of a csv
 with open(f'view_{filename_prefix}_generation.txt','w') as f:
     f.write(str(df[show].sort_values(by='name',ascending=True)))

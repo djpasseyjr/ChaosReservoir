@@ -7,6 +7,50 @@ import glob #for using wildcards
 import tarfile #may not work in the supercomputer
 import numpy as np
 
+# for analyze_main
+PARTIAL_DATA_bool=True,
+TEST_NUMBER=0
+
+def directory(network):
+    """
+    Given a certain topology, output the string of the
+        directory where all the modified experiment_template.py files
+        should be saved
+
+    Although this function is copied from parameter_experiments, because parameter_experiments
+    isnt usually in the same directory its not useful to import this function
+
+    Parameters:
+        Network (str): The topology for the experiments
+
+    Returns:
+        DIR (str): The directory where the individual experiment.py files will be stored
+    """
+    # the network options here should match the generate_adj function in res_experiment.py
+    network_options = ['barab1', 'barab2', 'barab4',
+                        'erdos', 'random_digraph',
+                        'watts3', 'watts5',
+                        'watts2','watts4',
+                        'geom', 'no_edges',
+                        'chain', 'loop',
+                        'ident']
+    if network not in network_options:
+        raise ValueError(f'{network} not in {network_options}')
+
+    if network in ['barab1','barab2','barab4']:
+        DIR = 'Barabasi'
+    if network == 'erdos':
+        DIR = 'Erdos'
+    if network == 'random_digraph':
+        DIR = 'RandDigraph'
+    if network in ['watts3', 'watts5', 'watts4', 'watts2']:
+        DIR = 'Watts'
+    if network == 'geom':
+        DIR = 'Geometric'
+    if network in ['no_edges', 'chain', 'loop', 'ident']:
+        DIR = 'AdditionalTopos'
+    return DIR
+
 def get_subdirectories():
     """ """
     subfolders = [f.name for f in os.scandir() if f.is_dir()]
@@ -74,9 +118,9 @@ def tar_subdirectories(subfolders=None,remove_old=False,verbose=True):
 
     print('make sure the tar file isnt zipped, the data should be efficiently accessible ')
 
-def partial_data(tar=True,remove_old=True,verbose=True):
+def get_best_partial_data(tar=True,remove_old=True,verbose=True):
     """
-    organize partial datasets, recommended to use sbatch cuz it can take over an hour
+    get best partial dataset from partial data directories (already made)
 
     Parameters:
         tar         (bool): tar up the datasets after moving the move important dataset
@@ -275,43 +319,6 @@ def mv_slurm(loc=None,num_to_name=None):
 
     print('do you want to tar up the slurm directories by batch??')
 
-def directory(network):
-    """
-    Given a certain topology, output the string of the
-        directory where all the modified experiment_template.py files
-        should be saved
-
-    Parameters:
-        Network (str): The topology for the experiments
-
-    Returns:
-        DIR (str): The directory where the individual experiment.py files will be stored
-    """
-    # the network options here should match the generate_adj function in res_experiment.py
-    network_options = ['barab1', 'barab2', 'barab4',
-                        'erdos', 'random_digraph',
-                        'watts3', 'watts5',
-                        'watts2','watts4',
-                        'geom', 'no_edges',
-                        'chain', 'loop',
-                        'ident']
-    if network not in network_options:
-        raise ValueError(f'{network} not in {network_options}')
-
-    if network in ['barab1','barab2','barab4']:
-        DIR = 'Barabasi'
-    if network == 'erdos':
-        DIR = 'Erdos'
-    if network == 'random_digraph':
-        DIR = 'RandDigraph'
-    if network in ['watts3', 'watts5', 'watts4', 'watts2']:
-        DIR = 'Watts'
-    if network == 'geom':
-        DIR = 'Geometric'
-    if network in ['no_edges', 'chain', 'loop', 'ident']:
-        DIR = 'AdditionalTopos'
-    return DIR
-
 def range_inator(max_experiments,nsplit):
     """Input is number of experiments and number of desired partitions,
     output is a list of tuples which are the range of each partition"""
@@ -369,15 +376,16 @@ def move_pkl(filename_prefix, num_experiments,num_partitions,loc=None,delete_py=
         working_directory_name = loc
     print(f'done moving {filename_prefix}.pkl files in {working_directory_name}\n')
 
-def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
+def update_partition_scripts(filename_prefix,num_partitions,copy_files=False,pc_script=None):
     """Update the compile partition based upon the .pkl files being moved
 
     Parameters:
         filename_prefix     (str):
         num_partitions      (int):
         copy_files          (bool): make duplicates of the partition_compilation files to avoid being overwritten
-
+        pc_script           (str): name of the partition_compilation (pc) script
     """
+
     if copy_files:
         # print('how to search for just directories using subprocess, as to verify if the copy directory has already been made ')
         # print('should copies include date & time, thats kinda weird cuz I expect this to be run only once except during development')
@@ -394,7 +402,8 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
 
     #need number of parititons
     for i in range(num_partitions):
-        pc_script = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
+        if pc_script_name is None:
+            pc_script = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
         topo = filename_prefix.split('_')
         dir = directory(topo[1])
 
@@ -413,6 +422,93 @@ def update_partition_scripts(filename_prefix,num_partitions,copy_files=False):
         new_f.close()
 
     print('finished updating pc scripts')
+
+def write_tarball_pc_scripts(
+    partition_num,
+    filename_prefix,
+    topology,
+    NEXPERIMENTS,
+    NETS_PER_EXPERIMENT,
+    NUM_EXPERIMENTS_PER_FILE,
+    verbose=True,
+    partial_data = True,
+    test_number=0
+):
+    """ small variation of compile_dicts_template but meant for tarball compilation """
+    if not isinstance(partial_data,bool):
+        raise ValueError('partial_data must be a boolean')
+    if not isinstance(test_number,int):
+        raise ValueError('test_number must be a int')
+    l = range_inator(NEXPERIMENTS,partition_num)
+    DIR = directory(topology)
+    for i,tuple in enumerate(l):
+        a,b = tuple
+        with open('tarball_compile_dicts_template.py','r') as f:
+            tmpl_str = f.read()
+        tmpl_str = tmpl_str.replace("#STARTING_EXPERIMENT_NUMBER#",str(a))
+        tmpl_str = tmpl_str.replace("#ENDING_EXPERIMENT_NUMBER#",str(b))
+        tmpl_str = tmpl_str.replace("#TOPO_DIRECTORY#",DIR)
+        tmpl_str = tmpl_str.replace("#FILENAME#",filename_prefix)
+        # the number of experiments isn't needed for a partitioned compilation
+        tmpl_str = tmpl_str.replace("#NUM_EXPRMTS_PER_FILE#",str(NUM_EXPERIMENTS_PER_FILE))
+        tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(NETS_PER_EXPERIMENT))
+        tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
+        tmpl_str = tmpl_str.replace("#PARTITION_INDEX#",str(i))
+        tmpl_str = tmpl_str.replace("#PARTIAL_DATA#",str(partial_data))
+        tmpl_str = tmpl_str.replace("#TEST_NUMBER#",str(test_number))
+        new_name = 'tb_pc_' + filename_prefix + "_" + str(i) + '.py'
+        print('writing',new_name)
+        new_f = open(new_name,'w')
+        new_f.write(tmpl_str)
+        new_f.close()
+
+def analyze_main(
+    FNAME,
+    PARTITION_NUM,
+    compilation_hours_per_partition,
+    compilation_memory_per_partition,
+    bash2_desired,
+    bash2_walltime_hours,
+    bash2_memory_required,
+    verbose,
+    nets_per_experiment,
+    orbits_per_experiment,
+    num_experiments_per_file,
+    topology,
+    hours_per_job,
+    minutes_per_job,
+    memory_per_job,
+    network_sizes,
+    gamma_vals,
+    sigma_vals,
+    spectr_vals,
+    topo_p_vals,
+    ridge_alphas,
+    remove_p_list,
+):
+    """a helper function for write_tarball_pc_scripts
+
+    similar to write_partitions in parameter_experiments,
+
+    Parameters:
+        see generate_experiments in parameter_experiments
+    """
+    a,b,c = len(topo_p_vals), len(gamma_vals), len(sigma_vals)
+    d,e,f,g = len(spectr_vals), len(ridge_alphas), len(network_sizes), len(remove_p_list)
+    total_experiment_number = a*b*c*d*e*f*g
+
+    write_tarball_pc_scripts(
+        partition_num=PARTITION_NUM,
+        filename_prefix= FNAME + "_"+ topology,
+        topology=topology,
+        NEXPERIMENTS=total_experiment_number,
+        NETS_PER_EXPERIMENT=nets_per_experiment,
+        NUM_EXPERIMENTS_PER_FILE=num_experiments_per_file,
+        verbose=True,
+        # variables determined at top of organize.py
+        partial_data=PARTIAL_DATA_bool,
+        test_number=TEST_NUMBER
+    )
 
 def batch_pkl_movement(d,verbose=True):
     """ Organize the different topology directories
