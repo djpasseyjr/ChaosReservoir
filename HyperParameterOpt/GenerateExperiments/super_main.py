@@ -131,6 +131,10 @@ with open(f'super_bash_{filename_prefix}.sh','w') as sbIO:
     sbIO.write(super_bash_script)
 
 df = pd.DataFrame(quick_view).T
-df.to_csv(f'view_{filename_prefix}_generation.csv')
+show = ['name','num_exp','exp_per_job','est_num_file','hrs_per_job']
+# df.to_csv(f'view_{filename_prefix}_generation.csv')
+#make a table view instead of a csv
+with open(f'view_{filename_prefix}_generation.txt','w') as f:
+    f.write(str(df[show].sort_values(by='name',ascending=True)))
 
 print('finished')
