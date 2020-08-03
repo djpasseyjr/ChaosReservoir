@@ -144,7 +144,7 @@ def chain(n):
     for i in range(n - 1):
         A[i+1, i] = 1
     return A
-    
+
 def loop(n):
     A = sparse.lil_matrix((n,n))
     for i in range(n - 1):
@@ -318,6 +318,7 @@ def experiment(
 
         results[i]['mean_pred'] = np.array(results[i]['pred']).mean()
         results[i]['mean_err'] = np.array(results[i]['err']).mean()
-        pickle.dump(results, open(fname,"wb"))
         # print('"Net complete -- \nMean Pred',results[i]['mean_pred'],'\nMean Error',results[i]['mean_err'])
         i += 1
+    #only dump the results if all the networks succeed
+    pickle.dump(results, open(fname,"wb"))

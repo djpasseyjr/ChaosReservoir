@@ -32,8 +32,17 @@ BATCH_NUMBER = 4
 generate_experiments(
     FNAME = USER_ID + str(BATCH_NUMBER),
     verbose = True,
-    nets_per_experiment = 2,
-    orbits_per_experiment = 200,
+    # parameters for compilation
+    PARTITION_NUM = 1,
+    compilation_hours_per_partition = 50,
+    compilation_memory_per_partition = 50,
+    #if bash2_desired is False, then bash2_walltime_hours, bash2_memory_required are irrelevant
+    bash2_desired=True,
+    bash2_walltime_hours = 1,
+    bash2_memory_required = 50,
+    #essential parameters for experiment generation
+    nets_per_experiment = 25,
+    orbits_per_experiment = 1,
     num_experiments_per_file = 1,
     topology = 'barab1',
     # these walltime parameters become the --time slurm command in bash_template

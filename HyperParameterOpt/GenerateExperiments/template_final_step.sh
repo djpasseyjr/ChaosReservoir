@@ -1,12 +1,8 @@
 #!/bin/bash
 
-#move the compiled output
-mv compiled_output_#FNAME#.pkl #DIR#/#FNAME#/
-
-#move the compile output file to batch directory
-mv compile_output_#FNAME#.py #DIR#/#FNAME#
-
 # make directories for organization
+mkdir #DIR#/#FNAME#/
+mkdir #DIR#/#FNAME#/output_slurm
 mkdir #DIR#/#FNAME#/experiment_files
 mkdir #DIR#/#FNAME#/result_files
 #organize the .py files,

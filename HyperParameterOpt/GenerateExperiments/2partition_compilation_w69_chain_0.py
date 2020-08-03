@@ -1,4 +1,5 @@
-#compile_dicts.py
+#2partition_compilation_w69_chain_15.py
+#this is to test comparison to tarball compilation
 import numpy as np
 import pickle
 import pandas as pd
@@ -7,19 +8,23 @@ import sys
 import traceback
 import networkx as nx
 
-DIR = "#TOPOLOGY_DIRECTORY#"
-filename_prefix = "#FNAME#"
-NEXPERIMENTS = #NUMBER_OF_EXPERIMENTS#
-NETS_PER_EXPERIMENT = #NETS_PER_EXPERIMENT#
-num_experiments_per_file = #NUM_EXPRMTS_PER_FILE#
+DIR = "AdditionalTopos/w69_chain_result_files/"
+NEXPERIMENTS = 77455 - 77445 #for testing purposes do fewer files
+filename_prefix = "w69_chain"
+print('during test the file_list is smaller')
+print('consider using extract all')
+NETS_PER_EXPERIMENT = 25
+num_experiments_per_file = 83
 #verbose will become a parameter in main
-verbose = #VERBOSE#
+verbose = True
+partition_index = 15
+partial_data = False
 
 COLNAMES = [
     "mean_pred",
     "mean_err",
-    "net",
     "adj_size",
+    "net",
     "topo_p",
     "gamma",
     "sigma",
@@ -33,45 +38,47 @@ COLNAMES = [
 NETCOLS = [
     "max_scc",
     "max_wcc",
+    "giant_comp",
     "singletons",
     "nwcc",
     "nscc",
     "cluster",
     "assort",
-    "diam",
-    "edge_weight"
+    "diam"
 ]
 
-def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
+def compile_output(DIR, filename_prefix, nets_per_experiment):
     """
     Compile the data from all the various pkl files
     Parameters:
         DIR                     (str): The directory where the individual experiment.py files will be stored
         filename_prefix         (str): prefix to each filename, an error will be thrown if not specified
-        num_experiments         (int): number of experiments total
         nets_per_experiment     (int): number of nets in each experiment, equivalent to nets_per_experiment in main.py
     """
     #get a list of failed files identifiers so it's simple to check traceback
     failed_experiment_identifiers = []
     failed_job_identifiers = []
-    
+    start_idx = 0
+    #used to make save the compiled dataset even partially
+    save_file_index = 0
+    failed_file_count = 0
+    errors_thrown = 0
+
     # Make dictionary for storing all data
-    compiled = empty_result_dict(num_experiments, nets_per_experiment)
+    compiled = empty_result_dict(77455 - 77445, nets_per_experiment)
 
     # we also need the prefix of the files, or can we use os.listdir()
     # path is probably directory plus filename prefix
     path = DIR + "/" + filename_prefix + "_"
-    failed_file_count = 0
-    errors_thrown = 0
+
     start = time.time()
-    start_idx = 0
 
     if verbose:
         file = filename_prefix
         print(file)
         timing = '\n\n'
 
-    for i in range(num_experiments):
+    for i in range(77445,77455):
         # Load next data dictionary
         try:
             data_dict = pickle.load(open(path + str(i) + '.pkl','rb'))
@@ -87,8 +94,8 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
             failed_job_identifiers.append((i-s) / num_experiments_per_file)
         except:
             traceback.print_exc()
-            errors_thrown += 1 
-            
+            errors_thrown += 1
+
         # Track experiment number
         for k in range(start_idx, start_idx + nets_per_experiment):
             compiled["exp_num"][k] = i
@@ -100,8 +107,14 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
                 info = f'\n{i} files compile attempted,time since start (minutes):{round((time.time() - start )/ 60,1)}'
                 timing += info
                 print(info)
+
+        # This will only include files that had data in the count
+        if (i - failed_file_count) % int(NEXPERIMENTS / 3):
+            # pickle.dump(compiled, open('partial_compiled_output_' + filename_prefix + "_" + str(partition_index) + "_" + str(save_file_index)+ '.pkl', 'wb'))
+            save_file_index += 1
+
     #write final dict to pkl file
-    pickle.dump(compiled, open('compiled_output_' + filename_prefix + '.pkl', 'wb'))
+    pickle.dump(compiled, open('2compiled_output_' + filename_prefix + "_" + str(partition_index) + '.pkl', 'wb'))
 
     if verbose:
         errors_message = f'\nthere were {errors_thrown} errors thrown other than FileNotFoundError, see compilation slurm file'
@@ -123,9 +136,9 @@ def compile_output(DIR, filename_prefix, num_experiments, nets_per_experiment):
         failed_exp = '\nthe following list shows #\'s of experiment files that failed:\n' + str(sorted(list(set(failed_experiment_identifiers)))) + '\n# corresponds to the # in FNAME in experiment() call'
 
         #only write to the file once, the file will close automatically
-        with open(f'{filename_prefix}_compiling_notes.txt','w') as f:
-            f.write(file + errors_message + failures + timing + failed_exp)
-
+        # with open(f'{filename_prefix}_compiling_notes_{partition_index}.txt','w') as f:
+        #     f.write(file + errors_message + failures + timing + failed_exp)
+        pass
 
 def empty_result_dict(num_experiments, nets_per_experiment):
     """ Make empty dictionary for compiling data """
@@ -165,15 +178,12 @@ def add_net_stats(compiled, data_dict, start_idx):
         # Add to dictionary
         compiled["max_wcc"][start_idx + k] = np.max(wcc_sz)/n
         compiled["max_scc"][start_idx + k] = np.max(scc_sz)/n
-        compiled["singletons"][start_idx + k] = np.sum(np.array(wcc_sz) == 1)
+        compiled["singletons"][start_idx + k] = np.sum(np.array(scc_sz) == 1)
         compiled["nscc"][start_idx + k] = len(scc)
         compiled["nwcc"][start_idx + k] = len(wcc)
         compiled["assort"][start_idx + k] = assort(g)
         compiled["cluster"][start_idx + k] = nx.average_clustering(g)
         compiled["diam"][start_idx + k] = diam
-        if np.max(A) - np.min(A) < 1e-8:
-            # If the edge weights aren't uniform edge weight is set to none
-            compiled["edge_weight"][start_idx + k] = np.max(A)
 
 def merge_compiled(compiled1, compiled2):
     """ Merge two compiled dictionaries """
@@ -183,11 +193,11 @@ def merge_compiled(compiled1, compiled2):
     # Shift experiment number for compiled2
     total_exp = np.max(compiled1["exp_num"])
     exp_nums = np.array(compiled2["exp_num"])
-    exp_nums[exp_nums >= 0] += total_exp 
+    exp_nums[exp_nums >= 0] += total_exp
     compiled2["exp_num"] = list(exp_nums)
     # Merge
     for k in compiled1.keys():
         compiled1[k] += compiled2[k]
     return compiled1
 
-compile_output(DIR, filename_prefix, NEXPERIMENTS, NETS_PER_EXPERIMENT)
+compile_output(DIR, filename_prefix, NETS_PER_EXPERIMENT)

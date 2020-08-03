@@ -6,34 +6,171 @@ from rescomp import ResComp, specialize, lorenz_equ
 from res_experiment import *
 from scipy import sparse
 
-def prepare_output_compilation(directory,filename, number_of_experiments,nets_per_experiment,verbose=True):
-    """
-    write the directory and number_of_experiments to the compile_output.py file
+DEBUG = False #similar to verbose but specifically for debugging
 
-    Record the topology so that the ouput_compiler can look in that
-    directory to compile all the pkl files that store the output
-    from the experiments
+def write_dependency_bash(filename_prefix):
+    """
+    Write a script that will automatically run 3 files with dependencies:
+    (1) the data generation batch
+    (2) individual_partition_compilation_filenameprefix.sh - the paritioned compilation files
+    (3) all_partitions_compilation_filenameprefix.sh - the final compilation
 
     Parameters:
-        directory               (str): the name of output directory where all resulting pkl files will be stored
-        filename                (str): the filename prefix that all the files have in common
-        number_of_experiments   (int): the number of experiments is used to systematically
-                                        compile all individual output files into one primary file
-        nets_per_experiment     (int): parameter in main.py
-        verbose                 (bool):  print statements to provide extra information
+        filename_prefix (str): essential for running proper files
+
+    Output:
+        FILE: `run_' + filename_prefix +'.sh'` which will run the 3 files with dependencies
+
     """
-    tmpl_stream = open('compile_dicts.py','r')
-    tmpl_str = tmpl_stream.read()
-    tmpl_stream.close()
-    tmpl_str = tmpl_str.replace("#TOPOLOGY_DIRECTORY#",directory)
-    tmpl_str = tmpl_str.replace("#FNAME#",filename)
-    tmpl_str = tmpl_str.replace("#NUMBER_OF_EXPERIMENTS#",str(number_of_experiments))
-    tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(nets_per_experiment))
-    tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
-    new_name = 'compile_output_' + filename +'.py'
-    new_f = open(new_name,'w')
+    with open('bash_dependency_template.sh','r') as f:
+        tmpl_str = f.read()
+    tmpl_str = tmpl_str.replace("#FILENAME_PREFIX#",filename_prefix)
+    # a for auto
+    tmpl_str = tmpl_str.replace("#JOB_NAME#",'a_' + filename_prefix)
+    new_f = open('run_' + filename_prefix +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
+    # print('\nbash run_' + filename_prefix +'.sh') #not needed for supermain
+    pass
+
+def range_inator(max_experiments,nsplit):
+    """Input is number of experiments and number of desired partitions,
+    output is a list of tuples which are the range of each partition"""
+    partition = max_experiments//nsplit
+    output = []
+    for i in range(nsplit):
+        if i == 0:
+            output.append((0,partition))
+        elif i == nsplit-1:
+            output.append((output[-1][-1],max_experiments))
+        else:
+            output.append((output[-1][-1],output[-1][-1]+partition))
+    #if max_experiments is max_experiments + 1
+    # last = output.pop()
+    # a,b = last
+    # output.append((a,b-1))
+    return output
+
+def write_bash1(filename,
+    number_of_experiments,
+    hours_per_job,
+    memory_per_job,
+):
+    """
+    Make the bash script 1 that will run the partitioned compile .py files
+     """
+    with open('bash1_template.sh','r') as f:
+        tmpl_str = f.read()
+    tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
+    tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
+    tmpl_str = tmpl_str.replace("#JNAME#",filename[2:] + 'pc')
+    tmpl_str = tmpl_str.replace("#FILENAME#",'partition_compilation_' + filename)
+    tmpl_str = tmpl_str.replace("#NUMBER_JOBS#",str(number_of_experiments - 1))
+    new_f = open('individual_partition_compilation_' + filename +'.sh','w')
+    new_f.write(tmpl_str)
+    new_f.close()
+    # print('written: individual_partition_compilation_' + filename +'.sh')
+    pass
+
+def write_bash2(filename,
+    hours_per_job,
+    memory_per_job,
+):
+    """
+    Write the (optional) bash script to compile all the datasets resulting from
+    the individual_partition_compilation*.py files.
+     """
+    with open('bash2_template.sh','r') as f:
+        tmpl_str = f.read()
+    tmpl_str = tmpl_str.replace("#HOURS#",str(hours_per_job))
+    tmpl_str = tmpl_str.replace("#MEMORY#",str(memory_per_job))
+    # JName, as in Job Name.
+    tmpl_str = tmpl_str.replace("#JNAME#",filename[2:] + 'bsh2')
+    tmpl_str = tmpl_str.replace("#FILENAME#",'merge_partitioned_output_' + filename)
+    new_f = open('all_partitions_compilation_' + filename +'.sh','w')
+    new_f.write(tmpl_str)
+    new_f.close()
+    # print('written: all_partitions_compilation_' + filename +'.sh')
+    pass
+
+def write_merge(fname,num_partitions):
+    """ write the merge file that will compile all the resulting datasets
+    from each partition, once the merge file is finished running, then all
+    the data for the *filename_prefix* batch has been compiled
+    """
+    with open('template_merge_compilations.py','r') as f:
+        tmpl_str = f.read()
+    tmpl_str = tmpl_str.replace("#filename_prefix#",fname)
+    tmpl_str = tmpl_str.replace("#partitions#",str(num_partitions))
+    new_f = open('merge_partitioned_output_' + fname +'.py','w')
+    new_f.write(tmpl_str)
+    new_f.close()
+    # print('written: merge_partitioned_output_' + fname +'.py')
+    pass
+
+def write_partitions(
+    PARTITION_NUM,
+    compilation_hours_per_partition,
+    compilation_memory_per_partition,
+    DIR,
+    filename_prefix,
+    NEXPERIMENTS,
+    NETS_PER_EXPERIMENT,
+    NUM_EXPERIMENTS_PER_FILE,
+    verbose=True,
+    bash2_desired=True,
+    bash2_walltime_hours = 1,
+    bash2_memory_required = 50,
+     ):
+    """write partitioned compile output scripts to leverage
+    multiple processors to pcompile data from big batches
+
+    Write partitioned compilation files to compile output in parallel
+
+    Write partitioned files according to the following name with zero
+    based indexing
+        - 'compiled_output_' + filename_prefix + '_' part_num + '.pkl
+    """
+    l = range_inator(NEXPERIMENTS,PARTITION_NUM)
+    if DEBUG:
+        print(l)
+    for i,tuple in enumerate(l):
+        a,b = tuple
+        with open('compile_dicts_template.py','r') as f:
+            tmpl_str = f.read()
+        tmpl_str = tmpl_str.replace("#STARTING_EXPERIMENT_NUMBER#",str(a))
+        tmpl_str = tmpl_str.replace("#ENDING_EXPERIMENT_NUMBER#",str(b))
+        tmpl_str = tmpl_str.replace("#TOPO_DIRECTORY#",DIR)
+        tmpl_str = tmpl_str.replace("#FILENAME#",filename_prefix)
+        # the number of experiments isn't needed for a partitioned compilation
+        tmpl_str = tmpl_str.replace("#NUM_EXPRMTS_PER_FILE#",str(NUM_EXPERIMENTS_PER_FILE))
+        tmpl_str = tmpl_str.replace("#NETS_PER_EXPERIMENT#",str(NETS_PER_EXPERIMENT))
+        tmpl_str = tmpl_str.replace("#VERBOSE#",str(verbose))
+        tmpl_str = tmpl_str.replace("#PARTITION_INDEX#",str(i))
+        new_name = 'partition_compilation_' + filename_prefix + "_" + str(i) + '.py'
+        new_f = open(new_name,'w')
+        new_f.write(tmpl_str)
+        new_f.close()
+    # print('written all the `partition_compilation_' + filename_prefix + "_*" + '.py` files from 0 to',PARTITION_NUM - 1)
+
+    #write bash_script1
+    #filename_prefix
+    write_bash1(filename_prefix,
+    PARTITION_NUM,
+    compilation_hours_per_partition,
+    compilation_memory_per_partition)
+
+    if bash2_desired:
+        #this might not be desired if the second compilation
+        #if the user would prefer to do it locally or in the login node
+        write_bash2(filename_prefix,
+            bash2_walltime_hours,
+            bash2_memory_required)
+
+    write_merge(filename_prefix,PARTITION_NUM)
+
+    # print('\nfinished writing partitions & bash files ')
+    pass
 
 def directory(network):
     """
@@ -48,7 +185,7 @@ def directory(network):
         DIR (str): The directory where the individual experiment.py files will be stored
     """
     # the network options here should match the generate_adj function in res_experiment.py
-    network_options = ['barab1', 'barab2',
+    network_options = ['barab1', 'barab2', 'barab4',
                         'erdos', 'random_digraph',
                         'watts3', 'watts5',
                         'watts2','watts4',
@@ -56,9 +193,9 @@ def directory(network):
                         'chain', 'loop',
                         'ident']
     if network not in network_options:
-        raise ValueError('{network} not in {network_options}')
+        raise ValueError(f'{network} not in {network_options}')
 
-    if network == 'barab1' or network == 'barab2':
+    if network in ['barab1','barab2','barab4']:
         DIR = 'Barabasi'
     if network == 'erdos':
         DIR = 'Erdos'
@@ -79,9 +216,6 @@ def write_bash_script(
     hours_per_job,
     minutes_per_job,
     memory_per_job,
-    # compile_hours, #will used with batch dependence
-    # compile_minutes,
-    # compile_mem
     ):
     """
     Write the bash script to run all the experiments and write a bash_script to cleanup the directory
@@ -123,33 +257,11 @@ def write_bash_script(
     new_f = open(filename +'.sh','w')
     new_f.write(tmpl_str)
     new_f.close()
-    print('NEXT: sg fslg_webb_reservoir \"sbatch',filename +'.sh\"')
+    # print('NEXT: sg fslg_webb_reservoir \"sbatch',filename +'.sh\"')
 
-    tmpl_stream = open('post_completion.sh','r')
-    tmpl_str = tmpl_stream.read()
-    tmpl_stream.close()
-    # TODO, this will be used once we have dependence figured out
-    # tmpl_str = tmpl_str.replace("#HOURS#",str(compile_hours))
-    # tmpl_str = tmpl_str.replace("#MINUTES#",str(compile_minutes))
-    # tmpl_str = tmpl_str.replace("#MEMORY#",str(compile_mem))
-    # tmpl_str = tmpl_str.replace("#DIR#",directory) #not needed
-    tmpl_str = tmpl_str.replace("#FNAME#",filename)
-    new_name = 'post_' + filename +'.sh'
-    new_f = open(new_name,'w')
-    new_f.write(tmpl_str)
-    new_f.close()
+    #post_completion script is outdated
 
-    tmpl_stream = open('template_cleanup.sh','r')
-    tmpl_str = tmpl_stream.read()
-    tmpl_stream.close()
-    tmpl_str = tmpl_str.replace("#FNAME#",filename)
-    tmpl_str = tmpl_str.replace("#DIR#",directory)
-    new_name = 'cleanup_' + filename +'.sh'
-    new_f = open(new_name,'w')
-    new_f.write(tmpl_str)
-    new_f.close()
-    print('bash','cleanup_' + filename +'.sh')
-    #print('\nThe cleanup file (command above) can be run immediately after submitting the batch')
+    #removed cleanup file
 
     tmpl_stream = open('template_final_step.sh','r')
     tmpl_str = tmpl_stream.read()
@@ -163,6 +275,12 @@ def write_bash_script(
 
 def generate_experiments(
     FNAME,
+    PARTITION_NUM,
+    compilation_hours_per_partition,
+    compilation_memory_per_partition,
+    bash2_desired=True,
+    bash2_walltime_hours = 1,
+    bash2_memory_required = 50,
     verbose = True,
     nets_per_experiment = 2,
     orbits_per_experiment = 200,
@@ -244,7 +362,6 @@ def generate_experiments(
                         #of low and high network sizes and remove_p values, depending upon 'num_experiments_per_file' of course
                         for n in network_sizes:
                             for p in remove_p_list:
-
                                 #save_fname is for .py files
                                 #new_name is for .pkl files
                                 save_fname =  DIR + '/' + FNAME + "_" + topology + "_" + str(file_count)
@@ -306,7 +423,28 @@ def generate_experiments(
         
     if verbose:
         print('\ntotal number of files/jobs',file_count)
+        if DEBUG:
+            print('parameter experiment number',parameter_experiment_number)
     #in order to run all the experiments on the supercomputer we need the main bash script
-    write_bash_script(DIR,FNAME + "_" + topology,file_count,hours_per_job,minutes_per_job,memory_per_job)
+    FNAME_PREFIX = FNAME + "_" + topology
+    write_bash_script(DIR,FNAME_PREFIX,file_count,hours_per_job,minutes_per_job,memory_per_job)
     #in order to compile output systematically, store the number of experiments and output directory
-    prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_experiment_number,nets_per_experiment,verbose)
+    write_partitions(
+        PARTITION_NUM,
+        compilation_hours_per_partition,
+        compilation_memory_per_partition,
+        DIR,
+        FNAME_PREFIX,
+        # subtract one for zero based indexing
+        parameter_experiment_number - 1,
+        nets_per_experiment,
+        num_experiments_per_file,
+        verbose,
+        bash2_desired,
+        bash2_walltime_hours,
+        bash2_memory_required,
+         )
+
+    write_dependency_bash(FNAME_PREFIX)
+    #prepare_output_compilation(DIR,FNAME + "_" + topology,parameter_experiment_number,nets_per_experiment,num_experiments_per_file,verbose)
+    pass
