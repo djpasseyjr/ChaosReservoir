@@ -43,7 +43,16 @@ def barab2(n=None):
     A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
     return sparse.dok_matrix(A)
 
-
+def barab4(n=None):
+    """ Barabasi-Albert preferential attachment. Each node is added with two edges
+    Parameter
+        n (int): n is the size of the network
+    """
+    if n is None:
+        n = np.random.randint(smallest_network_size,biggest_network_size)
+    m = 4
+    A = nx.adj_matrix(nx.barabasi_albert_graph(n,m)).T
+    return sparse.dok_matrix(A)
 
 def erdos(mean_degree,n=None):
     """ Erdos-Renyi random graph.

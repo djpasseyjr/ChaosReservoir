@@ -18,6 +18,7 @@ partition_index = #PARTITION_INDEX#
 COLNAMES = [
     "mean_pred",
     "mean_err",
+    "net",
     "adj_size",
     "net",
     "topo_p",
@@ -33,13 +34,13 @@ COLNAMES = [
 NETCOLS = [
     "max_scc",
     "max_wcc",
-    "giant_comp",
     "singletons",
     "nwcc",
     "nscc",
     "cluster",
     "assort",
-    "diam"
+    "diam",
+    "edge_weight"
 ]
 
 def compile_output(DIR, filename_prefix, nets_per_experiment):
