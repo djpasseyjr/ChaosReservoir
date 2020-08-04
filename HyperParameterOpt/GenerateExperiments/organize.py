@@ -8,8 +8,105 @@ import tarfile #may not work in the supercomputer
 import numpy as np
 
 # for analyze_main
-PARTIAL_DATA_bool=True,
+PARTIAL_DATA_bool=False
 TEST_NUMBER=0
+
+def batch_compilation_notes(results_file_name,filename=None):
+    """ """
+    df = pd.read_csv(results_file_name)
+    batch_results = dict()
+    for i,batch in enumerate(df.name.unique()):
+        batch_results[i] = {
+            'name':batch
+            ,'partitions_complete':df.name.value_counts()[batch]
+            ,'avg_hr':round(df.loc[df.name == batch]['hrs'].mean(),2)
+            ,'total_num_failures':df.loc[df.name == batch]['#_fails'].sum()
+            ,'total_num_exp':df.loc[df.name == batch]['partition_nexperiments'].sum()
+            ,'total_failure_percentage':round(df.loc[df.name == batch]['#_fails'].sum() / df.loc[df.name == batch]['partition_nexperiments'].sum() * 100,1)
+            ,'total_num_strange_errors':df.loc[df.name == batch]['strange_error_count'].sum()
+        }
+    x = pd.DataFrame(batch_results).T
+    x.sort_values(by='name',inplace=True)
+    show = ['name','partitions_complete','avg_hr','total_num_strange_errors'
+            ,'total_failure_percentage'
+           ,'total_num_failures','total_num_exp']
+
+    if filename is None:
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        filename = f'batch_compilation_notes_{month}_{day}_at_{hour}_{minute}'
+
+    # x.sort_values(by=['name','partition_index'],ascending=[True,True]).to_csv(f'{filename}.csv')
+    x[show].to_csv(f'{filename}.csv')
+
+    print(f'produced: {filename}.csv')
+
+def aggregate_compilation_notes(l=None,filename=None,verbose=False):
+    """
+    Given several directories that contain the batch compilation notes, I want to aggregate
+    the text files into a csv containing summaries
+
+    parameters:
+        l           (list): list of TXT directories that contain only .txt files, if None
+                            then assume its the working directory (only)
+        filename    (str): name for output
+    """
+    if l is None:
+        l = ['']
+
+    counter = 0
+    file_notes = dict() #the index of the dictionary
+    for directory in l:
+        if directory[-1] != '/':
+            directory += '/'
+        files_list = os.listdir(directory)
+        for file_name in files_list:
+            if 'notes' in file_name:
+                file_notes[counter] = {'name':None
+                    ,'partition_index':None #like partition index
+                    ,'hrs':None
+                    ,'failure_percent':None,'#_fails':None
+                    ,'partition_nexperiments':None
+                    ,'strange_error_count':None
+                    }
+                with open(directory + file_name,'r') as f:
+                    l = f.readlines()
+                #parsing the file in this way is appropriate because the file format doesnt change, regex is overkill
+                file_notes[counter]['name'] = l[0][:-1]
+                # the index will come from the title
+                file_notes[counter]['partition_index'] = int(file_name[:-4].split('_')[-1])
+                file_notes[counter]['hrs'] = float(l[2].split(' ')[1])
+                three = l[3].split(' ')
+                file_notes[counter]['#_fails'] = int(three[-3])
+                file_notes[counter]['partition_nexperiments'] = int(three[-1])
+                file_notes[counter]['failure_percent'] = round(int(three[-3]) / int(three[-1]) * 100,1)
+                file_notes[counter]['strange_error_count'] = int(l[5].split(' ')[2])
+
+                #this counter is better than enumeration of files_list because
+                # there could be files that arent compilation notes
+                # and I dont want the number to reset even if multiple directories
+                counter += 1
+            if verbose:
+                print(f'done with {directory}{file_name}')
+        if verbose:
+            print(f'done with all files in {directory}')
+
+    columns = ['file_count','name','partition_index','hrs','#_fails','partition_nexperiments','failure_percent','strange_error_count']
+    df = pd.DataFrame(file_notes).T
+    # df.columns = columns
+    #file_count is totally arbitrary and is useful in construction but remove from output
+    show = ['name','partition_index','hrs','#_fails','partition_nexperiments','failure_percent','strange_error_count']
+    # keep the csv just in case there is a big super batch and we want to sort the view better
+    if filename is None:
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        filename = f'aggregate_compilation_notes_{month}_{day}_at_{hour}_{minute}'
+
+    df.sort_values(by=['name','partition_index'],ascending=[True,True]).to_csv(f'{filename}.csv')
+    # df[show].sort_values(by=['name','partition_index'],ascending=[True,True]).to_csv(f'{filename}.csv')
+
+
+    print(f'produced: {filename}.csv')
 
 def directory(network):
     """
@@ -240,8 +337,8 @@ def slurm_batches(loc):
 
 def mv_slurm(loc=None,num_to_name=None):
     """
-    Assuming a large number of slurm files from different batches are in one directory then organize that directory
-    slurm-
+    Assuming a large number of slurm files from different batches are in one 
+    directory then organize that directory
 
     Parameters:
         loc                 (str): location to work, if None, then assumed working directory
@@ -254,7 +351,10 @@ def mv_slurm(loc=None,num_to_name=None):
     else:
         if loc[-1] != '/':
             loc += '/'
-            directory_list = os.listdir(loc)
+        directory_list = os.listdir(loc)
+
+    if num_to_name is None:
+        num_to_name = dict()
 
     #parse the slurn names
     files = [a.split('.') for a in directory_list]
