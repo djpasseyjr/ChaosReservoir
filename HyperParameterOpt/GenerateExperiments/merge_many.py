@@ -7,7 +7,7 @@ import traceback
 
 """this file is for merging many `completely_compiled` datasets from many batches """
 
-#to fill in 
+#to fill in
 file_list = [
 
 ,
@@ -46,5 +46,5 @@ for i,f in enumerate(file_list[1:]):
     except:
         traceback.print_exc()
 
-pickle.dump(compiled, open('best_partial_data_' + filename_prefix + '.pkl', 'wb'))
+pickle.dump(compiled, open('completely_compiled_' + filename_prefix + '.pkl', 'wb'))
 print(f'{filename_prefix} completely compiled, with export, after {round((time.time() - start )/ 60,1)} minutes')
