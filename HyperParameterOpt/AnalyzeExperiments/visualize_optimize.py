@@ -600,6 +600,8 @@ class Evaluate:
         self.data = df_dict
         self.results = pd.DataFrame()
 
+        print('how many exp_numbers have fewer than 25 nets for each dataset, what percent of experment numbers arent 25')
+
     def total_net_counts(self):
         """Identify how many experiments (25 nets) there are per remove value """
         pass
@@ -713,7 +715,7 @@ def df_dict(dir=None,file_list=None,drop_partial_experiments=None):
                     raise ValueError(f'cant drop {drop_partial_experiments} which is more than the max of {df['num_nets_by_exp'].max()}')
                 else:
                     #drop the networks
-                    df.drop(index=df[df['num_nets_by_exp'] > drop_partial_experiments ].index,inplace=True)
+                    df.drop(index=df[df['num_nets_by_exp'] < drop_partial_experiments ].index,inplace=True)
             if "net" not in df.columns:
                 df.loc[:,'net'] = i
                 print(f'`net` column wasnt in:\n{filenames[i]}')
@@ -774,4 +776,4 @@ print('how to exclude certain parameter values ? ')
 
 # main(SELECTION)
 print('main is commented out')
-test_visuals()
+# test_visuals()
