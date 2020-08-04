@@ -11,8 +11,31 @@ import numpy as np
 PARTIAL_DATA_bool=False
 TEST_NUMBER=0
 
+## add batch get_best_partial_data
+
+def join_batch_summary_csv(files,filename=None):
+    """Aggregate multiple outputs from batch_compilation_notes """
+    df = pd.DataFrame()
+    for f in files:
+        x = pd.read_csv(f)
+        print(f,' - ',x.shape)
+        df = pd.concat([df,x],ignore_index=True)
+    df.sort_values(by='name',inplace=True)
+    print('final df shape',df.shape)
+    if filename is None:
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        filename = f'big_summary_compilation_notes_{month}_{day}_at_{hour}_{minute}'
+    else:
+        if filename[-4:] == '.csv':
+            filename = filename[-4:]
+    df.to_csv(f'{filename}.csv')
+    print(f'produced: {filename}.csv')
+
 def batch_compilation_notes(results_file_name,filename=None):
-    """ """
+    """
+    Given the output from aggregate_compilation_notes, condense it to a batch level
+    """
     df = pd.read_csv(results_file_name)
     batch_results = dict()
     for i,batch in enumerate(df.name.unique()):
@@ -215,17 +238,29 @@ def tar_subdirectories(subfolders=None,remove_old=False,verbose=True):
 
     print('make sure the tar file isnt zipped, the data should be efficiently accessible ')
 
-def get_best_partial_data(tar=True,remove_old=True,verbose=True):
+def get_best_partial_data(subdirectories=None,tar=True,remove_old=True,verbose=True):
     """
     get best partial dataset from partial data directories (already made)
 
     Parameters:
+        subfolders  (list of str): list of directory names
         tar         (bool): tar up the datasets after moving the move important dataset
         remove_old  (bool): remove the unarchived data
 
     """
-    # get a list of all the partial dataset directories
+    # get a list of all the directories including partial dataset directories
     subfolders = get_subdirectories()
+    if subdirectories is None:
+        subdirectories = subfolders
+    else:
+        raise_error = False
+        for i in subdirectories:
+            if i not in subfolders:
+                raise_error = True
+                print(f'{i} not a directory')
+        if raise_error:
+            print(f'\nvalid directories are {subfolders}')
+            raise ValueError('an invalid directory was input')
     # find out what the max filename is
     # pull out the partial dataset with the highest index
 
@@ -337,7 +372,7 @@ def slurm_batches(loc):
 
 def mv_slurm(loc=None,num_to_name=None):
     """
-    Assuming a large number of slurm files from different batches are in one 
+    Assuming a large number of slurm files from different batches are in one
     directory then organize that directory
 
     Parameters:
@@ -609,44 +644,3 @@ def analyze_main(
         partial_data=PARTIAL_DATA_bool,
         test_number=TEST_NUMBER
     )
-
-def batch_pkl_movement(d,verbose=True):
-    """ Organize the different topology directories
-
-    Parameters:
-        d           (dict): According to format below, as inputs for move_pkl
-        verbose     (str)
-
-        #fnp = file_name_prefix
-        d = {'file_name_prefix':{
-                'num_experiments':60000
-                ,'num_partitions':16
-                ,'loc':None}
-            ,'fnp_2':{
-                'num_experiments':70000
-                ,'num_partitions':32
-                ,'loc':None}
-        }
-    """
-    #an alternative to this function is just to make the call
-    # to move_pkl many times from a different script,
-    # but this function will time the movements
-    # & this function will also do the update_partition_scripts
-    # which is convenient
-    raise NotImplementedError('not finished')
-
-    for i in d.keys():
-        start = time.time()
-
-        move_pkl(filename_prefix=i,
-        num_experiments=d[i]['num_experiments'],
-        num_partitions=d[i]['num_partitions'],
-        loc=d[i]['loc'])
-
-        runtime = time.time() - start
-        if verbose:
-            print(f'finished with {i} after {round((time.time() - start )/ 60,1)} minutes')
-
-        update_partition_scripts(filename_prefix=i,num_partitions=d[i]['num_partitions'])
-        if verbose:
-            print(f'finished updating partition scripts for {i}')
