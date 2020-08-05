@@ -119,7 +119,7 @@ def compile_output(DIR, filename_prefix, nets_per_experiment):
 
             if partial_data:
                 # This will only include files that had data in the count
-                if (i - failed_file_count) % int(NEXPERIMENTS / 3):
+                if ((i - failed_file_count) % int(NEXPERIMENTS / 3)) == 0:
                     pickle.dump(compiled, open(str(test_number) + 'partial_compiled_tarball_' + filename_prefix + "_" + str(partition_index) + "_" + str(save_file_index)+ '.pkl', 'wb'))
                     save_file_index += 1
 
@@ -194,6 +194,7 @@ def add_net_stats(compiled, data_dict, start_idx):
         compiled["assort"][start_idx + k] = assort(g)
         compiled["cluster"][start_idx + k] = nx.average_clustering(g)
         compiled["diam"][start_idx + k] = diam
+        A = A.tocsr()
         if np.max(A) - np.min(A) < 1e-8:
             # If the edge weights aren't uniform edge weight is set to none
             compiled["edge_weight"][start_idx + k] = np.max(A)
