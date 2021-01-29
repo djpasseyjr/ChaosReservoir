@@ -1,0 +1,207 @@
+import pickle
+import os
+import pandas as pd
+from matplotlib import pyplot as plt
+import rescomp as rc
+import time
+#from ChaosReservoir.HyperParameterOpt.GenerateExperiments.res_experiment import * #needed for running locally
+from res_experiment import * #used for running in super-computer
+import datetime as dt
+import pickle
+from scipy import integrate
+
+TOL = 5
+
+
+#small scale is to make sure it runs all the way through
+small_scale = False
+
+
+def lorentz_deriv(t0, X, sigma=10., beta=8./3, rho=28.0):
+    """Compute the time-derivative of a Lorenz system."""
+    (x, y, z) = X
+    return [sigma * (y - x), x * (rho - z) - y, x * y - beta * z]
+
+def lorenz_equ(x0=[-20, 10, -.5], begin=0, end=60, timesteps=60000, train_per=.66, clip=0):
+    """Use solve_ivp to produce a solution to the lorenz equations"""
+    t = np.linspace(begin,end,timesteps)
+    clipped_start = floor(timesteps * clip / (end - begin))
+    n_train = floor(clipped_start + train_per * (end - clip) / (end - begin) * timesteps)
+    train_t = t[clipped_start:n_train]
+    test_t = t[n_train:]
+    u = integrate.solve_ivp(lorentz_deriv, (begin,end), x0, dense_output=True).sol
+    return train_t, test_t, u
+
+def hybrid_metric(pred,true):
+    diff = pred - true
+    return np.linalg.norm(diff,axis=0) / np.linalg.norm(true,axis=0)
+
+def our_mse(pre,u):
+    diff = []
+    for i in range(u.shape[1]):
+        diff.append(np.sum((u[:,i] - pre[:,i])**2)**.5)
+    #mean_error = np.mean(np.linalg.norm(diff, ord=2, axis=0)**2)**(1/2)
+    return np.array(diff)
+
+def hybrid_accuracy_duration(hyb_diff):
+    """
+    Parameters:
+        hyb_diff (() ndarray): output of hybrid_metric function
+    """
+    hybrid_tol = 0.4
+    for i in range(len(hyb_diff)):
+        dist = hyb_diff[i]
+        if dist > hybrid_tol:
+            return i
+    return len(hyb_diff)
+
+def random_lorenz_x0():
+    """ Random initial condition for lorenz equations """
+    return  20*(2*np.random.rand(3) - 1)
+
+def metric_comparison_experiments(df,small_scale=False):
+    """ Given a DataFrame of parameters, run experiments
+    parameters
+        df (DataFrame); dataframe with parameters for experiments as columns
+     """
+    num_distinct_orbits = 20
+    num_distinct_rescomps = 32
+    results = dict()
+    assert TOL == 5,'the tolerance should not be changed'
+
+    print('THE DIFF_EQ PARAMS should be for 100 seconds\n',DIFF_EQ_PARAMS)
+
+    if small_scale:
+        #change adj size to like 1000, and remove_p to 0.9 for all experiments
+        df['remove_p'] = 0.9
+        df['adj_size'] = 1000
+
+    counter = 0
+    # generate 20 distinct orbits
+    for _ in range(num_distinct_orbits):
+        DIFF_EQ_PARAMS = {
+                          "x0": [-20, 10, -.5],
+                          "begin": 0,
+                          "end": 85,
+                          "timesteps": 85000,
+                          "train_per": .889,
+                          "solver": lorenz_equ,
+                          "clip": 40
+                         }
+        #change the starting position, random orbit
+        diff_eq_params["x0"] = random_lorenz_x0()
+        for i in range(num_distinct_rescomps):
+            for size in [500,1500,2500]:
+                z = df.iloc[i]
+                RIDGE_ALPHA,SPECT_RAD,GAMMA,SIGMA, = z.ridge_alpha, z.spect_rad, z.gamma, z.sigma
+                RES_PARAMS = {
+                              "uniform_weights": True,
+                              "solver": "ridge",
+                              "ridge_alpha": RIDGE_ALPHA,
+                              "signal_dim": 3,
+                              "network": "random graph",
+
+                              "res_sz": 15,
+                              "activ_f": np.tanh,
+                              "connect_p": .4,
+                              "spect_rad": SPECT_RAD,
+                              "gamma": GAMMA,
+                              "sigma": SIGMA,
+                              "sparse_res": True,
+                             }
+                adj = generate_adj(z.net, z.topo_p, size)
+                # print(z.net, z.topo_p, z.adj_size)
+
+                # Remove Edges
+                if z.remove_p != 0:
+                    adj = remove_edges(adj, floor(z.remove_p*np.sum(adj != 0)))
+
+                start = time.time()
+                DIFF_EQ_PARAMS["x0"] = random_lorenz_x0()
+                train_t, test_t, u = rc_solve_ode(DIFF_EQ_PARAMS)
+                rc = ResComp(adj, **RES_PARAMS)
+                # Train network
+                if small_scale:
+                    print('about to start training')
+                error = rc.fit(train_t, u)
+                if small_scale:
+                    print('done training')
+                predictions = rc.predict(test_t)
+                true = u(test_t)
+                pred = how_long_accurate(true, predictions, tol=TOL)
+                experiment_time = time.time() - start
+                if small_scale:
+                    print('minutes to run',experiment_time / 60)
+
+                hyb_diff = hybrid_metric(predictions,true)
+                our_diff = our_mse(predictions,true)
+                our_accuracy_duration = pred*0.91 / 1000 #scale is in seconds, not time steps so divide by 1k
+                their_score_timestep_time = hybrid_accuracy_duration(hyb_diff)
+                their_score = their_score_timestep_time * 0.91/1000
+
+                results[counter] = {'prediction' : predictions,
+                            'true':true,
+                            'pred':pred,
+                            'accuracy_duration':our_accuracy_duration,
+                            'their_score':their_score,
+                            'our_diff':our_diff,
+                            'hybrid_diff':hyb_diff,
+                            'adj_size': size,
+                            'net' : z.net,
+                            'topo_p' : z.topo_p,
+                            'gamma' : GAMMA,
+                            'sigma' : SIGMA,
+                            'spect_rad' : SPECT_RAD,
+                            'ridge_alpha' : RIDGE_ALPHA,
+                            'remove_p' : z.remove_p,
+                            'x0',DIFF_EQ_PARAMS['x0'],
+                            'compute time (Min)':experiment_time / 60
+                            }
+                if small_scale:
+                    print('some results')
+                    print(results[i]['accuracy_duration'])
+                    print(results[i]['their_score'])
+                    print()
+                counter += 1
+    return results
+
+def save_results(results):
+    """Take the output from  metric_comparison_experiments and write it to a file
+
+    """
+    #print('would it be better to just write it to a pickle file???')
+
+    try:
+        output = pd.DataFrame(results).T
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        # hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        output.to_csv(f'metric_comparison_experiments_{month}_{day}.csv')
+    except:
+        import sys
+        import traceback
+        traceback.print_exc()
+        print(results)
+
+if __name__ == "__main__":
+    # get parameters for experiments
+    f = '0compiled_tarball_output_b12_0.pkl'
+    p = ''
+    df = pd.DataFrame(pickle.load(open(p + f,'rb')))
+    df.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
+
+    if small_scale:
+        sample_size = 2
+        # get the first
+        #df = df.iloc[:3].copy()
+        samples = np.random.randint(0,df.shape[0],sample_size)
+        df = df.iloc[samples].copy()
+        results = metric_comparison_experiments(df,small_scale=True)
+        save_results(results)
+    else:
+        results = metric_comparison_experiments(df)
+        save_results(results)
+
+    message = """what this doesn't do is predict out 100 seconds, and it doesn't do just 30 networks
+    So I need to remember that we are trying to recreate the visuals, so I need 30 of each adjacency size
+    """
+    print(message)
