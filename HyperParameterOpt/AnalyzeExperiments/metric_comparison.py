@@ -63,7 +63,13 @@ def metric_comparison_experiments(df,small_scale=False):
     """ Given a DataFrame of parameters, run experiments
     parameters
         df (DataFrame); dataframe with parameters for experiments as columns
-     """
+    """
+    RIDGE_ALPHA = None
+    SPECT_RAD = None
+    GAMMA = None
+    SIGMA  = None
+    NET = None
+    TOPO_P = None
     num_distinct_orbits = 20
     num_distinct_rescomps = 32
     results = dict()
@@ -75,25 +81,32 @@ def metric_comparison_experiments(df,small_scale=False):
         #change adj size to like 1000, and remove_p to 0.9 for all experiments
         df['remove_p'] = 0.9
         df['adj_size'] = 1000
+    
+    if None in [RIDGE_ALPHA,SPECT_RAD,GAMMA,SIGMA,NET]:
+        raise ValueError('Specify Hyper-parameters')
 
     counter = 0
     # generate 20 distinct orbits
-    for _ in range(num_distinct_orbits):
+    for size in [500,1500,2500]:
+
         DIFF_EQ_PARAMS = {
-                          "x0": [-20, 10, -.5],
-                          "begin": 0,
-                          "end": 85,
-                          "timesteps": 85000,
-                          "train_per": .889,
-                          "solver": lorenz_equ,
-                          "clip": 40
-                         }
+                  "x0": [-20, 10, -.5],
+                  "begin": 0,
+                  "end": 155,
+                  "timesteps": 155000,
+                  "train_per": 100 / 115, #100 seconds of training, so 15 seconds of predict
+                  "solver": lorenz_equ,
+                  "clip": 40
+                 }
         #change the starting position, random orbit
         diff_eq_params["x0"] = random_lorenz_x0()
-        for i in range(num_distinct_rescomps):
-            for size in [500,1500,2500]:
-                z = df.iloc[i]
-                RIDGE_ALPHA,SPECT_RAD,GAMMA,SIGMA, = z.ridge_alpha, z.spect_rad, z.gamma, z.sigma
+
+        # set the desired parameter combinations
+
+        for _ in range(num_distinct_orbits):
+            rc_counter = 0
+            for i in range(num_distinct_rescomps):
+
                 RES_PARAMS = {
                               "uniform_weights": True,
                               "solver": "ridge",
@@ -109,7 +122,7 @@ def metric_comparison_experiments(df,small_scale=False):
                               "sigma": SIGMA,
                               "sparse_res": True,
                              }
-                adj = generate_adj(z.net, z.topo_p, size)
+                adj = generate_adj(NET,TOPO_P, size)
                 # print(z.net, z.topo_p, z.adj_size)
 
                 # Remove Edges
@@ -154,9 +167,11 @@ def metric_comparison_experiments(df,small_scale=False):
                             'spect_rad' : SPECT_RAD,
                             'ridge_alpha' : RIDGE_ALPHA,
                             'remove_p' : z.remove_p,
-                            'x0',DIFF_EQ_PARAMS['x0'],
+                            'x0':DIFF_EQ_PARAMS['x0'],
+                            'rc_counter':rc_counter,
                             'compute time (Min)':experiment_time / 60
                             }
+                rc_counter += 1
                 if small_scale:
                     print('some results')
                     print(results[i]['accuracy_duration'])
