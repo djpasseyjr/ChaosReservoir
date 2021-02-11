@@ -59,30 +59,30 @@ def random_lorenz_x0():
     """ Random initial condition for lorenz equations """
     return  20*(2*np.random.rand(3) - 1)
 
-def metric_comparison_experiments(df,small_scale=False):
+def metric_comparison_experiments(
+    RIDGE_ALPHA = None
+    ,SPECT_RAD = None
+    ,GAMMA = None
+    ,SIGMA  = None
+    ,NET = None
+    ,TOPO_P = None
+    ,REMOVE_P = None
+    ,num_distinct_orbits = 20
+    ,num_distinct_rescomps = 32
+):
     """ Given a DataFrame of parameters, run experiments
     parameters
         df (DataFrame); dataframe with parameters for experiments as columns
     """
-    RIDGE_ALPHA = None
-    SPECT_RAD = None
-    GAMMA = None
-    SIGMA  = None
-    NET = None
-    TOPO_P = None
-    num_distinct_orbits = 20
-    num_distinct_rescomps = 32
     results = dict()
     assert TOL == 5,'the tolerance should not be changed'
-
-    print('THE DIFF_EQ PARAMS should be for 100 seconds\n',DIFF_EQ_PARAMS)
 
     if small_scale:
         #change adj size to like 1000, and remove_p to 0.9 for all experiments
         df['remove_p'] = 0.9
         df['adj_size'] = 1000
-    
-    if None in [RIDGE_ALPHA,SPECT_RAD,GAMMA,SIGMA,NET]:
+
+    if None in [RIDGE_ALPHA,SPECT_RAD,GAMMA,SIGMA,NET,REMOVE_P]:
         raise ValueError('Specify Hyper-parameters')
 
     counter = 0
@@ -126,7 +126,7 @@ def metric_comparison_experiments(df,small_scale=False):
                 # print(z.net, z.topo_p, z.adj_size)
 
                 # Remove Edges
-                if z.remove_p != 0:
+                if REMOVE_P != 0:
                     adj = remove_edges(adj, floor(z.remove_p*np.sum(adj != 0)))
 
                 start = time.time()
@@ -160,13 +160,13 @@ def metric_comparison_experiments(df,small_scale=False):
                             'our_diff':our_diff,
                             'hybrid_diff':hyb_diff,
                             'adj_size': size,
-                            'net' : z.net,
-                            'topo_p' : z.topo_p,
+                            'net' : NET,
+                            'topo_p' : TOPO_P,
                             'gamma' : GAMMA,
                             'sigma' : SIGMA,
                             'spect_rad' : SPECT_RAD,
                             'ridge_alpha' : RIDGE_ALPHA,
-                            'remove_p' : z.remove_p,
+                            'remove_p' : REMOVE_P,
                             'x0':DIFF_EQ_PARAMS['x0'],
                             'rc_counter':rc_counter,
                             'compute time (Min)':experiment_time / 60
@@ -198,23 +198,19 @@ def save_results(results):
         print(results)
 
 if __name__ == "__main__":
-    # get parameters for experiments
-    f = '0compiled_tarball_output_b12_0.pkl'
-    p = ''
-    df = pd.DataFrame(pickle.load(open(p + f,'rb')))
-    df.sort_values(by=['mean_pred','mean_err'],ascending=[False,True],inplace=True)
 
-    if small_scale:
-        sample_size = 2
-        # get the first
-        #df = df.iloc[:3].copy()
-        samples = np.random.randint(0,df.shape[0],sample_size)
-        df = df.iloc[samples].copy()
-        results = metric_comparison_experiments(df,small_scale=True)
-        save_results(results)
-    else:
-        results = metric_comparison_experiments(df)
-        save_results(results)
+    results = metric_comparison_experiments(
+        RIDGE_ALPHA = 1.e-08
+        ,SPECT_RAD = 1
+        ,GAMMA = 10
+        ,SIGMA  = 0.14
+        ,NET = 'erdos'
+        ,TOPO_P = 0.5
+        ,REMOVE_P = 0.99
+        ,num_distinct_orbits = 20
+        ,num_distinct_rescomps = 32
+    )
+    save_results(results)
 
     message = """what this doesn't do is predict out 100 seconds, and it doesn't do just 30 networks
     So I need to remember that we are trying to recreate the visuals, so I need 30 of each adjacency size
