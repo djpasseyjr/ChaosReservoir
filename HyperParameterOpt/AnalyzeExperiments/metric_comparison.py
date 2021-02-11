@@ -71,6 +71,7 @@ def metric_comparison_experiments(
     ,num_distinct_orbits = 20
     ,num_distinct_rescomps = 32
     ,small_scale = False
+    ,verbose = False
 ):
     """ Given a DataFrame of parameters, run experiments
     parameters
@@ -102,7 +103,7 @@ def metric_comparison_experiments(
                   "clip": 40
                  }
         #change the starting position, random orbit
-        diff_eq_params["x0"] = random_lorenz_x0()
+        DIFF_EQ_PARAMS["x0"] = random_lorenz_x0()
 
         # set the desired parameter combinations
 
@@ -175,10 +176,11 @@ def metric_comparison_experiments(
                             'compute time (Min)':experiment_time / 60
                             }
                 rc_counter += 1
-                if small_scale:
+                if verbose:
                     print('some results')
-                    print(results[i]['accuracy_duration'])
-                    print(results[i]['their_score'])
+                    print(results[counter]['accuracy_duration'])
+                    print(results[counter]['their_score'])
+                    print(results[counter]['compute time (Min)'])
                     print()
                 counter += 1
     return results
@@ -213,6 +215,7 @@ if __name__ == "__main__":
         ,SIZES = [500]
         ,num_distinct_orbits = 1
         ,num_distinct_rescomps = 1
+        ,verbose = False
     )
     save_results(results)
 
