@@ -69,6 +69,7 @@ def metric_comparison_experiments(
     ,REMOVE_P = None
     ,num_distinct_orbits = 20
     ,num_distinct_rescomps = 32
+    ,small_scale = False
 ):
     """ Given a DataFrame of parameters, run experiments
     parameters
@@ -87,7 +88,12 @@ def metric_comparison_experiments(
 
     counter = 0
     # generate 20 distinct orbits
-    for size in [500,1500,2500]:
+    if small_scale:
+        sizes = [500]
+    else:
+        sizes = [500,1500,2500]
+
+    for size in sizes:
 
         DIFF_EQ_PARAMS = {
                   "x0": [-20, 10, -.5],
@@ -207,8 +213,9 @@ if __name__ == "__main__":
         ,NET = 'erdos'
         ,TOPO_P = 0.5
         ,REMOVE_P = 0.99
-        ,num_distinct_orbits = 20
-        ,num_distinct_rescomps = 32
+        ,num_distinct_orbits = 1
+        ,num_distinct_rescomps = 1
+        ,small_scale = False
     )
     save_results(results)
 
