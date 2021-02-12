@@ -192,11 +192,17 @@ def save_results(results,output_filename=None):
     """
     #print('would it be better to just write it to a pickle file???')
     if not output_filename:
-        print('just check to see if the filename isnt already in the directory')
+        l = set(os.listdir())
         month, day = dt.datetime.now().month, dt.datetime.now().day
         hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
-        ran = np.random.randint(0,10000)
+        randint_bound = 2
         output_filename = f'metric_comparison_experiments_{month}_{day}_{hour}_{minute}.csv'
+
+        while output_filename in l:
+            randint_bound *= 10
+            ran = np.random.randint(0,randint_bound)
+            output_filename = f'metric_comparison_experiments_{ran}.csv'
+
     elif output_filename[-4:] != '.csv':
         output_filename += '.csv'
 
@@ -224,7 +230,7 @@ if __name__ == "__main__":
         ,num_distinct_rescomps = 32
         ,verbose = False
     )
-    title = f'metric_comparison_experiments.csv'
+    #title = f'metric_comparison_experiments.csv'
     title = None
     save_results(results,title)
 
