@@ -9,6 +9,7 @@ from res_experiment import * #used for running in super-computer
 import datetime as dt
 import pickle
 from scipy import integrate
+import os
 
 TOL = 5
 
@@ -131,7 +132,7 @@ def metric_comparison_experiments(
 
                 # Remove Edges
                 if REMOVE_P != 0:
-                    adj = remove_edges(adj, floor(z.remove_p*np.sum(adj != 0)))
+                    adj = remove_edges(adj, floor(REMOVE_P*np.sum(adj != 0)))
 
                 start = time.time()
                 DIFF_EQ_PARAMS["x0"] = random_lorenz_x0()
@@ -185,17 +186,23 @@ def metric_comparison_experiments(
                 counter += 1
     return results
 
-def save_results(results):
+def save_results(results,output_filename=None):
     """Take the output from  metric_comparison_experiments and write it to a file
 
     """
     #print('would it be better to just write it to a pickle file???')
+    if not output_filename:
+        print('just check to see if the filename isnt already in the directory')
+        month, day = dt.datetime.now().month, dt.datetime.now().day
+        hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+        ran = np.random.randint(0,10000)
+        output_filename = f'metric_comparison_experiments_{month}_{day}_{hour}_{minute}.csv'
+    elif output_filename[-4:] != '.csv':
+        output_filename += '.csv'
 
     try:
         output = pd.DataFrame(results).T
-        month, day = dt.datetime.now().month, dt.datetime.now().day
-        # hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
-        output.to_csv(f'metric_comparison_experiments_{month}_{day}.csv')
+        output.to_csv(output_filename)
     except:
         import sys
         import traceback
@@ -205,19 +212,21 @@ def save_results(results):
 if __name__ == "__main__":
 
     results = metric_comparison_experiments(
-        RIDGE_ALPHA = 1.e-08
-        ,SPECT_RAD = 1
-        ,GAMMA = 10
+        RIDGE_ALPHA = 1e-08
+        ,SPECT_RAD = 2.0
+        ,GAMMA = 5.0
         ,SIGMA  = 0.14
-        ,NET = 'erdos'
+        ,NET = 'watts2'
         ,TOPO_P = 0.5
-        ,REMOVE_P = 0.99
+        ,REMOVE_P = 0.98
         ,SIZES = [500]
-        ,num_distinct_orbits = 1
-        ,num_distinct_rescomps = 1
+        ,num_distinct_orbits = 20
+        ,num_distinct_rescomps = 32
         ,verbose = False
     )
-    save_results(results)
+    title = f'metric_comparison_experiments.csv'
+    title = None
+    save_results(results,title)
 
     message = """ """
     print(message)
