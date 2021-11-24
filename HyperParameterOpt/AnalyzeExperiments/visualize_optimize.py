@@ -1007,6 +1007,8 @@ def df_dict(
     for i in filenames.keys():
         #save is a boolean to avoid errors in creating dataframes unnecessarily, df_dicts only contains df's not None's
         save = False
+        # df = None is just to make sure this variable is defined, in some cases, this was causing an issue
+        df = None
         l = filenames[i]
         if len(l) == 0:
             df = None
