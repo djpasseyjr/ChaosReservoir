@@ -13,16 +13,17 @@ import glob #could use but don't need to right now
 DROP_PARTIAL_EXPERIMENTS = 25 #used in optimization constructor
 combine_topos = True
 SCALE_DOWN = False
-# DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
+DIR = '/Users/joeywilkes/ReservoirComputing/research_data'
+DIR = '/content/drive/MyDrive/Vocational Folder/Research Assistant (Webb)/backup (visuals - files)/research_data (somewhat outdated)/'
 FILE_LIST = [
     # 'compiled_output_f2_38_barab2.pkl'
 #     ,'compiled_output_jw44_barab2.pkl'
     'compiled_output_jw39_barab1.pkl'
-    ,'compiled_output_jw43_barab1.pkl'
+    #,'compiled_output_jw43_barab1.pkl'
     ,'compiled_output_jw40_watts3.pkl'
-    ,'compiled_output_jw45_watts3.pkl'
+    #,'compiled_output_jw45_watts3.pkl'
 #     ,'compiled_output_jj6_random_digraph.pkl'
-#     ,'compiled_output_jj7_erdos.pkl'
+     ,'compiled_output_jj7_erdos.pkl'
 #     ,'compiled_output_jw53_ident.pkl'
     ,'compiled_output_jw54_loop.pkl'
     # ,'compiled_output_jw55_no_edges.pkl'
@@ -594,45 +595,45 @@ class Visualize:
 
         raise NotImplementedError('ncc not done ')
 
-        def export_top_x_percent(self,
-            x,
-            loc=None,
-            dep = 'mean_pred',
-            #savefig = None,
-            #res = int(1e2),
-            verbose = False):
-            """ Export the top x% of the data for all the of the topologies
+    def export_top_x_percent(self,
+        x,
+        loc=None,
+        dep = 'mean_pred',
+        #savefig = None,
+        #res = int(1e2),
+        verbose = False):
+        """ Export the top x% of the data for all the of the topologies
+        
+        Parameters
+            - x         (int): 1 <= x <= 100
+            - loc       (str): location to output data to
+            - dep       (str): either "mean_pred" or "mean_err"
+            - verbose   (bool): whether to print output or not 
+        """
             
-            Parameters
-                - x         (int): 1 <= x <= 100
-                - loc       (str): location to output data to
-                - dep       (str): either "mean_pred" or "mean_err"
-                - verbose   (bool): whether to print output or not 
-            """
-                
-            if x <= 0 or x > 100:
-                raise ValueError('x should be a percentage, like 5 or 50, x in (0,100]')
-            # casting as an int will floor if its a float
-            x = int(x)
+        if x <= 0 or x > 100:
+            raise ValueError('x should be a percentage, like 5 or 50, x in (0,100]')
+        # casting as an int will floor if its a float
+        x = int(x)
 
-            for t in self.data.keys():
-                for v in self.parameter_names.keys():
-                    temp = self.data[t].copy()
-                    #reseting this index is just to be cautious, just from combining the data 
-                    temp.reset_index(inplace=True)
-                    n = temp.shape[0]
-                    s = int(n * (x / 100))
-                    e = temp.sort_values(by='mean_pred',ascending=False).iloc[:s].copy()
-                    new = pd.pivot_table(e,values=dep,aggfunc='mean',columns='remove_p',index=v)
-                    # reseting the index in new is essential because the index is dropped when exporting
-                    new.reset_index(inplace=True)
-                    new.rename(columns={'index':v},inplace=True)
-                    month, day = dt.datetime.now().month, dt.datetime.now().day
-                    hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
-                    new_name = loc + f'Top {x}% of {dep} for {v}_{t}_{month}_{day}_at_{hour}_{minute}.csv'
-                    new.to_csv(new_name,index=False)
-                    if verbose:
-                        print('finished with ',new_name)
+        for t in self.data.keys():
+            for v in self.parameter_names.keys():
+                temp = self.data[t].copy()
+                #reseting this index is just to be cautious, just from combining the data 
+                temp.reset_index(inplace=True)
+                n = temp.shape[0]
+                s = int(n * (x / 100))
+                e = temp.sort_values(by='mean_pred',ascending=False).iloc[:s].copy()
+                new = pd.pivot_table(e,values=dep,aggfunc='mean',columns='remove_p',index=v)
+                # reseting the index in new is essential because the index is dropped when exporting
+                new.reset_index(inplace=True)
+                new.rename(columns={'index':v},inplace=True)
+                month, day = dt.datetime.now().month, dt.datetime.now().day
+                hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
+                new_name = loc + f'Top {x}% of {dep} for {v}_{t}_{month}_{day}_at_{hour}_{minute}.csv'
+                new.to_csv(new_name,index=False)
+                if verbose:
+                    print('finished with ',new_name)
 
 
     def all(self
@@ -1108,7 +1109,7 @@ def main(selection=None,drop_values=DROP_VALUES):
     if 'export' in l:
         start = time.time()
         V = Visualize(d,drop_values=drop_values)
-        V.export_top_x_percent(self,
+        V.export_top_x_percent(
             x=export_top_x_percentage_val,
             loc=LOC,
             dep = 'mean_pred',
