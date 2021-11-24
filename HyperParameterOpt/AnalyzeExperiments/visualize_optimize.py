@@ -49,7 +49,7 @@ export_top_x_percentage_val = 100
 # LOCATION FOR OUTPUT FILES
 LOC = None
 month, day = dt.datetime.now().month, dt.datetime.now().day
-LOC = f'Export_removeP_AS_OF_{month}_{day}'
+LOC = f'Export_removeP_AS_OF_{month}_{day}/'
 
 DROP_VALUES = {
   'adj_size':[]
@@ -615,6 +615,12 @@ class Visualize:
             raise ValueError('x should be a percentage, like 5 or 50, x in (0,100]')
         # casting as an int will floor if its a float
         x = int(x)
+        
+        if not loc:
+             loc = ''
+        else:
+            if loc[-1] != '/':
+                loc += '/'
 
         for t in self.data.keys():
             for v in self.parameter_names.keys():
