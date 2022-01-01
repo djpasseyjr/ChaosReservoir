@@ -39,9 +39,10 @@ NUM_WINNERS = 100 #find top NUM_WINNERS in grid search optimization
 #selection for either 'visualize' or 'optimize' or None (means both)
 SELECTION = None
 SELECTION = 'export'
-export_top_x_percentage_val = 5
-# the visuals we are wanting to replace are from 100% of the data
-export_top_x_percentage_val = 100
+## export_top_x_percentage_val - is not longer needed or in use
+# export_top_x_percentage_val = 5
+## the visuals we are wanting to replace are from 100% of the data
+# export_top_x_percentage_val = 100
 # SELECTION = 'visualize'
 # SELECTION = 'evaluate'
 # SELECTION = 'optimize'
@@ -49,7 +50,7 @@ export_top_x_percentage_val = 100
 # LOCATION FOR OUTPUT FILES
 LOC = None
 month, day = dt.datetime.now().month, dt.datetime.now().day
-LOC = f'Export_removeP_AS_OF_{month}_{day}/'
+LOC = f'Export_Pivots_AS_OF_{month}_{day}/'
 
 DROP_VALUES = {
   'adj_size':[]
@@ -595,27 +596,28 @@ class Visualize:
 
         raise NotImplementedError('ncc not done ')
 
-    def export_top_x_percent(self,
-        x,
+    def pivot_mean_by_hyperP_n_rp(self,
         loc=None,
         dep = 'mean_pred',
         #savefig = None,
         #res = int(1e2),
         verbose = False):
-        """ Export the top x% of the data for all the of the topologies
-        
+        """ Export a pivot table for each hyper-parameter, where the mean of the
+        prediction duration is calculated for each value in each hyper-parameter
+        value for each of the remove_p values
+
         Parameters
-            - x         (int): 1 <= x <= 100
             - loc       (str): location to output data to
             - dep       (str): either "mean_pred" or "mean_err"
-            - verbose   (bool): whether to print output or not 
+            - verbose   (bool): whether to print output or not
         """
-            
-        if x <= 0 or x > 100:
-            raise ValueError('x should be a percentage, like 5 or 50, x in (0,100]')
-        # casting as an int will floor if its a float
-        x = int(x)
-        
+        ## - x         (int): 0 < x <= 100
+        ## note than x is no longer needed or used, I was developing for another idea in tandem
+        # if x <= 0 or x > 100:
+        #     raise ValueError('x should be a percentage, like 5 or 50, x in (0,100]')
+        # # casting as an int will floor if its a float
+        # x = int(x)
+
         if not loc:
              loc = ''
         else:
@@ -625,18 +627,21 @@ class Visualize:
         for t in self.data.keys():
             for v in self.parameter_names.keys():
                 temp = self.data[t].copy()
-                #reseting this index is just to be cautious, just from combining the data 
+                #reseting this index is just to be cautious, just from combining the data
                 temp.reset_index(inplace=True)
-                n = temp.shape[0]
-                s = int(n * (x / 100))
-                e = temp.sort_values(by='mean_pred',ascending=False).iloc[:s].copy()
-                new = pd.pivot_table(e,values=dep,aggfunc='mean',columns='remove_p',index=v)
+                #n = temp.shape[0]
+                #s = int(n * (x / 100))
+                # e = temp.sort_values(by='mean_pred',ascending=False).iloc[:s].copy()
+                # new = pd.pivot_table(e,values=dep,aggfunc='mean',columns='remove_p',index=v)
+                ## maybe we would want the top for each remove_p, but if the list is sorted then that creates an uneven count of values going into the mean for different remove_p values
+                new = pd.pivot_table(temp,values=dep,aggfunc='mean',columns='remove_p',index=v)
                 # reseting the index in new is essential because the index is dropped when exporting
                 new.reset_index(inplace=True)
                 new.rename(columns={'index':v},inplace=True)
                 month, day = dt.datetime.now().month, dt.datetime.now().day
                 hour, minute = dt.datetime.now().hour, dt.datetime.now().minute
-                new_name = loc + f'Top {x}% of {dep} for {v}_{t}_{month}_{day}_at_{hour}_{minute}.csv'
+                #new_name = loc + f'Top {x}% of {dep} for {v}_{t}_{month}_{day}_at_{hour}_{minute}.csv'
+                new_name = loc + f'{dep} Pivot for {v}_{t}_{month}_{day}_at_{hour}_{minute}.csv'
                 new.to_csv(new_name,index=False)
                 if verbose:
                     print('finished with ',new_name)
@@ -1090,7 +1095,7 @@ def main(selection=None,drop_values=DROP_VALUES):
                 l.append(selection)
 
     #make loc directory
-    subprocess.run(['mkdir',LOC])
+    subprocess.run(['mkdir',LOC]) ## same as os.mkdir(LOC)
 
 
     # DIR FILE_LIST parameters defined at top of script, for easy modification in VIM
@@ -1117,8 +1122,7 @@ def main(selection=None,drop_values=DROP_VALUES):
     if 'export' in l:
         start = time.time()
         V = Visualize(d,drop_values=drop_values)
-        V.export_top_x_percent(
-            x=export_top_x_percentage_val,
+        V.pivot_mean_by_hyperP_n_rp(
             loc=LOC,
             dep = 'mean_pred',
             #savefig = None,
