@@ -1,0 +1,20 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: ChaosReservoir
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: DJ
+    family-names: Passey
+    email: djpasseyjr@gmail.com
+    affiliation: University of North Carolina at Chapel Hill
+  - given-names: Joseph
+    family-names: Wilkes
+    email: joseph.benson.wilkes@gmail.com
+  - given-names: Joseph
+    family-names: Jamieson
+    email: joebobjamieson@gmail.com
