@@ -1,0 +1,169 @@
+
+
+\documentclass[12pt]{article}
+\usepackage[letterpaper,margin=1in]{geometry}
+\usepackage{times}
+\usepackage{graphicx}
+\usepackage{sectsty}
+\allsectionsfont{\normalsize}
+\usepackage{authblk}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\renewcommand\Authfont{\normalsize}
+
+\begin{document}
+
+\title{\normalsize\bf%
+Reservoir Dynamical System Analysis}
+\vspace{-0.5in}
+\author{\vspace{-0.25in} J Jamieson, D. Passey, D. Smith,  B. Webb, and J. Wilkes\\
+}
+
+\date{\vspace{-5ex}} % to kill the unnecessary blank space for \date{}
+
+\maketitle
+
+\thispagestyle{empty}
+\pagestyle{empty}
+
+
+\normalsize \vspace{-.25in}
+\section{General 3D Reservoir System}
+The reservoir computer dynamical system is
+\[
+\mathbf{\dot{r}}(t) = \gamma \big[ -\mathbf{r}(t) + 
+\tanh  \big(A\mathbf{r}(t) +  W_\text{in} \mathbf{u}(t)\big) \big]
+\]
+We will simplify the system to a three dimensional system. Write
+\[\mathbf{r}(t) = \begin{bmatrix} x(t) & y(t)  & z(t) \end{bmatrix}^T
+\] and
+\[ W_\text{in} \mathbf{u}(t) = \begin{bmatrix} a(t) & b(t) & c(t) \end{bmatrix}^T
+\]
+Then the entire system is:
+\[
+\begin{bmatrix} \dot{x}(t) \\ \dot{y}(t) \\ \dot{z}(t) \end{bmatrix}
+=
+\gamma \begin{bmatrix}
+-x(t) + \tanh\Big(a_{11} x(t) + a_{12} y(t) + a{13} z(t) + a(t) \Big) \\
+-y(t) + \tanh\Big(a_{21} x(t) + a_{22} y(t) + a{23} z(t) + b(t) \Big)  \\
+-z(t) + \tanh\Big(a_{31} x(t) + a_{32} y(t) + a{33} z(t) + c(t) \Big)
+\end{bmatrix}
+\]
+ Let's investigate a few different adjacency matrices:
+ \subsection{Single Path}
+ Let
+ \[
+ A = 
+ \begin{bmatrix} 
+ 0 & 0 & 0 \\
+ 1 & 0 & 0 \\
+ 0 & 1 & 0 \\
+ \end{bmatrix}
+ \]
+ 
+ Then our system simplifies to:
+ \[
+\begin{bmatrix} \dot{x}(t) \\ \dot{y}(t) \\ \dot{z}(t) \end{bmatrix}
+=
+\gamma \begin{bmatrix}
+-x(t) + \tanh\Big( a(t) \Big) \\
+-y(t) + \tanh\Big( x(t) + b(t) \Big)  \\
+-z(t) + \tanh\Big( y(t) + c(t) \Big)
+\end{bmatrix}
+\]
+
+We solve for the location of the fixed point:
+ \[
+\begin{bmatrix} 0 \\ 0 \\ 0  \end{bmatrix}
+=
+\gamma \begin{bmatrix}
+-x(t) + \tanh\Big( a(t) \Big) \\
+-y(t) + \tanh\Big( x(t) + b(t) \Big)  \\
+-z(t) + \tanh\Big( y(t) + c(t) \Big)
+\end{bmatrix}
+\]
+\[
+\begin{bmatrix} x^\star(t) \\ y^\star(t) \\ z^\star(t) \end{bmatrix}
+=
+\begin{bmatrix}
+\tanh\Big( a(t) \Big) \\
+\tanh\Big( x^\star(t) + b(t) \Big)  \\
+\tanh\Big( y^\star(t) + c(t) \Big)
+\end{bmatrix}
+\]
+Then, substitute in the solution for $x^\star$ into the equation for $y^\star$ and the solution for $y^\star$ into $z^\star$ to obtain:
+\[
+x^\star = \tanh\big( a(t) \big)
+\]
+\[
+y^\star = \tanh\big( \tanh\big( a(t) \big) + b(t) \big)
+\]
+\[
+z^\star = \tanh \big( \tanh\big( \tanh\big( a(t) \big) + b(t) \big) + c(t) \big)
+\]
+
+The interpretation of this solution is that the location of the fixed point depends only on the input signals. The first reservoir node state $x(t)$ responds only to the input driving it directly $a(t)$. The second reservoir node state $y(t)$ responds to the input driving it directly, $b(t)$ as well as to $\tanh(a(t))$, the transformed input to $x(t)$. This means that input from $a(t)$ will have an impact on the location of $y^\star$, but it will mapped to the interval $(-1, 1)$. Therefore, if $b(t)$ is a lot larger in magnitude, $a(t)$ be overpowered by $b(t)$.
+
+\subsection{Three Node Loop}
+
+Let
+ \[
+ A = 
+ \begin{bmatrix} 
+ 0 & 0 & 1 \\
+ 1 & 0 & 0 \\
+ 0 & 1 & 0 \\
+ \end{bmatrix}
+ \]
+ 
+ Then our system simplifies to:
+ \[
+\begin{bmatrix} \dot{x}(t) \\ \dot{y}(t) \\ \dot{z}(t) \end{bmatrix}
+=
+\gamma \begin{bmatrix}
+-x(t) + \tanh\Big( z(t) + a(t) \Big) \\
+-y(t) + \tanh\Big( x(t) + b(t) \Big)  \\
+-z(t) + \tanh\Big( y(t) + c(t) \Big)
+\end{bmatrix}
+\]
+
+We solve for the location of the fixed point:
+ \[
+\begin{bmatrix} 0 \\ 0 \\ 0  \end{bmatrix}
+=
+\gamma \begin{bmatrix}
+-x(t) + \tanh\Big( z(t) + a(t) \Big) \\
+-y(t) + \tanh\Big( x(t) + b(t) \Big)  \\
+-z(t) + \tanh\Big( y(t) + c(t) \Big)
+\end{bmatrix}
+\]
+\[
+\begin{bmatrix} x^\star \\ y^\star \\ z^\star \end{bmatrix}
+=
+\begin{bmatrix}
+\tanh\Big( z^\star + a(t) \Big) \\
+\tanh\Big( x^\star + b(t) \Big)  \\
+\tanh\Big( y^\star + c(t) \Big)
+\end{bmatrix}
+\]
+Then, substitute in the solution for $x^\star$ into the equation for $y^\star$ and the solution for $y^\star$ into $z^\star$ to obtain:
+\[
+x^\star = \tanh\Big( \tanh\Big( \tanh\Big( x^\star + b(t) \Big) + c(t) \Big) + a(t) \Big) 
+\]
+\[
+y^\star = \tanh\big( \tanh\Big(\tanh\Big( y^\star + c(t) \Big) + a(t) \Big)  + b(t) \big)
+\]
+\[
+z^\star = \tanh \big( \tanh\Big( \tanh\Big( z^\star + a(t) \Big) + b(t) \Big)  + c(t) \big)
+\]
+
+
+\begin{thebibliography}{9}
+\bibitem{review} 
+Tanaka, Gouhei, et. al. "Recent advances in physical reservoir computing: A review",
+\textit{Neural Networks}, vol. 115. (2019).
+
+\end{thebibliography}
+
+
+\end{document}
